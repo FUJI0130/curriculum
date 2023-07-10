@@ -6,7 +6,7 @@ skinparam linetype ortho
 left to right direction
 
 
-package DomainModel_second {
+package DomainModel {
  
  
     package タグ集約 #LightPink
