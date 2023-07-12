@@ -1,6 +1,6 @@
-version: "3.2"
+version: "3.8"
 services:
-  mysql_test:
+  mysql:
     build: .
     restart: always
     environment: 
@@ -12,12 +12,3 @@ services:
       - "9999:3306"
     volumes:
       - "db-data:/var/lib/mysql"
-    networks:
-      - db_network
-  
-volumes:
-  db-data:
-
-networks:
-  db_network:
-    driver: bridge
