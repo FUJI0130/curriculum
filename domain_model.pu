@@ -160,7 +160,6 @@ package DomainModel {
             相談方式
             ディスクリプション
             ステータス
-            提案ID
         ]
 
         
