@@ -38,67 +38,14 @@ package DomainModel {
         語学
         ライフスタイル
         end note
-    package 相談形式集約 #LightCoral
-    {
-        card 相談形式[
-            相談形式
-            --
-            ID
-            相談形式
-        ]
 
-    }
-        note right of 相談形式
-        単発or継続
-        end note
-    package 相談方式集約 #LightGray
-    {
-        card 相談方式[
-            相談方式
-            --
-            ID
-            相談方式
-        ]
-
-    }
-        note right of 相談方式
-        チャットorビデオ通話
-        end note
-
-    package 予算集約 #LightCyan
-    {
-        card 予算[
-            予算
-            --
-            ID
-            予算from
-            予算to
-        ]
-    }
-        note left of 予算
-            １０００円以上の数値
-        end note
-
-    package 応募期間集約 #LightSeaGreen
-    {
-        card 応募期間[
-            応募期間
-            --
-            ID
-            応募期間from
-            応募期間to
-        ]
-    }
-        note right of 応募期間
-           １日単位
-           最大１４日後まで可能 
-        end note
     package 契約集約 #LightSteelBlue
     {
         card 契約[
             契約
             --
             ID
+            契約時の契約金額
             現在の契約金額
             新しい契約金額
         ]
@@ -120,6 +67,7 @@ package DomainModel {
             --
             ID
             ユーザーID
+            メンター募集ID
             提案内容
         ]
         note left of 提案
@@ -203,14 +151,16 @@ package DomainModel {
             タイトル
             タグID
             カテゴリID
-            予算ID
+            予算from
+            予算to
             提案数
-            応募期間ID
-            相談形式ID
-            相談方式ID
+            応募期間from
+            応募期間to
+            相談形式
+            相談方式
             ディスクリプション
             ステータス
-            List<提案>
+            提案ID
         ]
 
         
@@ -219,10 +169,6 @@ package DomainModel {
         メンター募集 "1" -- "1*" カテゴリ
         メンター募集 "1" -- "1*" ユーザー
         メンター募集 "1" -- "1*" 提案
-        メンター募集 "1" - "1*" 予算
-        メンター募集 "1" -- "1*" 応募期間 
-        メンター募集 "1" -- "1*" 相談形式
-        メンター募集 "1" -- "1*" 相談方式
         提案 "1" -- "1*" ユーザー
 
         note left of メンター募集
@@ -230,15 +176,15 @@ package DomainModel {
             --
             ページネーション 20件
             ディスクリプション2000字
-        end note
-
-        note left of メンター募集
+            --
             任意項目
             --
             タグは複数OK
-        end note
-
-        
+            --
+            予算は１０００円以上の数値
+            --
+            相談形式： 単発or継続
+        end note 
 
     }
 
@@ -253,16 +199,14 @@ package DomainModel {
             タグID
             内容
             ステータス
-            相談形式ID
-            相談方式ID
+            相談形式
+            相談方式
             契約ID
             ユーザーID   
         ]
 
         プラン作成 "1" -- "1*" タグ
         プラン作成 "1" -- "1*" カテゴリ
-        プラン作成 "1" -- "1*" 相談形式
-        プラン作成 "1" -- "1*" 相談方式
         プラン作成 "1" - "1*" 契約
         プラン作成 "1" -- "1*" ユーザー
 
@@ -278,7 +222,10 @@ package DomainModel {
             ==
             相談方式
             チャットorビデオ通話
+            ==
+            相談形式： 単発or継続
         end note
+        
     }
     
 }
