@@ -46,8 +46,6 @@ package DomainModel {
             --
             ID
             契約時の契約金額
-            現在の契約金額
-            新しい契約金額
         ]
 
         note left of 契約
