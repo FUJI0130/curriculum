@@ -1,0 +1,19 @@
+version: "3.8"
+volumes:
+  sql:
+services:
+  mysql:
+    build: 
+      context: .
+      dockerfile: ./.docker/Dockerfile
+    restart: always    
+    ports:
+      - "9999:3306"
+    volumes:
+      - sql:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=sql
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_ROOT_PASSWORD=password
+      - TZ=Asia/Tokyo
