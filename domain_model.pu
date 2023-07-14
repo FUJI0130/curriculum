@@ -45,7 +45,7 @@ package DomainModel {
             --
             ID
             契約時の契約金額
-            契約リクエスト承認
+            契約リクエストID
             承認メッセージ
         ]
 
@@ -233,6 +233,7 @@ package DomainModel {
             ID
             メッセージ
             プランID
+            リクエスト時の契約金額
         ]
         契約リクエスト "0..*" o-- "0..*" プラン
         note left of 契約リクエスト
