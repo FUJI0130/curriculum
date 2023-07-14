@@ -5,7 +5,6 @@ skinparam linetype ortho
 
 left to right direction
 
-
 package DomainModel {
  
  
@@ -61,7 +60,6 @@ package DomainModel {
             承認メッセージは最大５００文字
         end note
     }
-    
 
     package 提案集約 #LightGoldenRodYellow
     {
@@ -113,8 +111,6 @@ package DomainModel {
             西暦to
         ]
 
-
-
         ユーザー "1.." o-- "0..*" 経歴
         ユーザー "1.." o-- "0..*" スキル
         タグ "0.." --o "0*" スキル
@@ -164,8 +160,6 @@ package DomainModel {
             ディスクリプション
             ステータス
         ]
-
-        
         
         メンター募集 "1" o-- "0*" タグ
         メンター募集 "1" o-- "1*" カテゴリ
@@ -227,7 +221,6 @@ package DomainModel {
             ==
             相談形式： 単発or継続
         end note
-        
     }
     package 契約リクエスト集約 #LightGreen
     {
