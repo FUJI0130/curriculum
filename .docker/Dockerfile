@@ -16,8 +16,9 @@ FROM golang:latest
 
 WORKDIR /app
 
-COPY src/core/cmd* ./
-COPY src/core/infra/controllers* ./
+COPY . .
+# # COPY src/core/cmd* ./
+# COPY src/core/infra/controllers* ./
 
 
 RUN go mod init example.com/myapp
