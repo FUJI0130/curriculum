@@ -16,7 +16,7 @@ FROM golang:latest
 
 WORKDIR /app
 
-COPY src/core/app/main.go ./
+COPY src/core/cmd/main.go ./
 
 RUN go mod init example.com/myapp
 RUN go get github.com/gin-gonic/gin
