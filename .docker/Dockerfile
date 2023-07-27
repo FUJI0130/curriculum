@@ -21,7 +21,8 @@ COPY . .
 # COPY src/core/infra/controllers* ./
 
 
-RUN go mod init example.com/myapp
+# RUN go mod init example.com/myapp
+RUN go mod download
 RUN go get github.com/gin-gonic/gin
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 
