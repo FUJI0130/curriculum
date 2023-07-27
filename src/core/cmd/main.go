@@ -1,7 +1,7 @@
 package main
 
 import (
-	"../infra/controllers"
+	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/gin-gonic/gin"
 )
 
