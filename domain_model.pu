@@ -15,6 +15,8 @@ package DomainModel {
             --
             ID
             タグ名
+            created_at
+            updated_at
         ]
     }
         
@@ -25,6 +27,8 @@ package DomainModel {
             --
             ID
             カテゴリ名
+            created_at
+            updated_at
         ]
     }
         note right of カテゴリ 
@@ -46,6 +50,7 @@ package DomainModel {
             ID
             契約リクエストID
             承認メッセージ
+            created_at
         ]
 
         note left of 契約
@@ -69,6 +74,8 @@ package DomainModel {
             ユーザーID
             メンター募集ID
             提案内容
+            created_at
+            updated_at
         ]
         note left of 提案
             提案内容
@@ -87,9 +94,10 @@ package DomainModel {
             名前
             メールアドレス
             パスワード
-            List<スキル>
             プロファイル
-            List<経歴>
+            経歴ID
+            created_at
+            updated_at
         ]
 
         card スキル[
@@ -99,6 +107,8 @@ package DomainModel {
             タグID
             評価
             年数
+            created_at
+            updated_at
         ]
 
         card 経歴 [
@@ -108,6 +118,9 @@ package DomainModel {
             詳細
             西暦from
             西暦to
+            ユーザーID
+            created_at
+            updated_at
         ]
 
         ユーザー "1.." o-- "0..*" 経歴
@@ -151,13 +164,14 @@ package DomainModel {
             カテゴリID
             予算from
             予算to
-            提案数
             応募期間from
             応募期間to
             相談形式
             相談方式
             ディスクリプション
             ステータス
+            created_at
+            updated_at
         ]
         
         メンター募集 "1" o-- "0*" タグ
@@ -194,13 +208,13 @@ package DomainModel {
             ID
             タイトル
             カテゴリID
-            タグID
             内容
             ステータス
             相談形式
             相談方式
-            契約ID
-            ユーザーID   
+            ユーザーID 
+            created_at
+            Updated_at  
         ]
 
         プラン "0" o-- "0*" タグ
@@ -233,6 +247,7 @@ package DomainModel {
             メッセージ
             プランID
             契約金額
+            created_at
         ]
         契約リクエスト "0..*" o-- "0..*" プラン
         契約リクエスト "0..*" o-- "0..*" 契約 
