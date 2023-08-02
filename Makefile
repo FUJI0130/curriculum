@@ -15,7 +15,7 @@ build: ## Build docker image to deploy		docker build -t go_webapp_hands_on --tar
 		 docker build -t curriculum:${DOCKER_TAG} \
 		  		--target go_dev ./	
 
-# build-localターゲットの指定　ローカル開発環境用のDockerイメージをビルドする作業を自動s化する
+# build-localターゲットの指定　ローカル開発環境用のDockerイメージをビルドする作業を自動化する
 build-local: ## Build docker image to local development
 		docker-compose build --no-cache
 
