@@ -15,7 +15,7 @@ build: ## Build docker image to deploy		docker build -t go_webapp_hands_on --tar
 # -f の後にビルドで使うDockerfileを指定しないとビルド通らなかった
 	docker build -t curriculum:${DOCKER_TAG} \
 		--target go_dev \
-		-f ./.docker/Dockerfile.app \
+		-f ./.docker/app.Dockerfile \
 		./
 
 up: ## Do docker compose up with hot reload

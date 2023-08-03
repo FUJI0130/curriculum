@@ -6,14 +6,14 @@ services:
     image: curriculum
     build:
       context: .
-      dockerfile: .docker/Dockerfile.app
+      dockerfile: .docker/app.Dockerfile
     container_name: my_app_server
     ports:
       - "8080:8080"
   mysql:
     build: 
       context: .
-      dockerfile: .docker/Dockerfile.mysql
+      dockerfile: .docker/mysql.Dockerfile
     restart: always    
     ports:
       - "9999:3306"
