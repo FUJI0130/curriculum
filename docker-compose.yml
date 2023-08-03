@@ -2,10 +2,18 @@ version: "3.8"
 volumes:
   sql:
 services:
+  app:
+    image: curriculum
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile.app
+    container_name: my_app_server
+    ports:
+      - "8080:8080"
   mysql:
     build: 
       context: .
-      dockerfile: ./.docker/Dockerfile
+      dockerfile: .docker/Dockerfile.mysql
     restart: always    
     ports:
       - "9999:3306"
