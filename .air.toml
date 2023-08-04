@@ -7,7 +7,7 @@
 
 [watch]
   includes = ["./src/**/*.go"]
-  excludes = ["./src/core/app/tmp"]
+  excludes = ["./vendor/**/*", "./src/core/app/tmp"]
 
 [log]
   level = "info"
