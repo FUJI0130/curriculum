@@ -1,0 +1,19 @@
+# .air.toml
+[build]
+  cmd = "go build -o ./main ./src/core/cmd/main.go"
+  bin = "./main"
+  tmp_dir = "./tmp"
+
+
+[watch]
+  includes = ["./src/**/*.go"]
+  excludes = ["vendor", "tmp"]
+
+[log]
+  level = "info"
+
+[color]
+  main = "cyan"
+  watcher = "magenta"
+  build = "yellow"
+  app = "green"
