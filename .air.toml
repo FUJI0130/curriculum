@@ -1,8 +1,9 @@
 # .air.toml
 [build]
-  cmd = "go build -o ./src/core/cmd/tmp/main ./src/core/cmd/main.go"
-  bin = "./src/core/cmd/tmp/main"
-  tmp_dir = "./src/core/cmd/tmp"
+  cmd = "go build -o ./main ./src/core/cmd/main.go"
+  bin = "./main"
+  tmp_dir = "./tmp"
+
 
 [watch]
   includes = ["./src/**/*.go"]
