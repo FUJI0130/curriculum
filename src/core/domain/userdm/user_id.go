@@ -1,22 +1,27 @@
 package userdm
 
-import "errors"
+import (
+	"fmt"
 
-type UserID struct {
-	value string
-}
+	"github.com/google/uuid"
+)
 
-func NewUserID(userID string) (*UserID, error) {
-	if userID == "" {
-		return nil, errors.New("userID cannot be empty")
+type UserID uuid.UUID
+
+func NewUserID() (*UserID, error) {
+	userID, err := uuid.NewRandom()
+	if err != nil {
+		fmt.Printf("Failed to generate UUID: %v", err)
 	}
-	return &UserID{value: userID}, nil
+	userID_VO := UserID(userID)
+	return &userID_VO, nil
 }
 
 func (id *UserID) String() string {
-	return id.value
+	uuidString := id.String()
+	return uuidString
 }
 
-func (id *UserID) Equal(userID2 *UserID) bool {
-	return id.value == userID2.value
+func (userID1 *UserID) Equal(userID2 *UserID) bool {
+	return *userID1 == *userID2
 }

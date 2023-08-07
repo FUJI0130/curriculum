@@ -4,32 +4,33 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewUser(t *testing.T) {
-	userID, _ := NewUserID(uuid.New().String())
+
 	createdAt := time.Now()
 	updatedAt := time.Now()
 
-	user, err := NewUser(userID, "TestName", "test@example.com", "Password", "Profile", createdAt, updatedAt)
+	user, err := NewUser("TestName", "test@example.com", "Password", "Profile", createdAt, updatedAt)
 
-	assert.NoError(t, err)
-	assert.Equal(t, "TestName", user.Name)
-	assert.Equal(t, "test@example.com", user.Email)
-	assert.Equal(t, "Password", user.Password)
-	assert.Equal(t, "Profile", user.Profile)
-	assert.Equal(t, createdAt, user.CreatedAt)
-	assert.Equal(t, updatedAt, user.UpdatedAt)
+	// assert.NoError(t, err)
+	require.NoError(t, err)
+	assert.Equal(t, "TestName", user.name)
+	assert.Equal(t, "test@example.com", user.email)
+	assert.Equal(t, "Password", user.password)
+	assert.Equal(t, "Profile", user.profile)
+	assert.Equal(t, createdAt, user.createdAt)
+	assert.Equal(t, updatedAt, user.updatedAt)
 }
 
 func TestUserID_Equal(t *testing.T) {
-	userID1, _ := NewUserID(uuid.New().String())
-	userID2, _ := NewUserID(uuid.New().String())
+	userID1, _ := NewUserID()
+	userID2, _ := NewUserID()
 
 	assert.False(t, userID1.Equal(userID2))
 
-	userID3, _ := NewUserID(userID1.String())
+	userID3, _ := NewUserID()
 	assert.True(t, userID1.Equal(userID3))
 }
