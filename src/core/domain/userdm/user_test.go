@@ -9,7 +9,6 @@ import (
 )
 
 func TestNewUserID_check(t *testing.T) {
-	// testUserID2とtestUserID2を作成
 	testUserID1, err := NewUserID()
 	if err != nil {
 		t.Fatalf("Failed to create userID1: %v", err)
@@ -59,7 +58,6 @@ func TestNewUserID_check(t *testing.T) {
 				assert.False(t, equal, "%v should not be equal to %v", tt.id1, tt.id2)
 			}
 
-			// オプション：ユーザIDを出力
 			t.Logf("UserID1: %v", tt.id1.String())
 			t.Logf("UserID2: %v", tt.id2.String())
 		})
@@ -87,9 +85,9 @@ func TestNewUser(t *testing.T) {
 			profile:     "Profile",
 			createdAt:   createdAt,
 			updatedAt:   updatedAt,
-			expectError: false, // テストケースに合わせてここを設定します
+			expectError: false, // テストケースに合わせてここを設定
 		},
-		// ここに他のテストケースを追加できます。
+		// ここに他のテストケースを追加出来る
 	}
 
 	for _, test := range tests {
@@ -99,8 +97,6 @@ func TestNewUser(t *testing.T) {
 			require.Error(t, err)
 		} else {
 			require.NoError(t, err)
-			// ここでは値オブジェクトの比較が必要かもしれませんが、
-			// その具体的な方法は値オブジェクトの実装によります
 			assert.Equal(t, user.name, user.name)
 			assert.Equal(t, user.email, user.email)
 			assert.Equal(t, user.password, user.password)
