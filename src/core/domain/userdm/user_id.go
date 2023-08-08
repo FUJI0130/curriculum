@@ -18,7 +18,7 @@ func NewUserID() (*UserID, error) {
 }
 
 func (id *UserID) String() string {
-	uuidString := id.String()
+	uuidString := uuid.UUID(*id).String()
 	return uuidString
 }
 
