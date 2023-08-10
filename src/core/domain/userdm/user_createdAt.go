@@ -5,9 +5,7 @@ import (
 	"time"
 )
 
-type UserCreatedAt struct {
-	value time.Time
-}
+type UserCreatedAt time.Time
 
 func NewUserCreatedAt(userCreatedAt time.Time) (*UserCreatedAt, error) {
 	if userCreatedAt.IsZero() {
@@ -16,12 +14,13 @@ func NewUserCreatedAt(userCreatedAt time.Time) (*UserCreatedAt, error) {
 	if userCreatedAt.After(time.Now()) {
 		return nil, errors.New("userCreatedAt cannot be future date")
 	}
-	// userCreatedAt_VO := UserCreatedAt{value: userCreatedAt}
-	return &UserCreatedAt{value: userCreatedAt}, nil
+	userCreatedAt_VO := UserCreatedAt(userCreatedAt)
+	return &userCreatedAt_VO, nil
 }
 
 func (createdAt *UserCreatedAt) DateTime() time.Time {
-	return createdAt.value
+	userCreatedAt_DateTime := time.Time(*createdAt)
+	return userCreatedAt_DateTime
 }
 
 func (userCreatedAt1 *UserCreatedAt) Equal(userCreatedAt2 *UserCreatedAt) bool {
