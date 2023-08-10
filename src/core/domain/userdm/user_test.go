@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -12,29 +13,34 @@ func TestNewUser(t *testing.T) {
 	// createdAtとupdatedAtの作成
 
 	//●error処理を書く
-	createdAt, err := NewUserCreatedAt(time.Now())
+	createdAt, err := sharedvo.NewCreatedAt(time.Now())
 	if err != nil {
 		t.Fatalf("failed to create createdAt: %v", err) // テストを失敗させてエラーメッセージを表示
 	}
 
-	updatedAt, err := NewUserUpdatedAt(time.Now())
+	updatedAt, err := sharedvo.NewUpdatedAt(time.Now())
 	if err != nil {
 		t.Fatalf("failed to create updatedAt: %v", err) // テストを失敗させてエラーメッセージを表示
+	}
+
+	user_password, err := NewUserPassword("new_password0130")
+	if err != nil {
+		t.Fatalf("failed to create user_password: %v", err) // テストを失敗させてエラーメッセージを表示
 	}
 
 	tests := []struct {
 		name        string
 		email       string
-		password    string
+		password    *UserPassword
 		profile     string
-		createdAt   *UserCreatedAt
-		updatedAt   *UserUpdatedAt
+		createdAt   *sharedvo.CreatedAt
+		updatedAt   *sharedvo.UpdatedAt
 		expectError bool // expectErrorを追加
 	}{
 		{
 			name:        "TestName",
 			email:       "test@example.com",
-			password:    "Password",
+			password:    user_password,
 			profile:     "Profile",
 			createdAt:   createdAt,
 			updatedAt:   updatedAt,
@@ -44,7 +50,7 @@ func TestNewUser(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		user, err := NewUser(test.name, test.email, test.password, test.profile, test.createdAt.DateTime(), test.updatedAt.DateTime())
+		user, err := NewUser(test.name, test.email, test.password.String(), test.profile, test.createdAt.DateTime(), test.updatedAt.DateTime())
 
 		if test.expectError {
 			require.Error(t, err)
