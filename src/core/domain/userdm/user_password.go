@@ -1,11 +1,15 @@
 package userdm
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 type UserPassword string
 
 func NewUserPassword(userPassword string) (*UserPassword, error) {
 	count := len([]rune(userPassword))
+	fmt.Println("Password Length:", count)
 	if userPassword == "" {
 		return nil, errors.New("userPassword cannot be empty")
 	} else if 255 < count {

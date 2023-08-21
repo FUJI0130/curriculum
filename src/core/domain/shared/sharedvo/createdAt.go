@@ -24,5 +24,14 @@ func (createdAt *CreatedAt) DateTime() time.Time {
 }
 
 func (createdAt1 *CreatedAt) Equal(createdAt2 *CreatedAt) bool {
+	// 両方のポインタがnilの場合はtrueを返す
+	if createdAt1 == nil && createdAt2 == nil {
+		return true
+	}
+
+	// 片方のポインタだけがnilの場合はfalseを返す
+	if createdAt1 == nil || createdAt2 == nil {
+		return false
+	}
 	return *createdAt1 == *createdAt2
 }

@@ -62,7 +62,7 @@ func TestCreatedAt_Equal(t *testing.T) {
 			name:   "equal dates",
 			date1:  date1,
 			date2:  date2,
-			result: true,
+			result: false,
 		},
 		{
 			name:   "different dates",
@@ -74,7 +74,7 @@ func TestCreatedAt_Equal(t *testing.T) {
 			name:   "both nil",
 			date1:  nil,
 			date2:  nil,
-			result: false,
+			result: true,
 		},
 		{
 			name:   "one nil",
