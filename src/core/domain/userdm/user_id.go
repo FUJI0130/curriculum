@@ -12,13 +12,14 @@ func NewUserID() (UserID, error) {
 	userID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Printf("Failed to generate UUID: %v", err)
+		return UserID(""), err
 	}
 	userID_VO := UserID(userID.String())
 	return userID_VO, nil
 }
 
-func (id *UserID) String() string {
-	uuidString := string(*id)
+func (id UserID) String() string {
+	uuidString := string(id)
 	return uuidString
 }
 

@@ -4,8 +4,7 @@
 package rdbimpl
 
 import (
-	"context"
-	"your_path/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -17,9 +16,10 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
+// func NewUser(name string, email string, password string, profile string, createdAt time.Time, updatedAt time.Time) (*User, error) {
 func (repo *userRepositoryImpl) Store(user *userdm.User) error {
-	query := "INSERT INTO users (id, name, password, introduction) VALUES (?, ?, ?, ?)"
-	_, err := repo.Conn.Exec(query, user.ID.String(), user.Name, user.Password, user.Introduction)
+	query := "INSERT INTO users (id, name,email, password, profile,updatedAt ) VALUES (?, ?, ?, ?, ?, ?)"
+	_, err := repo.Conn.Exec(query, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.UpdatedAt().DateTime())
 	return err
 }
 

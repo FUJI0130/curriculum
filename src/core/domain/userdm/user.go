@@ -73,3 +73,31 @@ func NewUser(name string, email string, password string, profile string, created
 		updatedAt: *user_updatedAt,
 	}, nil
 }
+
+func (u *User) ID() UserID {
+	return u.id
+}
+
+func (u *User) Name() string {
+	return u.name
+}
+
+func (u *User) Email() UserEmail {
+	return u.email
+}
+
+func (u *User) Password() UserPassword {
+	return u.password
+}
+
+func (u *User) Profile() string {
+	return u.profile
+}
+
+func (u *User) CreatedAt() sharedvo.CreatedAt {
+	return u.createdAt
+}
+
+func (u *User) UpdatedAt() sharedvo.UpdatedAt {
+	return u.updatedAt
+}

@@ -26,8 +26,8 @@ func NewUserEmail(user_email string) (*UserEmail, error) {
 	return &userEmail_VO, nil
 }
 
-func (email *UserEmail) String() string {
-	userEmailString := string(*email)
+func (email UserEmail) String() string {
+	userEmailString := string(email)
 	return userEmailString
 }
 

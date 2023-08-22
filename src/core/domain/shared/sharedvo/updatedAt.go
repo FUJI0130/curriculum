@@ -26,13 +26,13 @@ func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
 
 	LastDuration = time.Since(adjustTime)
 
-	UpdatedAt_VO := UpdatedAt(updatedAt)
-	return &UpdatedAt_VO, nil
+	updatedAtReturn := UpdatedAt(updatedAt)
+	return &updatedAtReturn, nil
 }
 
-func (updatedAt *UpdatedAt) DateTime() time.Time {
-	UpdatedAt_DateTime := time.Time(*updatedAt)
-	return UpdatedAt_DateTime
+func (updatedAt UpdatedAt) DateTime() time.Time {
+	updatedAtDateTime := time.Time(updatedAt)
+	return updatedAtDateTime
 }
 
 func (updatedAt *UpdatedAt) SetDateTime(newTime time.Time) error {

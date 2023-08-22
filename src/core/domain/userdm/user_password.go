@@ -22,8 +22,8 @@ func NewUserPassword(userPassword string) (*UserPassword, error) {
 	return &userPassword_VO, nil
 }
 
-func (password *UserPassword) String() string {
-	userPasswordString := string(*password)
+func (password UserPassword) String() string {
+	userPasswordString := string(password)
 	return userPasswordString
 }
 
