@@ -2,6 +2,7 @@ package userdm
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -60,6 +61,7 @@ func NewUser(name string, email string, password string, profile string, created
 
 	user_updatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
 	if err != nil {
+		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 

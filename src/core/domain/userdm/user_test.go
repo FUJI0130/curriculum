@@ -21,6 +21,7 @@ func TestNewUser(t *testing.T) {
 	startTime := time.Now()
 	updatedAt, err := sharedvo.NewUpdatedAt(startTime)
 	if err != nil {
+		t.Logf("Time taken for updatedAt.Before(time.Now()): %v", sharedvo.LastDuration)
 		t.Fatalf("failed to create updatedAt: %v", err) // テストを失敗させてエラーメッセージを表示
 	}
 
@@ -55,14 +56,14 @@ func TestNewUser(t *testing.T) {
 
 		if test.expectError {
 			require.Error(t, err)
-		} else {
-			require.NoError(t, err)
-			assert.Equal(t, user.name, user.name)
-			assert.Equal(t, user.email, user.email)
-			assert.Equal(t, user.password, user.password)
-			assert.Equal(t, user.profile, user.profile)
-			assert.Equal(t, user.createdAt, user.createdAt)
-			assert.Equal(t, user.updatedAt, user.updatedAt)
+			return
 		}
+		require.NoError(t, err)
+		assert.Equal(t, user.name, user.name)
+		assert.Equal(t, user.email, user.email)
+		assert.Equal(t, user.password, user.password)
+		assert.Equal(t, user.profile, user.profile)
+		assert.Equal(t, user.createdAt, user.createdAt)
+		assert.Equal(t, user.updatedAt, user.updatedAt)
 	}
 }

@@ -3,7 +3,9 @@
 
 package userdm
 
+import "context"
+
 type UserRepository interface {
-	Store(user *User) error
-	FindByName(name string) (*User, error)
+	Store(ctx context.Context, user *User) error
+	FindByName(ctx context.Context, name string) (*User, error)
 }

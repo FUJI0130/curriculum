@@ -2,6 +2,8 @@ package userdm
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewUserPassword(t *testing.T) {
@@ -36,14 +38,13 @@ func TestNewUserPassword(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewUserPassword(tt.input)
 			if tt.expectedError != "" {
-				if err == nil {
-					t.Errorf("expected error %v, got nil", tt.expectedError)
-				} else if err.Error() != tt.expectedError {
-					t.Errorf("expected error %v, got %v", tt.expectedError, err.Error())
+				if assert.NotNil(t, err, "エラーが期待されましたが、nilが返されました") {
+					assert.Equal(t, tt.expectedError, err.Error(), "エラーメッセージが一致しません")
 				}
-			} else if err != nil {
-				t.Errorf("expected no error, got %v", err.Error())
+				return
 			}
+			assert.Nil(t, err, "エラーは期待されませんでしたが、%vが返されました", err)
 		})
 	}
+
 }

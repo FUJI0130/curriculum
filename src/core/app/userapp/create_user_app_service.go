@@ -34,21 +34,24 @@ type CreateUserRequest struct {
 // ユーザ名重複チェック
 // ユーザ作成
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	existingUser, err := app.userRepo.FindByName(req.Name)
+	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 	if err != nil {
+
+		//TODO:
+		// if !err.Is(err, NotFound) {
+		// 	return err
+		// }
+
 		return err
 	}
 	if existingUser != nil {
 		return errors.New("user name already exists")
 	}
 
-	// createdAt, err := sharedvo.NewCreatedAt(time.Now())
-	// updatedAt, err := sharedvo.NewUpdatedAt(time.Now())
-	// func NewUser(name string, email string, password string, profile string, createdAt time.Time, updatedAt time.Time) (*User, error) {
 	user, err := userdm.NewUser(req.Name, req.Email, req.Password, req.Profile, time.Now(), time.Now())
 	if err != nil {
 		return err
 	}
 
-	return app.userRepo.Store(user)
+	return app.userRepo.Store(ctx, user)
 }
