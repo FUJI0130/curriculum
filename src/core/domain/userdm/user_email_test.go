@@ -39,7 +39,7 @@ func TestNewUserEmail(t *testing.T) {
 			expectedValue: nil,
 		},
 		{
-			name:          "emailの長さが２５６文字以上の場合のテスト",
+			name:          "emailの長さが256文字以上の場合のテスト",
 			input:         "a" + string(make([]rune, 255)) + "@example.com",
 			expectedError: errors.New("userEmail length over 256"),
 			expectedValue: nil,

@@ -21,8 +21,6 @@ func TestNewUser(t *testing.T) {
 	startTime := time.Now()
 	updatedAt, err := sharedvo.NewUpdatedAt(startTime)
 	if err != nil {
-		t.Logf("Time taken for updatedAt.Before(time.Now()): %v", sharedvo.LastDuration)
-
 		t.Fatalf("failed to create updatedAt: %v", err) // テストを失敗させてエラーメッセージを表示
 	}
 
