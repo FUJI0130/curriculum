@@ -17,19 +17,19 @@ func TestNewUpdatedAt(t *testing.T) {
 		wantError error
 	}{
 		{
-			name:      "zero time",
+			name:      "時間が０",
 			input:     time.Time{},
 			want:      nil,
 			wantError: errors.New("UpdatedAt cannot be zero value"),
 		},
 		{
-			name:      "past time",
+			name:      "過去の時間の場合のテスト",
 			input:     time.Now().Add(-time.Hour * 24),
 			want:      nil,
 			wantError: errors.New("UpdatedAt cannot be past date"),
 		},
 		{
-			name:      "valid time",
+			name:      "有効な時間の場合のテスト",
 			input:     validTime,
 			want:      (*UpdatedAt)(&validTime),
 			wantError: nil,
@@ -72,19 +72,19 @@ func TestUpdatedAt_SetDateTime(t *testing.T) {
 		wantError error
 	}{
 		{
-			name:      "zero time",
+			name:      "時間が０",
 			original:  time.Now(),
 			newTime:   time.Time{},
 			wantError: errors.New("UpdatedAt cannot be zero value"),
 		},
 		{
-			name:      "past time",
+			name:      "過去の時間の場合のテスト",
 			original:  time.Now(),
 			newTime:   time.Now().Add(-time.Hour),
 			wantError: errors.New("UpdatedAt cannot be past date"),
 		},
 		{
-			name:      "valid time",
+			name:      "有効な時間の場合のテスト",
 			original:  time.Now(),
 			newTime:   time.Now().Add(time.Hour),
 			wantError: nil,
@@ -119,13 +119,13 @@ func TestUpdatedAt_Equal(t *testing.T) {
 		result bool
 	}{
 		{
-			name:   "equal",
+			name:   "等しい場合のテスト",
 			u1:     UpdatedAt(now),
 			u2:     UpdatedAt(now),
 			result: true,
 		},
 		{
-			name:   "not equal",
+			name:   "等しくない場合のテスト",
 			u1:     UpdatedAt(now),
 			u2:     UpdatedAt(now.Add(time.Hour)),
 			result: false,

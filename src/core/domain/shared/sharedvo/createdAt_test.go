@@ -59,25 +59,25 @@ func TestCreatedAt_Equal(t *testing.T) {
 		result bool
 	}{
 		{
-			name:   "equal dates",
+			name:   "日付が等しい",
 			date1:  date1,
 			date2:  date2,
 			result: false,
 		},
 		{
-			name:   "different dates",
+			name:   "異なる日付",
 			date1:  date1,
 			date2:  date3,
 			result: false,
 		},
 		{
-			name:   "both nil",
+			name:   "両方nilだった場合",
 			date1:  nil,
 			date2:  nil,
 			result: true,
 		},
 		{
-			name:   "one nil",
+			name:   "date2がnil",
 			date1:  date1,
 			date2:  nil,
 			result: false,

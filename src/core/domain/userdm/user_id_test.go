@@ -25,19 +25,19 @@ func TestNewUserID_check(t *testing.T) {
 		isErr bool
 	}{
 		{
-			name:  "testUserID1 and testUserID2 should not be isErr",
+			name:  "testUserID1 と testUserID2 は等しくない事を確認するテスト",
 			id1:   testUserID1,
 			id2:   testUserID2,
 			isErr: false,
 		},
 		{
-			name:  "testUserID1 and itself should be isErr",
+			name:  "testUserID1 自身を比べて等しい事を確認するテスト",
 			id1:   testUserID1,
 			id2:   testUserID1,
 			isErr: true,
 		},
 		{
-			name:  "testUserID2 and itself should be isErr",
+			name:  "testUserID2  自身を比べて等しい事を確認するテスト",
 			id1:   testUserID2,
 			id2:   testUserID2,
 			isErr: true,

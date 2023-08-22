@@ -15,31 +15,31 @@ func TestNewUserEmail(t *testing.T) {
 		expectedValue *UserEmail
 	}{
 		{
-			name:          "empty email",
+			name:          "emailが空の場合のテスト",
 			input:         "",
 			expectedError: errors.New("userEmail cannot be empty"),
 			expectedValue: nil,
 		},
 		{
-			name:          "valid email",
+			name:          "有効なemailか確認するテスト",
 			input:         "test@example.com",
 			expectedError: nil,
 			expectedValue: &validEmail,
 		},
 		{
-			name:          "invalid email without domain",
+			name:          "emailのドメインが有効でない場合のテスト",
 			input:         "test@.com",
 			expectedError: errors.New("userEmail format is invalid"),
 			expectedValue: nil,
 		},
 		{
-			name:          "invalid email without @ symbol",
+			name:          "＠が無い場合のテスト",
 			input:         "testexample.com",
 			expectedError: errors.New("userEmail format is invalid"),
 			expectedValue: nil,
 		},
 		{
-			name:          "overlength email",
+			name:          "emailの長さが２５６文字以上の場合のテスト",
 			input:         "a" + string(make([]rune, 255)) + "@example.com",
 			expectedError: errors.New("userEmail length over 256"),
 			expectedValue: nil,
