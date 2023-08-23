@@ -13,22 +13,22 @@ func TestNewUserPassword(t *testing.T) {
 		expectedError string
 	}{
 		{
-			name:          "empty password",
+			name:          "パスワードが空",
 			input:         "",
 			expectedError: "userPassword cannot be empty",
 		},
 		{
-			name:          "valid password",
+			name:          "有効なパスワード",
 			input:         "AValidPassword123",
 			expectedError: "",
 		},
 		{
-			name:          "too short password",
-			input:         "Short1",
+			name:          "パスワードが12文字以下",
+			input:         "Short12345678",
 			expectedError: "userPassword length under 12",
 		},
 		{
-			name:          "too long password",
+			name:          "パスワードが256文字以上",
 			input:         "ThisIsAReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyReallyLongPasswordThatIsDefinitelyOver256CharactersLongAndShouldReturnAnErrorBecauseOfItsLength1234567890LetsMakeThisStringExactlyTwoHundredFiftyFiveCharactersLongAddingMoreNow+",
 			expectedError: "userPassword length over 256",
 		},
@@ -38,12 +38,12 @@ func TestNewUserPassword(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := NewUserPassword(tt.input)
 			if tt.expectedError != "" {
-				if assert.NotNil(t, err, "エラーが期待されましたが、nilが返されました") {
-					assert.Equal(t, tt.expectedError, err.Error(), "エラーメッセージが一致しません")
-				}
+				assert.Error(t, err, "エラーが期待されましたが、nilが返されました")
+				assert.EqualError(t, err, tt.expectedError, "エラーメッセージが一致しません")
 				return
 			}
-			assert.Nil(t, err, "エラーは期待されませんでしたが、%vが返されました", err)
+
+			assert.NoError(t, err, "エラーは期待されませんでしたが、%vが返されました", err)
 		})
 	}
 
