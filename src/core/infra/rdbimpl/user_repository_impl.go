@@ -34,7 +34,7 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 }
 
 func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User) error {
-	query := "INSERT INTO users (id, name, email, password, profile, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 
 	return err
