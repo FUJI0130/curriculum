@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -20,6 +21,23 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 
 	tests := []testCase{
 		{
+			name: "存在しないユーザーを新規作成",
+			request: &CreateUserRequest{
+				Name:     "newUser",
+				Email:    "new@example.com",
+				Password: "newpassword12345",
+				Profile:  "new profile",
+			},
+			wantErr: nil,
+			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
+				// この名前のユーザーはまだ存在しないことを模倣する
+				mockRepo.EXPECT().FindByName(gomock.Any(), "newUser").Return(nil, userdm.ErrUserNotFound)
+
+				// 新しいユーザーの保存を模倣する
+				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
+			},
+		},
+		{
 			name: "存在するユーザーを作成",
 			request: &CreateUserRequest{
 				Name:     "testUser",
@@ -29,7 +47,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			},
 			wantErr: nil,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, "user not found")
+				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, nil)
 				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
 			},
 		},

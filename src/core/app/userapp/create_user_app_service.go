@@ -47,6 +47,9 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 		// }
 	}
+	if err != nil && errors.Is(err, userdm.ErrUserNotFound) {
+		err = nil // ユーザーが見つからない場合、エラーをクリア
+	}
 	if existingUser != nil {
 		// existingUser が nil ではない場合、ユーザー名が既に存在すると判断
 		log.Println("Existing user details:", existingUser)
