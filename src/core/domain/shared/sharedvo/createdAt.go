@@ -18,8 +18,8 @@ func NewCreatedAt(createdAt time.Time) (*CreatedAt, error) {
 	return &CreatedAt_VO, nil
 }
 
-func (createdAt *CreatedAt) DateTime() time.Time {
-	CreatedAtDateTime := time.Time(*createdAt)
+func (createdAt CreatedAt) DateTime() time.Time {
+	CreatedAtDateTime := time.Time(createdAt)
 	return CreatedAtDateTime
 }
 

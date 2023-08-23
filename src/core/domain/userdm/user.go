@@ -9,16 +9,18 @@ import (
 )
 
 type User struct {
-	id        UserID
-	name      string
-	email     UserEmail
-	password  UserPassword
-	profile   string
-	createdAt sharedvo.CreatedAt
-	updatedAt sharedvo.UpdatedAt
+	id        UserID             `db:"id"`
+	name      string             `db:"name"`
+	email     UserEmail          `db:"email"`
+	password  UserPassword       `db:"password"`
+	profile   string             `db:"profile"`
+	createdAt sharedvo.CreatedAt `db:"created_at"`
+	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewUser(name string, email string, password string, profile string, createdAt time.Time, updatedAt time.Time) (*User, error) {
+var ErrUserNotFound = errors.New("user not found")
+
+func NewUser(name string, email string, password string, profile string, created_at time.Time, updatedAt time.Time) (*User, error) {
 	if name == "" || password == "" {
 		return nil, errors.New("name and password cannot be empty")
 	}
@@ -54,7 +56,7 @@ func NewUser(name string, email string, password string, profile string, created
 		return nil, errors.New("userProfile length over 256")
 	}
 
-	userCreatedAt, err := sharedvo.NewCreatedAt(createdAt)
+	userCreatedAt, err := sharedvo.NewCreatedAt(created_at)
 	if err != nil {
 		return nil, err
 	}

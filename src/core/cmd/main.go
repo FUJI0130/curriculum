@@ -19,9 +19,8 @@ func main() {
 
 	userRepo := rdbimpl.NewUserRepository(db)
 	createUserService := userapp.NewCreateUserAppService(userRepo)
-	createUserController := controllers.NewCreateUserController(createUserService)
 
 	r := gin.Default()
-	r.POST("/users", createUserController.Create)
+	controllers.InitControllers(r, createUserService)
 	r.Run(":8080")
 }

@@ -3,6 +3,7 @@ package userapp
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -30,22 +31,26 @@ type CreateUserRequest struct {
 	Careers  []string
 }
 
+// var ErrUserNotFound = errors.New("user not found")
+var ErrUserNameAlreadyExists = errors.New("user name already exists")
+
 // ユーザドメイン作成
 // ユーザ名重複チェック
 // ユーザ作成
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
-	if err != nil {
-
-		//TODO:
-		// if !err.Is(err, NotFound) {
-		// 	return err
-		// }
-
+	if err != nil && !errors.Is(err, userdm.ErrUserNotFound) {
+		log.Println("Error after FindByName:", err)
+		// "user not found" は正常なケースなので、特に何もしない
+		// if !errors.Is(err, userdm.ErrUserNotFound) {
+		// その他のエラーは問題があるので、そのまま返す
 		return err
+		// }
 	}
 	if existingUser != nil {
-		return errors.New("user name already exists")
+		// existingUser が nil ではない場合、ユーザー名が既に存在すると判断
+		log.Println("Existing user details:", existingUser)
+		return ErrUserNameAlreadyExists
 	}
 
 	user, err := userdm.NewUser(req.Name, req.Email, req.Password, req.Profile, time.Now(), time.Now())

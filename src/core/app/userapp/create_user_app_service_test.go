@@ -29,7 +29,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			},
 			wantErr: nil,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, nil)
+				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, "user not found")
 				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
 			},
 		},

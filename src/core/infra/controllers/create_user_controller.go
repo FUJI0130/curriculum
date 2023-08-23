@@ -2,6 +2,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
@@ -24,7 +25,12 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 	}
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// エラーの種類によってHTTPステータスコードを変更
+		if errors.Is(err, userapp.ErrUserNameAlreadyExists) { // ユーザ名が既に存在するエラーを追加
+			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
 		return
 	}
 
