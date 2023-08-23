@@ -18,8 +18,8 @@ func NewUserPassword(userPassword string) (*UserPassword, error) {
 		return nil, errors.New("userPassword length under 12")
 	}
 
-	userPassword_VO := UserPassword(userPassword)
-	return &userPassword_VO, nil
+	userPasswordVO := UserPassword(userPassword)
+	return &userPasswordVO, nil
 }
 
 func (password UserPassword) String() string {

@@ -2,7 +2,7 @@
 // Source: src/core/domain/userdm/user_repository.go
 
 // Package mock_user is a generated GoMock package.
-package mock_user
+package mockUser
 
 import (
 	context "context"

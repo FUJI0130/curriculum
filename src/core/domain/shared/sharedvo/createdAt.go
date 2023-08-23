@@ -19,8 +19,8 @@ func NewCreatedAt(createdAt time.Time) (*CreatedAt, error) {
 }
 
 func (createdAt *CreatedAt) DateTime() time.Time {
-	CreatedAt_DateTime := time.Time(*createdAt)
-	return CreatedAt_DateTime
+	CreatedAtDateTime := time.Time(*createdAt)
+	return CreatedAtDateTime
 }
 
 func (createdAt1 *CreatedAt) Equal(createdAt2 *CreatedAt) bool {

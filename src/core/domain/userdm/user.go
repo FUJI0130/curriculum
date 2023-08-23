@@ -27,39 +27,39 @@ func NewUser(name string, email string, password string, profile string, created
 		return nil, err
 	}
 
-	user_name := name
+	userName := name
 	//エラー処理ここに入れる
-	count_name := len([]rune(user_name))
-	if user_name == "" {
+	countName := len([]rune(userName))
+	if userName == "" {
 		return nil, errors.New("userName cannot be empty")
-	} else if 255 < count_name {
+	} else if 255 < countName {
 		return nil, errors.New("userName length over 256")
 	}
 
-	user_email, err := NewUserEmail(email)
+	userEmail, err := NewUserEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	user_password, err := NewUserPassword(password)
+	userPassword, err := NewUserPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	user_profile := profile
+	userProfile := profile
 	count_profile := len([]rune(profile))
-	if user_profile == "" {
+	if userProfile == "" {
 		return nil, errors.New("userProfile cannot be empty")
 	} else if 255 < count_profile {
 		return nil, errors.New("userProfile length over 256")
 	}
 
-	user_createdAt, err := sharedvo.NewCreatedAt(createdAt)
+	userCreatedAt, err := sharedvo.NewCreatedAt(createdAt)
 	if err != nil {
 		return nil, err
 	}
 
-	user_updatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
+	userUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
 	if err != nil {
 		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
@@ -67,12 +67,12 @@ func NewUser(name string, email string, password string, profile string, created
 
 	return &User{
 		id:        user_id,
-		name:      user_name,
-		email:     *user_email,
-		password:  *user_password,
-		profile:   user_profile,
-		createdAt: *user_createdAt,
-		updatedAt: *user_updatedAt,
+		name:      userName,
+		email:     *userEmail,
+		password:  *userPassword,
+		profile:   userProfile,
+		createdAt: *userCreatedAt,
+		updatedAt: *userUpdatedAt,
 	}, nil
 }
 

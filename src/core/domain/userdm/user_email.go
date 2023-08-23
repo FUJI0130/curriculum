@@ -7,9 +7,9 @@ import (
 
 type UserEmail string
 
-func NewUserEmail(user_email string) (*UserEmail, error) {
-	count := len([]rune(user_email))
-	if user_email == "" {
+func NewUserEmail(userEmail string) (*UserEmail, error) {
+	count := len([]rune(userEmail))
+	if userEmail == "" {
 		return nil, errors.New("userEmail cannot be empty")
 	} else if 255 < count {
 		return nil, errors.New("userEmail length over 256")
@@ -18,12 +18,12 @@ func NewUserEmail(user_email string) (*UserEmail, error) {
 	// メールアドレスの形式の正規表現
 	var emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	re := regexp.MustCompile(emailRegex)
-	if !re.MatchString(user_email) {
+	if !re.MatchString(userEmail) {
 		return nil, errors.New("userEmail format is invalid")
 	}
 
-	userEmail_VO := UserEmail(user_email)
-	return &userEmail_VO, nil
+	userEmailVO := UserEmail(userEmail)
+	return &userEmailVO, nil
 }
 
 func (email UserEmail) String() string {
