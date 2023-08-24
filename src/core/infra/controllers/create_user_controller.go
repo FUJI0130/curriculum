@@ -26,7 +26,7 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		// エラーの種類によってHTTPステータスコードを変更
-		if errors.Is(err, userapp.ErrUserNameAlreadyExists) { // ユーザ名が既に存在するエラーを追加
+		if errors.Is(err, userapp.ErrUserNameAlreadyExists) {
 			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
