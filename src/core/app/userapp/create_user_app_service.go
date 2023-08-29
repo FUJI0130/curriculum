@@ -38,8 +38,8 @@ type SkillsStruct struct {
 }
 
 type CareersStruct struct {
-	From   time.Time
-	To     time.Time
+	From   int
+	To     int
 	Detail string
 }
 
@@ -71,5 +71,25 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 	}
 
-	return app.userRepo.Store(ctx, user)
+	// SkillsStructからuserdm.Skillsへの変換
+	var skillsSlice []*userdm.Skills
+	for _, s := range req.Skills {
+		skill, err := userdm.NewSkills(s.Evaluation, s.Years) // NewSkillは適切なコンストラクタを想定しています。
+		if err != nil {
+			return err
+		}
+		skillsSlice = append(skillsSlice, skill)
+	}
+
+	// CareersStructからuserdm.Careersへの変換
+	var careersSlice []*userdm.Careers
+	for _, c := range req.Careers {
+		career, err := userdm.NewCareers(c.From, c.To, c.Detail) // NewCareerは適切なコンストラクタを想定しています。
+		if err != nil {
+			return err
+		}
+		careersSlice = append(careersSlice, career)
+	}
+
+	return app.userRepo.Store(ctx, user, skillsSlice, careersSlice)
 }

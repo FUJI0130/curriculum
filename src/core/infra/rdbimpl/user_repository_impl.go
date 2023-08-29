@@ -33,11 +33,32 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
-func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User) error {
-	query := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	_, err := repo.Conn.Exec(query, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []*userdm.Careers) error {
+	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	_, err := repo.Conn.Exec(queryUser, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+	if err != nil {
+		return err
+	}
 
-	return err
+	// skillsテーブルにデータを保存
+	for _, skill := range skills {
+		querySkill := "INSERT INTO skills (user_id, evaluation, years) VALUES (?, ?, ?)"
+		_, err = repo.Conn.Exec(querySkill, user.ID(), skill.Evaluation(), skill.Years())
+		if err != nil {
+			return err
+		}
+	}
+
+	// careersテーブルにデータを保存
+	for _, career := range careers {
+		queryCareer := "INSERT INTO careers (user_id, from_date, to_date, detail) VALUES (?, ?, ?, ?)"
+		_, err = repo.Conn.Exec(queryCareer, user.ID(), career.From(), career.To(), career.Detail())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
