@@ -13,6 +13,7 @@ type CreateUserAppService struct {
 	userRepo userdm.UserRepository
 }
 
+// ここでインターフェース
 func NewCreateUserAppService(userRepo userdm.UserRepository) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo: userRepo,
@@ -26,9 +27,20 @@ type CreateUserRequest struct {
 	Name     string
 	Email    string
 	Password string
-	Skills   []string
+	Skills   []SkillsStruct
 	Profile  string
-	Careers  []string
+	Careers  []CareersStruct
+}
+
+type SkillsStruct struct {
+	Evaluation int
+	Years      int
+}
+
+type CareersStruct struct {
+	From   time.Time
+	To     time.Time
+	Detail string
 }
 
 // var ErrUserNotFound = errors.New("user not found")
