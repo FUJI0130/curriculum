@@ -27,10 +27,10 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "new@example.com",
 				Password: "newpassword12345",
 				Profile:  "new profile",
-				Skills: []SkillsStruct{
+				Skills: []SkillRequest{
 					{Evaluation: 5, Years: 3},
 				},
-				Careers: []userdm.CareersStruct{
+				Careers: []userdm.CareersRequest{
 					{From: 2020, To: 2023, Detail: "Software Developer"},
 				},
 			},
@@ -47,10 +47,10 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "password01234",
 				Profile:  "test profile",
-				Skills: []SkillsStruct{
+				Skills: []SkillRequest{
 					{Evaluation: 4, Years: 2},
 				},
-				Careers: []userdm.CareersStruct{
+				Careers: []userdm.CareersRequest{
 					{From: 2021, To: 2023, Detail: "Backend Developer"},
 				},
 			},
@@ -67,10 +67,10 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "pass",
 				Profile:  "test profile",
-				Skills: []SkillsStruct{
+				Skills: []SkillRequest{
 					{Evaluation: 3, Years: 1},
 				},
-				Careers: []userdm.CareersStruct{
+				Careers: []userdm.CareersRequest{
 					{From: 2022, To: 2023, Detail: "Frontend Developer"},
 				},
 			},

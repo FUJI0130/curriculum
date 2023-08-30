@@ -5,7 +5,7 @@ type Skills struct {
 	years      SkillsYears
 }
 
-func NewSkills(evaluation int, years int) (*Skills, error) {
+func NewSkills(evaluation uint8, years uint8) (*Skills, error) {
 	eval, err := NewSkillsEvaluation(evaluation)
 	if err != nil {
 		return nil, err

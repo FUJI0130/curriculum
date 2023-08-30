@@ -10,7 +10,7 @@ import (
 func TestNewSkillsEvaluation(t *testing.T) {
 	tests := []struct {
 		name    string
-		value   int
+		value   uint8
 		wantErr bool
 	}{
 		{

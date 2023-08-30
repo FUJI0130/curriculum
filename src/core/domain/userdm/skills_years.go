@@ -4,9 +4,9 @@ import (
 	"errors"
 )
 
-type SkillsYears int
+type SkillsYears uint8
 
-func NewSkillsYears(yearsOfExperience int) (*SkillsYears, error) {
+func NewSkillsYears(yearsOfExperience uint8) (*SkillsYears, error) {
 	// 経験年数が0以下であればエラーを返す
 	if yearsOfExperience <= 0 {
 		return nil, errors.New("SkillsYears cannot be zero or negative value")
@@ -21,8 +21,8 @@ func NewSkillsYears(yearsOfExperience int) (*SkillsYears, error) {
 	return &skillsYearsVO, nil
 }
 
-func (skillsYears SkillsYears) GetYearsOfExperience() int {
-	return int(skillsYears)
+func (skillsYears SkillsYears) GetYearsOfExperience() uint8 {
+	return uint8(skillsYears)
 }
 
 func (skillsYears1 *SkillsYears) Equal(skillsYears2 *SkillsYears) bool {

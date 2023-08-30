@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type SkillsEvaluation int
+type SkillsEvaluation uint8
 
 // スキルの評価は1から10の間とします。
 const (
@@ -15,7 +15,7 @@ const (
 	MaxSkillsEvaluationValue = 5
 )
 
-func NewSkillsEvaluation(value int) (*SkillsEvaluation, error) {
+func NewSkillsEvaluation(value uint8) (*SkillsEvaluation, error) {
 	if value < MinSkillsEvaluationValue || value > MaxSkillsEvaluationValue {
 		return nil, errors.New(fmt.Sprintf("SkillsEvaluation must be between %d and %d", MinSkillsEvaluationValue, MaxSkillsEvaluationValue))
 	}
@@ -24,8 +24,8 @@ func NewSkillsEvaluation(value int) (*SkillsEvaluation, error) {
 	return &evaluation, nil
 }
 
-func (evaluation SkillsEvaluation) Value() int {
-	return int(evaluation)
+func (evaluation SkillsEvaluation) Value() uint8 {
+	return uint8(evaluation)
 }
 
 func (evaluation1 *SkillsEvaluation) Equal(evaluation2 *SkillsEvaluation) bool {

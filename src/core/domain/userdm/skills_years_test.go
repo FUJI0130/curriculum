@@ -10,17 +10,12 @@ import (
 func TestNewSkillsYears(t *testing.T) {
 	tests := []struct {
 		name    string
-		years   int
+		years   uint8
 		wantErr bool
 	}{
 		{
 			name:    "zero years",
 			years:   0,
-			wantErr: true,
-		},
-		{
-			name:    "negative years",
-			years:   -1,
 			wantErr: true,
 		},
 		{

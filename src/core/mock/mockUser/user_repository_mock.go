@@ -51,7 +51,7 @@ func (mr *MockUserRepositoryMockRecorder) FindByName(ctx, name interface{}) *gom
 }
 
 // Store mocks base method.
-func (m *MockUserRepository) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []userdm.CareersStruct) error {
+func (m *MockUserRepository) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []userdm.CareersRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Store", ctx, user, skills, careers)
 	ret0, _ := ret[0].(error)
