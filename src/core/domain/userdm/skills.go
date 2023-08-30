@@ -1,8 +1,18 @@
 package userdm
 
+import (
+	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+)
+
 type Skills struct {
-	evaluation SkillsEvaluation
-	years      SkillsYears
+	id         SkillID            `db:"id"`
+	tagId      tagdm.TagID        `db:"tag_id"`
+	userId     UserID             `db:"user_id"`
+	evaluation SkillsEvaluation   `db:"evaluation"`
+	years      SkillsYears        `db:"years"`
+	createdAt  sharedvo.CreatedAt `db:"created_at"`
+	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
 }
 
 func NewSkills(evaluation uint8, years uint8) (*Skills, error) {
