@@ -15,7 +15,7 @@ type Skills struct {
 	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewSkills(evaluation uint8, years uint8) (*Skills, error) {
+func NewSkills(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skills, error) {
 	eval, err := NewSkillsEvaluation(evaluation)
 	if err != nil {
 		return nil, err
@@ -27,9 +27,20 @@ func NewSkills(evaluation uint8, years uint8) (*Skills, error) {
 	}
 
 	return &Skills{
+		tagId:      tagId,
+		userId:     userId,
 		evaluation: *eval,
 		years:      *y,
 	}, nil
+}
+func (s *Skills) ID() SkillID {
+	return s.id
+}
+func (s *Skills) TagID() tagdm.TagID {
+	return s.tagId
+}
+func (s *Skills) UserID() UserID {
+	return s.userId
 }
 
 func (s *Skills) Evaluation() SkillsEvaluation {
@@ -38,4 +49,11 @@ func (s *Skills) Evaluation() SkillsEvaluation {
 
 func (s *Skills) Years() SkillsYears {
 	return s.years
+}
+func (s *Skills) CreatedAt() sharedvo.CreatedAt {
+	return s.createdAt
+}
+
+func (s *Skills) UpdatedAt() sharedvo.UpdatedAt {
+	return s.updatedAt
 }

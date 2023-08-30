@@ -37,3 +37,7 @@ func NewTags(name string, created_at time.Time, updatedAt time.Time) (*Tags, err
 		updatedAt: *tagUpdatedAt,
 	}, nil
 }
+
+func (t *Tags) ID() TagID {
+	return t.id
+}

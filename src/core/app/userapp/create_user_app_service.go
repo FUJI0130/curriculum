@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 )
 
@@ -13,41 +14,41 @@ type CreateUserAppService struct {
 	userRepo userdm.UserRepository
 }
 
-// ここでインターフェース
 func NewCreateUserAppService(userRepo userdm.UserRepository) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo: userRepo,
 	}
 }
 
-// Controllerからユースケースへの引数は必ずプリミティブで渡すこと！
-// 理由はドメインをなるべくユースケース以下の円の外側(オニオンアーキテクチャの円を参照)の部分で
-// 触らせないようにすることで、ドメイン知識が漏れ出すのを防ぐため
 type CreateUserRequest struct {
 	Name     string
 	Email    string
 	Password string
 	Skills   []SkillRequest
 	Profile  string
-	Careers  []userdm.CareersRequest
+	Careers  []CareersRequest
 }
 
 type SkillRequest struct {
+	TagID      string
+	UserID     string
 	Evaluation uint8
 	Years      uint8
 }
 
-// var ErrUserNotFound = errors.New("user not found")
+type CareersRequest struct {
+	Detail string
+	AdFrom time.Time
+	AdTo   time.Time
+	UserID string
+}
+
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
 
-// ユーザドメイン作成
-// ユーザ名重複チェック
-// ユーザ作成
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 	if err != nil {
 		if errors.Is(err, userdm.ErrUserNotFound) {
-			// ユーザーが存在しないので、新しいユーザーの作成を続行する
 		} else {
 			log.Println("Error after FindByName:", err)
 			return err
@@ -55,7 +56,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	if existingUser != nil {
-		// existingUser が nil ではない場合、ユーザー名が既に存在すると判断
 		log.Println("Existing user details:", existingUser)
 		return ErrUserNameAlreadyExists
 	}
@@ -65,16 +65,32 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 	}
 
-	// SkillRequestからuserdm.Skillsへの変換
-	// 事前に必要なキャパシティを確保してスライスを宣言
+	// TODO:　後程タグIDの部分は修正する　一時的にこの形で渡すこととする 23/8/30
+	tagId, err := tagdm.NewTagID()
+	if err != nil {
+		return err
+	}
 	skillsSlice := make([]*userdm.Skills, len(req.Skills))
 	for i, s := range req.Skills {
-		skill, err := userdm.NewSkills(s.Evaluation, s.Years)
+
+		// func NewSkills(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skills, error) {
+		skill, err := userdm.NewSkills(tagId, user.ID(), s.Evaluation, s.Years)
 		if err != nil {
 			return err
 		}
 		skillsSlice[i] = skill
 	}
 
-	return app.userRepo.Store(ctx, user, skillsSlice, req.Careers)
+	// careersSlice の作成
+	careersSlice := make([]*userdm.Careers, len(req.Careers))
+	for i, c := range req.Careers {
+		career, err := userdm.NewCareers(c.Detail, c.AdFrom, c.AdTo, user.ID(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+		if err != nil {
+			return err
+		}
+		careersSlice[i] = career
+	}
+	//結局ここにもcareersSliceが必要な気がしてきた
+
+	return app.userRepo.Store(ctx, user, skillsSlice, careersSlice)
 }
