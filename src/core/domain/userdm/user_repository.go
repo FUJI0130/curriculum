@@ -7,6 +7,12 @@ package userdm
 import "context"
 
 type UserRepository interface {
-	Store(ctx context.Context, user *User, skills []*Skills, careers []*Careers) error
+	Store(ctx context.Context, user *User, skills []*Skills, careers []CareersStruct) error
 	FindByName(ctx context.Context, name string) (*User, error)
+}
+
+type CareersStruct struct {
+	From   int
+	To     int
+	Detail string
 }

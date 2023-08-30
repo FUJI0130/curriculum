@@ -33,7 +33,7 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
-func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []*userdm.Careers) error {
+func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []userdm.CareersStruct) error {
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(queryUser, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 	if err != nil {
@@ -52,7 +52,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// careersテーブルにデータを保存
 	for _, career := range careers {
 		queryCareer := "INSERT INTO careers (user_id, from_date, to_date, detail) VALUES (?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(queryCareer, user.ID(), career.From(), career.To(), career.Detail())
+		_, err = repo.Conn.Exec(queryCareer, user.ID(), career.From, career.To, career.Detail)
 		if err != nil {
 			return err
 		}

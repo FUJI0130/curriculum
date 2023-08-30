@@ -29,18 +29,12 @@ type CreateUserRequest struct {
 	Password string
 	Skills   []SkillsStruct
 	Profile  string
-	Careers  []CareersStruct
+	Careers  []userdm.CareersStruct
 }
 
 type SkillsStruct struct {
 	Evaluation int
 	Years      int
-}
-
-type CareersStruct struct {
-	From   int
-	To     int
-	Detail string
 }
 
 // var ErrUserNotFound = errors.New("user not found")
@@ -82,14 +76,14 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	// CareersStructからuserdm.Careersへの変換
-	var careersSlice []*userdm.Careers
-	for _, c := range req.Careers {
-		career, err := userdm.NewCareers(c.From, c.To, c.Detail) // NewCareerは適切なコンストラクタを想定しています。
-		if err != nil {
-			return err
-		}
-		careersSlice = append(careersSlice, career)
-	}
+	// var careersSlice []*userdm.Careers
+	// for _, c := range req.Careers {
+	// 	career, err := userdm.NewCareers(c.From, c.To, c.Detail) // NewCareerは適切なコンストラクタを想定しています。
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	careersSlice = append(careersSlice, career)
+	// }
 
-	return app.userRepo.Store(ctx, user, skillsSlice, careersSlice)
+	return app.userRepo.Store(ctx, user, skillsSlice, req.Careers)
 }

@@ -27,14 +27,17 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "new@example.com",
 				Password: "newpassword12345",
 				Profile:  "new profile",
+				Skills: []SkillsStruct{
+					{Evaluation: 5, Years: 3},
+				},
+				Careers: []userdm.CareersStruct{
+					{From: 2020, To: 2023, Detail: "Software Developer"},
+				},
 			},
 			wantErr: nil,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				// この名前のユーザーはまだ存在しないことを模倣する
 				mockRepo.EXPECT().FindByName(gomock.Any(), "newUser").Return(nil, userdm.ErrUserNotFound)
-
-				// 新しいユーザーの保存を模倣する
-				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
+				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 		},
 		{
@@ -44,11 +47,17 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "password01234",
 				Profile:  "test profile",
+				Skills: []SkillsStruct{
+					{Evaluation: 4, Years: 2},
+				},
+				Careers: []userdm.CareersStruct{
+					{From: 2021, To: 2023, Detail: "Backend Developer"},
+				},
 			},
-			wantErr: nil,
+			wantErr: ErrUserNameAlreadyExists,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, nil)
-				mockRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
+				existingUser := &userdm.User{}
+				mockRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(existingUser, nil)
 			},
 		},
 		{
@@ -58,6 +67,12 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    "test@example.com",
 				Password: "pass",
 				Profile:  "test profile",
+				Skills: []SkillsStruct{
+					{Evaluation: 3, Years: 1},
+				},
+				Careers: []userdm.CareersStruct{
+					{From: 2022, To: 2023, Detail: "Frontend Developer"},
+				},
 			},
 			wantErr: errors.New("userPassword length under 12"),
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
@@ -81,5 +96,4 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			assert.Equal(t, tt.wantErr, err)
 		})
 	}
-
 }
