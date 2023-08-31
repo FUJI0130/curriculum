@@ -17,6 +17,7 @@ func NewCreateUserController(s *userapp.CreateUserAppService) *CreateUserControl
 	return &CreateUserController{createUserService: s}
 }
 
+// ここでcurlコマンドの内容をバインドしている
 func (ctrl *CreateUserController) Create(c *gin.Context) {
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {

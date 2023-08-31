@@ -51,24 +51,24 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
-func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []*userdm.Careers) error {
+// error　が戻り値の型
+func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skills []*userdm.Skills, careers []*userdm.Careers, tags []*tagdm.Tags) error {
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-
-	//ここにtagIDの記述を追加
-	// tagId, err := tagdm.NewTagID()
-	// if err != nil {
-	// 	return err
-	// }
 	_, err := repo.Conn.Exec(queryUser, user.ID(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 	if err != nil {
 		return err
 	}
 
 	// TODO:　後程タグIDの部分は修正する　一時的にこの形で渡すこととする 23/8/30
-	tagId, err := tagdm.NewTagID()
-	if err != nil {
-		return err
-	}
+	// tagId, err := tagdm.NewTagID()
+	// if err != nil {
+	// 	return err
+	// }
+
+	//ここにタグテーブルへの書込みが必要 23/8/31
+
+	//タグテーブルの中身を確認する処理も必要　tag_repository_impl.goにその処理を追加して、ここで呼び出さないといけない　23/8/31
+
 	for _, skill := range skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(querySkill, skill.ID(), tagId.String(), user.ID(), skill.CreatedAt(), skill.UpdatedAt(), skill.Evaluation(), skill.Years())

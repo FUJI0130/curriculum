@@ -1,20 +1,23 @@
 package tagdm
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
 
-type Tags struct {
+type Tag struct {
 	id        TagID              `db:"id"`
 	name      string             `db:"name"`
 	createdAt sharedvo.CreatedAt `db:"created_at"`
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewTags(name string, created_at time.Time, updatedAt time.Time) (*Tags, error) {
+var ErrTagNotFound = errors.New("tag not found")
+
+func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
 	tagId, err := NewTagID()
 	if err != nil {
 		return nil, err
@@ -30,7 +33,7 @@ func NewTags(name string, created_at time.Time, updatedAt time.Time) (*Tags, err
 		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
-	return &Tags{
+	return &Tag{
 		id:        tagId,
 		name:      tagName,
 		createdAt: *tagCreatedAt,
@@ -38,6 +41,17 @@ func NewTags(name string, created_at time.Time, updatedAt time.Time) (*Tags, err
 	}, nil
 }
 
-func (t *Tags) ID() TagID {
+func (t *Tag) ID() TagID {
 	return t.id
+}
+func (t *Tag) Name() string {
+	return t.name
+}
+
+func (t *Tag) CreatedAt() sharedvo.CreatedAt {
+	return t.createdAt
+}
+
+func (t *Tag) UpdatedAt() sharedvo.UpdatedAt {
+	return t.updatedAt
 }

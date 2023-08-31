@@ -45,6 +45,7 @@ type CareersRequest struct {
 
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
 
+// create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 	if err != nil {
@@ -66,14 +67,22 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	// TODO:　後程タグIDの部分は修正する　一時的にこの形で渡すこととする 23/8/30
-	tagId, err := tagdm.NewTagID()
-	if err != nil {
-		return err
-	}
+	// tagId, err := tagdm.NewTagID()
+	// if err != nil {
+	// 	return err
+	// }
+
+	//この中で、DBのタグテーブルの中に
+
+	//Tagのスライスを作る事にする　結局必要になりそうなので今やる 23/8/31
+
 	skillsSlice := make([]*userdm.Skills, len(req.Skills))
 	for i, s := range req.Skills {
+		tagId, err := tagdm.NewTagID() // もしTagIDがstringである場合。適切な変換関数を使用してください。
+		if err != nil {
+			return err
+		}
 
-		// func NewSkills(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skills, error) {
 		skill, err := userdm.NewSkills(tagId, user.ID(), s.Evaluation, s.Years)
 		if err != nil {
 			return err

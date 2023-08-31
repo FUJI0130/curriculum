@@ -21,9 +21,9 @@ type UserRepository interface {
 // 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 // }
 
-type CareersRequest struct {
-	Id     string
-	From   uint16
-	To     uint16
-	Detail string
-}
+// type CareersRequest struct {
+// 	Id     string
+// 	From   uint16
+// 	To     uint16
+// 	Detail string
+// }
