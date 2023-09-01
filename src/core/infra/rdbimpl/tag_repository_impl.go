@@ -79,24 +79,17 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 }
 
 func (repo *tagRepositoryImpl) CreateNewTag(ctx context.Context, name string) (*tagdm.Tag, error) {
-	// 既存のタグを名前で検索
-	tag, err := repo.FindByName(ctx, name)
+	// 新規タグを作成
+	newTag, err := tagdm.NewTag(name, time.Now(), time.Now())
 	if err != nil {
-		if errors.Is(err, tagdm.ErrTagNotFound) {
-			// タグが存在しない場合、新規作成
-			newTag, err := tagdm.NewTag(name, time.Now(), time.Now())
-			if err != nil {
-				return nil, err
-			}
-			// データベースに新規タグを保存
-			err = repo.Store(ctx, newTag)
-			if err != nil {
-				return nil, err
-			}
-			return newTag, nil
-		}
 		return nil, err
 	}
-	// 既存のタグが見つかった場合、それを返す
-	return tag, nil
+
+	// データベースに新規タグを保存
+	err = repo.Store(ctx, newTag)
+	if err != nil {
+		return nil, err
+	}
+
+	return newTag, nil
 }

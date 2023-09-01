@@ -49,8 +49,7 @@ var ErrUserNameAlreadyExists = errors.New("user name already exists")
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 	if err != nil {
-		if errors.Is(err, userdm.ErrUserNotFound) {
-		} else {
+		if !errors.Is(err, userdm.ErrUserNotFound) {
 			log.Println("Error after FindByName:", err)
 			return err
 		}
@@ -68,14 +67,15 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	skillsSlice := make([]*userdm.Skill, len(req.Skills))
 
+	var tag *tagdm.Tag
 	for i, s := range req.Skills {
 		// 名前からタグを検索
-		// tag, err := app.tagRepo.FindByName(ctx, s.TagName)
+		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
 
 		// タグが見つからない場合
 		if errors.Is(err, tagdm.ErrTagNotFound) {
 			// 新規タグを作成 (このメソッドはあなたのリポジトリ設計による)
-			tag, err := app.tagRepo.CreateNewTag(ctx, s.TagName) // 仮にTagNameがタグの名前を示すものとして
+			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName) // 仮にTagNameがタグの名前を示すものとして
 			if err != nil {
 				return err // 新規タグの作成中にエラーが発生した場合
 			}
