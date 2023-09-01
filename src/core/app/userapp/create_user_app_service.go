@@ -12,11 +12,13 @@ import (
 
 type CreateUserAppService struct {
 	userRepo userdm.UserRepository
+	tagRepo  tagdm.TagRepository
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository) *CreateUserAppService {
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo: userRepo,
+		tagRepo:  tagRepo,
 	}
 }
 
@@ -30,8 +32,7 @@ type CreateUserRequest struct {
 }
 
 type SkillRequest struct {
-	TagID      string
-	UserID     string
+	TagName    string
 	Evaluation uint8
 	Years      uint8
 }
@@ -40,7 +41,6 @@ type CareersRequest struct {
 	Detail string
 	AdFrom time.Time
 	AdTo   time.Time
-	UserID string
 }
 
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
@@ -66,24 +66,25 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 	}
 
-	// TODO:　後程タグIDの部分は修正する　一時的にこの形で渡すこととする 23/8/30
-	// tagId, err := tagdm.NewTagID()
-	// if err != nil {
-	// 	return err
-	// }
+	skillsSlice := make([]*userdm.Skill, len(req.Skills))
 
-	//この中で、DBのタグテーブルの中に
-
-	//Tagのスライスを作る事にする　結局必要になりそうなので今やる 23/8/31
-
-	skillsSlice := make([]*userdm.Skills, len(req.Skills))
 	for i, s := range req.Skills {
-		tagId, err := tagdm.NewTagID() // もしTagIDがstringである場合。適切な変換関数を使用してください。
-		if err != nil {
-			return err
+		// 名前からタグを検索
+		// tag, err := app.tagRepo.FindByName(ctx, s.TagName)
+
+		// タグが見つからない場合
+		if errors.Is(err, tagdm.ErrTagNotFound) {
+			// 新規タグを作成 (このメソッドはあなたのリポジトリ設計による)
+			tag, err := app.tagRepo.CreateNewTag(ctx, s.TagName) // 仮にTagNameがタグの名前を示すものとして
+			if err != nil {
+				return err // 新規タグの作成中にエラーが発生した場合
+			}
+		} else if err != nil {
+			return err // その他のエラー
 		}
 
-		skill, err := userdm.NewSkills(tagId, user.ID(), s.Evaluation, s.Years)
+		// tag.ID() を使用してスキルを作成
+		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years)
 		if err != nil {
 			return err
 		}
@@ -91,15 +92,14 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	// careersSlice の作成
-	careersSlice := make([]*userdm.Careers, len(req.Careers))
+	careersSlice := make([]*userdm.Career, len(req.Careers))
 	for i, c := range req.Careers {
-		career, err := userdm.NewCareers(c.Detail, c.AdFrom, c.AdTo, user.ID(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo, user.ID(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 		if err != nil {
 			return err
 		}
 		careersSlice[i] = career
 	}
-	//結局ここにもcareersSliceが必要な気がしてきた
 
 	return app.userRepo.Store(ctx, user, skillsSlice, careersSlice)
 }

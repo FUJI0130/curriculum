@@ -18,7 +18,8 @@ func main() {
 	defer db.Close()
 
 	userRepo := rdbimpl.NewUserRepository(db)
-	createUserService := userapp.NewCreateUserAppService(userRepo)
+	tagRepo := rdbimpl.NewTagRepository(db)
+	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo)
 
 	r := gin.Default()
 	controllers.InitControllers(r, createUserService)

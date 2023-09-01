@@ -41,6 +41,27 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 	}, nil
 }
 
+// エラーメッセージの追加
+var (
+	ErrTagNameEmpty = errors.New("tag name cannot be empty")
+)
+
+func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
+	// タグの名前が空の場合はエラー
+	if name == "" {
+		return nil, ErrTagNameEmpty
+	}
+
+	// 他のエラーチェックもここで行うことができます。
+
+	return &Tag{
+		id:        id,
+		name:      name,
+		createdAt: sharedvo.CreatedAt(created_at),
+		updatedAt: sharedvo.UpdatedAt(updatedAt),
+	}, nil
+}
+
 func (t *Tag) ID() TagID {
 	return t.id
 }

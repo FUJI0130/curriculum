@@ -7,7 +7,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
 
-type Careers struct {
+type Career struct {
 	id        CareerID           `db:"id"`
 	detail    string             `db:"detail"`
 	adFrom    time.Time          `db:"ad_from"`
@@ -17,7 +17,7 @@ type Careers struct {
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewCareers(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId UserID, created_at time.Time, updatedAt time.Time) (*Careers, error) {
+func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId UserID, created_at time.Time, updatedAt time.Time) (*Career, error) {
 
 	career_id, err := NewCareerID()
 	if err != nil {
@@ -35,7 +35,7 @@ func NewCareers(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId 
 		return nil, err
 	}
 
-	return &Careers{
+	return &Career{
 		id:        career_id,
 		detail:    detail,
 		adFrom:    adFrom_Set,
@@ -47,30 +47,30 @@ func NewCareers(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId 
 }
 
 // 以下のゲッターはそのままです。
-func (c *Careers) ID() CareerID {
+func (c *Career) ID() CareerID {
 	return c.id
 }
 
-func (c *Careers) Detail() string {
+func (c *Career) Detail() string {
 	return c.detail
 }
 
-func (c *Careers) AdFrom() time.Time {
+func (c *Career) AdFrom() time.Time {
 	return c.adFrom
 }
 
-func (c *Careers) AdTo() time.Time {
+func (c *Career) AdTo() time.Time {
 	return c.adTo
 }
 
-func (c *Careers) UserID() UserID {
+func (c *Career) UserID() UserID {
 	return c.userId
 }
 
-func (c *Careers) CreatedAt() sharedvo.CreatedAt {
+func (c *Career) CreatedAt() sharedvo.CreatedAt {
 	return c.createdAt
 }
 
-func (c *Careers) UpdatedAt() sharedvo.UpdatedAt {
+func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 	return c.updatedAt
 }

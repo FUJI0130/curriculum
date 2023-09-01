@@ -47,7 +47,8 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 
-	tag, err := tagdm.NewTag(tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
+	tagID := tagdm.TagID(tempTag.ID)
+	tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
 	}
@@ -68,10 +69,34 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 
-	tag, err := tagdm.NewTag(tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
+	tagID := tagdm.TagID(tempTag.ID)
+	tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
 	}
 
+	return tag, nil
+}
+
+func (repo *tagRepositoryImpl) CreateNewTag(ctx context.Context, name string) (*tagdm.Tag, error) {
+	// 既存のタグを名前で検索
+	tag, err := repo.FindByName(ctx, name)
+	if err != nil {
+		if errors.Is(err, tagdm.ErrTagNotFound) {
+			// タグが存在しない場合、新規作成
+			newTag, err := tagdm.NewTag(name, time.Now(), time.Now())
+			if err != nil {
+				return nil, err
+			}
+			// データベースに新規タグを保存
+			err = repo.Store(ctx, newTag)
+			if err != nil {
+				return nil, err
+			}
+			return newTag, nil
+		}
+		return nil, err
+	}
+	// 既存のタグが見つかった場合、それを返す
 	return tag, nil
 }

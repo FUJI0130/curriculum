@@ -5,55 +5,55 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 )
 
-type Skills struct {
+type Skill struct {
 	id         SkillID            `db:"id"`
 	tagId      tagdm.TagID        `db:"tag_id"`
 	userId     UserID             `db:"user_id"`
-	evaluation SkillsEvaluation   `db:"evaluation"`
-	years      SkillsYears        `db:"years"`
+	evaluation SkillEvaluation    `db:"evaluation"`
+	years      SkillYears         `db:"years"`
 	createdAt  sharedvo.CreatedAt `db:"created_at"`
 	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewSkills(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skills, error) {
-	eval, err := NewSkillsEvaluation(evaluation)
+func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skill, error) {
+	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
 		return nil, err
 	}
 
-	y, err := NewSkillsYears(years)
+	y, err := NewSkillYears(years)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Skills{
+	return &Skill{
 		tagId:      tagId,
 		userId:     userId,
 		evaluation: *eval,
 		years:      *y,
 	}, nil
 }
-func (s *Skills) ID() SkillID {
+func (s *Skill) ID() SkillID {
 	return s.id
 }
-func (s *Skills) TagID() tagdm.TagID {
+func (s *Skill) TagID() tagdm.TagID {
 	return s.tagId
 }
-func (s *Skills) UserID() UserID {
+func (s *Skill) UserID() UserID {
 	return s.userId
 }
 
-func (s *Skills) Evaluation() SkillsEvaluation {
+func (s *Skill) Evaluation() SkillEvaluation {
 	return s.evaluation
 }
 
-func (s *Skills) Years() SkillsYears {
+func (s *Skill) Years() SkillYears {
 	return s.years
 }
-func (s *Skills) CreatedAt() sharedvo.CreatedAt {
+func (s *Skill) CreatedAt() sharedvo.CreatedAt {
 	return s.createdAt
 }
 
-func (s *Skills) UpdatedAt() sharedvo.UpdatedAt {
+func (s *Skill) UpdatedAt() sharedvo.UpdatedAt {
 	return s.updatedAt
 }

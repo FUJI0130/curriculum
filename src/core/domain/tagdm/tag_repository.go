@@ -10,4 +10,5 @@ type TagRepository interface {
 	Store(ctx context.Context, tag *Tag) error
 	FindByName(ctx context.Context, name string) (*Tag, error)
 	FindByID(ctx context.Context, id string) (*Tag, error)
+	CreateNewTag(ctx context.Context, name string) (*Tag, error)
 }
