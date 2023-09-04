@@ -58,7 +58,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	for _, skill := range skill {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
-		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt(), skill.UpdatedAt(), skill.Evaluation(), skill.Years())
+		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Years().Value())
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
 	query := "SELECT * FROM users WHERE name = ?"
-	log.Printf("[DEBUG] Searching for user with name: %s", name)
+	log.Printf("[DEBUG] Searching for user with name: %s", name) //ここまで来てるのはわかった
 
 	var tempUser userRequest
 	err := repo.Conn.Get(&tempUser, query, name)
@@ -90,7 +90,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 			log.Printf("[DEBUG] User not found with name: %s", name) //エラー出てる箇所
 			return nil, userdm.ErrUserNotFound
 		}
-		log.Printf("[ERROR] Database error while searching for user with name %s: %v", name, err)
+		log.Printf("[ERROR] Database error while searching for user with name %s: %v", name, err) //ここにきてる
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 

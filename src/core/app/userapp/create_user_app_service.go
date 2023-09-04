@@ -47,13 +47,13 @@ var ErrUserNameAlreadyExists = errors.New("user name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
+	existingUser, err := app.userRepo.FindByName(ctx, req.Name) //ここでエラー出てる
 
 	if err != nil {
 		if errors.Is(err, userdm.ErrUserNotFound) {
 			log.Printf("[DEBUG] User not found with name: %s, proceeding with creation.", req.Name)
 		} else {
-			log.Printf("[ERROR] Unexpected error while searching for user with name %s: %v", req.Name, err)
+			log.Printf("[ERROR] Unexpected error while searching for user with name %s: %v", req.Name, err) //ここのエラーまで来てる
 			return err
 		}
 	}
@@ -104,7 +104,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		skillsSlice[i] = skill
 	}
 
-	log.Printf("[DEBUG] after skill process")
+	log.Printf("[DEBUG] after skill process") //ここまでは来てる
 
 	// careersSlice の作成
 	careersSlice := make([]*userdm.Career, len(req.Careers))

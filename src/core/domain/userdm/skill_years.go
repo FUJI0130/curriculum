@@ -21,7 +21,7 @@ func NewSkillYears(yearsOfExperience uint8) (*SkillYears, error) {
 	return &skillsYearsVO, nil
 }
 
-func (skillsYears SkillYears) GetYearsOfExperience() uint8 {
+func (skillsYears SkillYears) Value() uint8 {
 	return uint8(skillsYears)
 }
 

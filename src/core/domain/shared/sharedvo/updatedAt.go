@@ -15,7 +15,7 @@ func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
 		return nil, errors.New("UpdatedAt cannot be zero value")
 	}
 
-	adjustTime := time.Now().Add(-1 * time.Millisecond)
+	adjustTime := time.Now().Add(-1000 * time.Millisecond)
 
 	if updatedAt.Before(adjustTime) {
 
