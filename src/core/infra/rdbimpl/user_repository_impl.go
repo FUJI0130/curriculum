@@ -57,7 +57,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// Skillsの保存
 	for _, skill := range skill {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-
+		//ここで渡す時に中身が空っぽになっているからエラーが出ている気がするので、もう一度明日見直す 23/9/4
 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Years().Value())
 		if err != nil {
 			return err
