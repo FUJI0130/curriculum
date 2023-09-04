@@ -50,11 +50,16 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 	log.Printf("[DEBUG] before tag_repository_impl FindByName")
 	query := "SELECT * FROM tags WHERE name = ?"
 	var tempTag tagRequest
+	log.Printf("[DEBUG] before repo.Conn.Get(&tempTag, query, name)")
 	err := repo.Conn.Get(&tempTag, query, name)
 	if err != nil {
+
+		log.Printf("[DEBUG] into error handling repo.Conn.Get 1")
 		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("[DEBUG] into error handling repo.Conn.Get 2 ErrTagNotFound")
 			return nil, tagdm.ErrTagNotFound
 		}
+		log.Printf("[DEBUG] Not ErrNoRows")
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 

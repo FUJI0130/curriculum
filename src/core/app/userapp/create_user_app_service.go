@@ -80,6 +80,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		// 名前からタグを検索
 		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
 
+		log.Printf("[DEBUG] after tagRepo.FindByName")
 		// タグが見つからない場合
 		if errors.Is(err, tagdm.ErrTagNotFound) {
 			// 新規タグを作成 (このメソッドはあなたのリポジトリ設計による)
@@ -87,6 +88,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			log.Printf("[DEBUG] before CreateNewTag")
 			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName) // 仮にTagNameがタグの名前を示すものとして
 			if err != nil {
+
 				return err // 新規タグの作成中にエラーが発生した場合
 			}
 		} else if err != nil {
