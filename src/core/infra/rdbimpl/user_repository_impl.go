@@ -32,6 +32,9 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 
 // error　が戻り値の型
 func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skill []*userdm.Skill, career []*userdm.Career) error {
+
+	log.Printf("[DEBUG] before queryUser Exec")
+
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(queryUser, user.ID().String(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 	if err != nil {
@@ -48,6 +51,9 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// 		}
 	// 	}
 	// }
+
+	log.Printf("[DEBUG] before querySkill Exec")
+
 	// Skillsの保存
 	for _, skill := range skill {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -59,6 +65,8 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	}
 
 	// Careersの保存
+
+	log.Printf("[DEBUG] before queryCareers Exec")
 	for _, career := range career {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		// ad_from, ad_to を Date() メソッドで取得
@@ -79,7 +87,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("[DEBUG] User not found with name: %s", name)
+			log.Printf("[DEBUG] User not found with name: %s", name) //エラー出てる箇所
 			return nil, userdm.ErrUserNotFound
 		}
 		log.Printf("[ERROR] Database error while searching for user with name %s: %v", name, err)

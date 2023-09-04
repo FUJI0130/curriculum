@@ -46,6 +46,7 @@ var (
 	ErrTagNameEmpty = errors.New("tag name cannot be empty")
 )
 
+// func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
 func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
 	// タグの名前が空の場合はエラー
 	if name == "" {
