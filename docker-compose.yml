@@ -23,6 +23,7 @@ services:
       - "9999:3306"
     volumes:
       - sql:/var/lib/mysql
+      - ./.docker/my.cnf:/etc/mysql/my.cnf
     environment:
       - MYSQL_DATABASE=sql
       - MYSQL_USER=user

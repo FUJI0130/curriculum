@@ -20,7 +20,7 @@ func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
 	if updatedAt.Before(adjustTime) {
 
 		LastDuration = time.Since(adjustTime)
-		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", LastDuration)
+		fmt.Printf("NewUpdatedAt Time taken for updatedAt.Before(time.Now()): %v\n", LastDuration)
 		return nil, errors.New("UpdatedAt cannot be past date")
 	}
 

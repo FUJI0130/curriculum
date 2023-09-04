@@ -30,7 +30,7 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 
 	tagUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
 	if err != nil {
-		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
+		fmt.Printf("NewTag Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 	return &Tag{

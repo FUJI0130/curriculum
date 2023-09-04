@@ -63,7 +63,7 @@ func NewUser(name string, email string, password string, profile string, created
 
 	userUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
 	if err != nil {
-		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
+		fmt.Printf("NewUser Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 
@@ -114,7 +114,7 @@ func ReconstructUser(id UserID, name string, email string, password string, prof
 
 	userUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
 	if err != nil {
-		fmt.Printf("Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
+		fmt.Printf("ReconstructUser Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 	return &User{
