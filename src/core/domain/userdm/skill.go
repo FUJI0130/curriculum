@@ -1,6 +1,9 @@
 package userdm
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 )
@@ -15,7 +18,7 @@ type Skill struct {
 	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (*Skill, error) {
+func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
 		return nil, err
@@ -25,12 +28,23 @@ func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8) (
 	if err != nil {
 		return nil, err
 	}
+	skillCreatedAt, err := sharedvo.NewCreatedAt(createdAt)
+	if err != nil {
+		return nil, err
+	}
 
+	skillUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
+	if err != nil {
+		fmt.Printf("Skill NewUpdatedAt  Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
+		return nil, err
+	}
 	return &Skill{
 		tagId:      tagId,
 		userId:     userId,
 		evaluation: *eval,
 		years:      *y,
+		createdAt:  *skillCreatedAt,
+		updatedAt:  *skillUpdatedAt,
 	}, nil
 }
 func (s *Skill) ID() SkillID {

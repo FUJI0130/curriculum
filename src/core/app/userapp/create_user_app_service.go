@@ -97,7 +97,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 		log.Printf("[DEBUG] after CreateNewTag")
 		// tag.ID() を使用してスキルを作成
-		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years)
+		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
 		if err != nil {
 			return err
 		}

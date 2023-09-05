@@ -57,7 +57,6 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// Skillsの保存
 	for _, skill := range skill {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		//ここで渡す時に中身が空っぽになっているからエラーが出ている気がするので、もう一度明日見直す 23/9/4
 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Years().Value())
 		if err != nil {
 			return err
@@ -70,7 +69,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	for _, career := range career {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		// ad_from, ad_to を Date() メソッドで取得
-		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.UserID().String(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
 			return err
 		}
