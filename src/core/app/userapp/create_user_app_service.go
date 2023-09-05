@@ -47,12 +47,12 @@ var ErrUserNameAlreadyExists = errors.New("user name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	existingUser, err := app.userRepo.FindByName(ctx, req.Name) //ここでエラー出てる
+	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 
 	if err != nil {
 		if errors.Is(err, userdm.ErrUserNotFound) {
 		} else {
-			log.Printf("[ERROR] Unexpected error while searching for user with name %s: %v", req.Name, err) //ここのエラーまで来てる
+			log.Printf("[ERROR] Unexpected error while searching for user with name %s: %v", req.Name, err)
 			return err
 		}
 	}
