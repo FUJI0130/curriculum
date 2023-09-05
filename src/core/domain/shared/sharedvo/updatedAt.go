@@ -24,8 +24,6 @@ func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
 		return nil, errors.New("UpdatedAt cannot be past date")
 	}
 
-	LastDuration = time.Since(adjustTime)
-
 	updatedAtReturn := UpdatedAt(updatedAt)
 	return &updatedAtReturn, nil
 }
