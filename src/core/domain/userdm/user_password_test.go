@@ -24,7 +24,7 @@ func TestNewUserPassword(t *testing.T) {
 		},
 		{
 			name:          "パスワードが12文字以下",
-			input:         "Short12345678",
+			input:         "Short1234567",
 			expectedError: "userPassword length under 12",
 		},
 		{

@@ -2,12 +2,14 @@ package userdm_test
 
 import (
 	"testing"
+	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSkills(t *testing.T) {
+func TestNewSkill(t *testing.T) {
 	tests := []struct {
 		name       string
 		evaluation uint8
@@ -36,7 +38,12 @@ func TestNewSkills(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := userdm.NewSkills(tt.evaluation, tt.years)
+			dummyTagID, _ := tagdm.NewTagID()
+			dummyUserID, _ := userdm.NewUserID()
+			dummyCreatedAt := time.Now()
+			dummyUpdatedAt := time.Now()
+
+			_, err := userdm.NewSkill(dummyTagID, dummyUserID, tt.evaluation, tt.years, dummyCreatedAt, dummyUpdatedAt)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {

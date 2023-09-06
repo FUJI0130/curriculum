@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSkillsYears(t *testing.T) {
+func TestNewSkillYears(t *testing.T) {
 	tests := []struct {
 		name    string
 		years   uint8
@@ -32,7 +32,7 @@ func TestNewSkillsYears(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := userdm.NewSkillsYears(tt.years)
+			_, err := userdm.NewSkillYears(tt.years)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -42,13 +42,13 @@ func TestNewSkillsYears(t *testing.T) {
 	}
 }
 
-func TestSkillsYears_Equal(t *testing.T) {
-	years1, _ := userdm.NewSkillsYears(3)
-	years2, _ := userdm.NewSkillsYears(3)
-	years3, _ := userdm.NewSkillsYears(4)
+func TestSkillYears_Equal(t *testing.T) {
+	years1, _ := userdm.NewSkillYears(3)
+	years2, _ := userdm.NewSkillYears(3)
+	years3, _ := userdm.NewSkillYears(4)
 
 	assert.True(t, years1.Equal(years2))
 	assert.False(t, years1.Equal(years3))
 	assert.False(t, years1.Equal(nil))
-	assert.True(t, (*userdm.SkillsYears)(nil).Equal(nil))
+	assert.True(t, (*userdm.SkillYears)(nil).Equal(nil))
 }
