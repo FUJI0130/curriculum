@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewSkillYears(t *testing.T) {
+func TestNewSkillYear(t *testing.T) {
 	tests := []struct {
 		name    string
 		years   uint8
@@ -32,7 +32,7 @@ func TestNewSkillYears(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := userdm.NewSkillYears(tt.years)
+			_, err := userdm.NewSkillYear(tt.years)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {
@@ -42,13 +42,24 @@ func TestNewSkillYears(t *testing.T) {
 	}
 }
 
-func TestSkillYears_Equal(t *testing.T) {
-	years1, _ := userdm.NewSkillYears(3)
-	years2, _ := userdm.NewSkillYears(3)
-	years3, _ := userdm.NewSkillYears(4)
+func TestSkillYear_Equal(t *testing.T) {
+	years1, err1 := userdm.NewSkillYear(3)
+	if err1 != nil {
+		t.Fatalf("Failed to create SkillYear for years1: %v", err1)
+	}
 
-	assert.True(t, years1.Equal(years2))
-	assert.False(t, years1.Equal(years3))
+	years2, err2 := userdm.NewSkillYear(3)
+	if err2 != nil {
+		t.Fatalf("Failed to create SkillYear for years2: %v", err2)
+	}
+
+	years3, err3 := userdm.NewSkillYear(4)
+	if err3 != nil {
+		t.Fatalf("Failed to create SkillYear for years3: %v", err3)
+	}
+
+	assert.True(t, years1.Equal(&years2))
+	assert.False(t, years1.Equal(&years3))
 	assert.False(t, years1.Equal(nil))
-	assert.True(t, (*userdm.SkillYears)(nil).Equal(nil))
+	assert.True(t, (*userdm.SkillYear)(nil).Equal(nil))
 }

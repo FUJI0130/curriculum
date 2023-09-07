@@ -33,10 +33,10 @@ func TestNewUser(t *testing.T) {
 	tests := []struct {
 		name        string
 		email       string
-		password    *UserPassword
+		password    UserPassword
 		profile     string
-		createdAt   *sharedvo.CreatedAt
-		updatedAt   *sharedvo.UpdatedAt
+		createdAt   sharedvo.CreatedAt
+		updatedAt   sharedvo.UpdatedAt
 		expectError bool // expectErrorを追加
 	}{
 		{

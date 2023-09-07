@@ -9,13 +9,13 @@ import (
 type CareerID string
 
 func NewCareerID() (CareerID, error) {
-	careerId, err := uuid.NewRandom()
+	careerID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Printf("Failed to generate UUID: %v", err)
 		return CareerID(""), err
 	}
-	careerId_VO := CareerID(careerId.String())
-	return careerId_VO, nil
+	careerIDValueObject := CareerID(careerID.String())
+	return careerIDValueObject, nil
 }
 
 func (id CareerID) String() string {

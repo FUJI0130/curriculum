@@ -12,12 +12,12 @@ type Career struct {
 	detail    string             `db:"detail"`
 	adFrom    time.Time          `db:"ad_from"`
 	adTo      time.Time          `db:"ad_to"`
-	userId    UserID             `db:"user_id"`
+	userID    UserID             `db:"user_id"`
 	createdAt sharedvo.CreatedAt `db:"created_at"`
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId UserID, created_at time.Time, updatedAt time.Time) (*Career, error) {
+func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userID UserID, created_at time.Time, updatedAt time.Time) (*Career, error) {
 
 	career_id, err := NewCareerID()
 	if err != nil {
@@ -40,9 +40,9 @@ func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userId U
 		detail:    detail,
 		adFrom:    adFrom_Set,
 		adTo:      adTo_Set,
-		userId:    userId,
-		createdAt: *careerCreatedAt,
-		updatedAt: *careerUpdatedAt,
+		userID:    userID,
+		createdAt: careerCreatedAt,
+		updatedAt: careerUpdatedAt,
 	}, nil
 }
 
@@ -64,7 +64,7 @@ func (c *Career) AdTo() time.Time {
 }
 
 func (c *Career) UserID() UserID {
-	return c.userId
+	return c.userID
 }
 
 func (c *Career) CreatedAt() sharedvo.CreatedAt {

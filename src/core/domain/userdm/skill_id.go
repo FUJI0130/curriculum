@@ -9,13 +9,13 @@ import (
 type SkillID string
 
 func NewSkillID() (SkillID, error) {
-	skillId, err := uuid.NewRandom()
+	skillID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Printf("Failed to generate UUID: %v", err)
 		return SkillID(""), err
 	}
-	skillId_VO := SkillID(skillId.String())
-	return skillId_VO, nil
+	skillIDValueObject := SkillID(skillID.String())
+	return skillIDValueObject, nil
 }
 
 func (id SkillID) String() string {

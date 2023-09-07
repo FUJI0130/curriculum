@@ -9,13 +9,13 @@ import (
 type UserID string
 
 func NewUserID() (UserID, error) {
-	userId, err := uuid.NewRandom()
+	userID, err := uuid.NewRandom()
 	if err != nil {
 		fmt.Printf("Failed to generate UUID: %v", err)
 		return UserID(""), err
 	}
-	userId_VO := UserID(userId.String())
-	return userId_VO, nil
+	userIDValueObject := UserID(userID.String())
+	return userIDValueObject, nil
 }
 
 func (id UserID) String() string {

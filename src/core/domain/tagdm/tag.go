@@ -18,7 +18,7 @@ type Tag struct {
 var ErrTagNotFound = errors.New("tag not found")
 
 func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
-	tagId, err := NewTagID()
+	tagID, err := NewTagID()
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +34,10 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 		return nil, err
 	}
 	return &Tag{
-		id:        tagId,
+		id:        tagID,
 		name:      tagName,
-		createdAt: *tagCreatedAt,
-		updatedAt: *tagUpdatedAt,
+		createdAt: tagCreatedAt,
+		updatedAt: tagUpdatedAt,
 	}, nil
 }
 

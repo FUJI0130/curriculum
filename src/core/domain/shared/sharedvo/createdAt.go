@@ -7,15 +7,15 @@ import (
 
 type CreatedAt time.Time
 
-func NewCreatedAt(createdAt time.Time) (*CreatedAt, error) {
+func NewCreatedAt(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return nil, errors.New("CreatedAt cannot be zero value")
+		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be zero value")
 	}
 	if createdAt.After(time.Now()) {
-		return nil, errors.New("CreatedAt cannot be future date")
+		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be future date")
 	}
-	CreatedAt_VO := CreatedAt(createdAt)
-	return &CreatedAt_VO, nil
+	CreatedAtValueObject := CreatedAt(createdAt)
+	return CreatedAtValueObject, nil
 }
 
 func (createdAt CreatedAt) DateTime() time.Time {
@@ -23,15 +23,7 @@ func (createdAt CreatedAt) DateTime() time.Time {
 	return CreatedAtDateTime
 }
 
-func (createdAt1 *CreatedAt) Equal(createdAt2 *CreatedAt) bool {
-	// 両方のポインタがnilの場合はtrueを返す
-	if createdAt1 == nil && createdAt2 == nil {
-		return true
-	}
+func (createdAt1 CreatedAt) Equal(createdAt2 CreatedAt) bool {
 
-	// 片方のポインタだけがnilの場合はfalseを返す
-	if createdAt1 == nil || createdAt2 == nil {
-		return false
-	}
-	return *createdAt1 == *createdAt2
+	return createdAt1 == createdAt2
 }

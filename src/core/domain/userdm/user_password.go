@@ -7,26 +7,25 @@ import (
 
 type UserPassword string
 
-func NewUserPassword(userPassword string) (*UserPassword, error) {
+func NewUserPassword(userPassword string) (UserPassword, error) {
 	count := len([]rune(userPassword))
 	fmt.Println("Password Length:", count)
 	if userPassword == "" {
-		return nil, errors.New("userPassword cannot be empty")
+		return "", errors.New("userPassword cannot be empty")
 	} else if 255 < count {
-		return nil, errors.New("userPassword length over 256")
+		return "", errors.New("userPassword length over 256")
 	} else if count < 13 {
-		return nil, errors.New("userPassword length under 12")
+		return "", errors.New("userPassword length under 12")
 	}
 
-	userPasswordVO := UserPassword(userPassword)
-	return &userPasswordVO, nil
+	userPasswordValueObject := UserPassword(userPassword)
+	return userPasswordValueObject, nil
 }
 
 func (password UserPassword) String() string {
-	userPasswordString := string(password)
-	return userPasswordString
+	return string(password)
 }
 
-func (userPassword1 *UserPassword) Equal(userPassword2 *UserPassword) bool {
-	return *userPassword1 == *userPassword2
+func (userPassword1 UserPassword) Equal(userPassword2 UserPassword) bool {
+	return userPassword1 == userPassword2
 }

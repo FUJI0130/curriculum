@@ -15,13 +15,13 @@ const (
 	MaxSkillEvaluationValue = 5
 )
 
-func NewSkillEvaluation(value uint8) (*SkillEvaluation, error) {
+func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
 	if value < MinSkillEvaluationValue || value > MaxSkillEvaluationValue {
-		return nil, errors.New(fmt.Sprintf("SkillEvaluation must be between %d and %d", MinSkillEvaluationValue, MaxSkillEvaluationValue))
+		return 0, errors.New(fmt.Sprintf("SkillEvaluation must be between %d and %d", MinSkillEvaluationValue, MaxSkillEvaluationValue))
 	}
 
 	evaluation := SkillEvaluation(value)
-	return &evaluation, nil
+	return evaluation, nil
 }
 
 func (evaluation SkillEvaluation) Value() uint8 {

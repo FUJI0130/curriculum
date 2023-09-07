@@ -41,7 +41,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// Skillsの保存
 	for _, skill := range skill {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Years().Value())
+		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
 			return err
 		}

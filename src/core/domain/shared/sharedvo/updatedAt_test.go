@@ -13,25 +13,25 @@ func TestNewUpdatedAt(t *testing.T) {
 	tests := []struct {
 		name      string
 		input     time.Time
-		want      *UpdatedAt
+		want      UpdatedAt
 		wantError error
 	}{
 		{
 			name:      "時間が０",
 			input:     time.Time{},
-			want:      nil,
+			want:      UpdatedAt(time.Time{}),
 			wantError: errors.New("UpdatedAt cannot be zero value"),
 		},
 		{
 			name:      "過去の時間の場合のテスト",
 			input:     time.Now().Add(-time.Hour * 24),
-			want:      nil,
+			want:      UpdatedAt(time.Time{}),
 			wantError: errors.New("UpdatedAt cannot be past date"),
 		},
 		{
 			name:      "有効な時間の場合のテスト",
 			input:     validTime,
-			want:      (*UpdatedAt)(&validTime),
+			want:      (UpdatedAt)(validTime),
 			wantError: nil,
 		},
 	}
@@ -48,15 +48,6 @@ func TestNewUpdatedAt(t *testing.T) {
 				return
 			}
 
-			// got または tt.want が nil の場合の処理
-			if got == nil || tt.want == nil {
-				if (got != nil && tt.want == nil) || (got == nil && tt.want != nil) {
-					t.Errorf("expected: %v, got: %v", tt.want, got)
-				}
-				return
-			}
-
-			// DateTimeメソッドとEqualメソッドを使用した比較
 			if !got.DateTime().Equal(tt.want.DateTime()) {
 				t.Errorf("expected: %v, got: %v", tt.want.DateTime(), got.DateTime())
 			}
@@ -134,7 +125,7 @@ func TestUpdatedAt_Equal(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.u1.Equal(&tt.u2); got != tt.result {
+			if got := tt.u1.Equal(tt.u2); got != tt.result {
 				t.Errorf("expected: %v, got: %v", tt.result, got)
 			}
 		})

@@ -10,21 +10,21 @@ import (
 
 type Skill struct {
 	id         SkillID            `db:"id"`
-	tagId      tagdm.TagID        `db:"tag_id"`
-	userId     UserID             `db:"user_id"`
+	tagID      tagdm.TagID        `db:"tag_id"`
+	userID     UserID             `db:"user_id"`
 	evaluation SkillEvaluation    `db:"evaluation"`
-	years      SkillYears         `db:"years"`
+	years      SkillYear          `db:"years"`
 	createdAt  sharedvo.CreatedAt `db:"created_at"`
 	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
+func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
 		return nil, err
 	}
 
-	y, err := NewSkillYears(years)
+	y, err := NewSkillYear(years)
 	if err != nil {
 		return nil, err
 	}
@@ -39,29 +39,29 @@ func NewSkill(tagId tagdm.TagID, userId UserID, evaluation uint8, years uint8, c
 		return nil, err
 	}
 	return &Skill{
-		tagId:      tagId,
-		userId:     userId,
-		evaluation: *eval,
-		years:      *y,
-		createdAt:  *skillCreatedAt,
-		updatedAt:  *skillUpdatedAt,
+		tagID:      tagID,
+		userID:     userID,
+		evaluation: eval,
+		years:      y,
+		createdAt:  skillCreatedAt,
+		updatedAt:  skillUpdatedAt,
 	}, nil
 }
 func (s *Skill) ID() SkillID {
 	return s.id
 }
 func (s *Skill) TagID() tagdm.TagID {
-	return s.tagId
+	return s.tagID
 }
 func (s *Skill) UserID() UserID {
-	return s.userId
+	return s.userID
 }
 
 func (s *Skill) Evaluation() SkillEvaluation {
 	return s.evaluation
 }
 
-func (s *Skill) Years() SkillYears {
+func (s *Skill) Year() SkillYear {
 	return s.years
 }
 func (s *Skill) CreatedAt() sharedvo.CreatedAt {

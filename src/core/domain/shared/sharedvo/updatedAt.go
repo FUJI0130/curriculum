@@ -10,9 +10,9 @@ var LastDuration time.Duration // 経過時間を保存するための変数
 
 type UpdatedAt time.Time
 
-func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
+func NewUpdatedAt(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
-		return nil, errors.New("UpdatedAt cannot be zero value")
+		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be zero value")
 	}
 
 	adjustTime := time.Now().Add(-1000 * time.Millisecond)
@@ -21,11 +21,11 @@ func NewUpdatedAt(updatedAt time.Time) (*UpdatedAt, error) {
 
 		LastDuration = time.Since(adjustTime)
 		fmt.Printf("NewUpdatedAt Time taken for updatedAt.Before(time.Now()): %v\n", LastDuration)
-		return nil, errors.New("UpdatedAt cannot be past date")
+		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be past date")
 	}
 
 	updatedAtReturn := UpdatedAt(updatedAt)
-	return &updatedAtReturn, nil
+	return updatedAtReturn, nil
 }
 
 func (updatedAt UpdatedAt) DateTime() time.Time {
@@ -47,17 +47,7 @@ func (updatedAt *UpdatedAt) SetDateTime(newTime time.Time) error {
 	return nil
 }
 
-func (updatedAt1 *UpdatedAt) Equal(updatedAt2 *UpdatedAt) bool {
+func (updatedAt1 UpdatedAt) Equal(updatedAt2 UpdatedAt) bool {
 
-	// 両方のポインタがnilの場合はtrueを返す
-	if updatedAt1 == nil && updatedAt2 == nil {
-		return true
-	}
-
-	// 片方のポインタだけがnilの場合はfalseを返す
-	if updatedAt1 == nil || updatedAt2 == nil {
-		return false
-	}
-
-	return *updatedAt1 == *updatedAt2
+	return updatedAt1 == updatedAt2
 }

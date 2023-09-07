@@ -54,8 +54,8 @@ func TestCreatedAt_Equal(t *testing.T) {
 
 	tests := []struct {
 		name   string
-		date1  *CreatedAt
-		date2  *CreatedAt
+		date1  CreatedAt
+		date2  CreatedAt
 		result bool
 	}{
 		{
@@ -71,15 +71,15 @@ func TestCreatedAt_Equal(t *testing.T) {
 			result: false,
 		},
 		{
-			name:   "両方nilだった場合",
-			date1:  nil,
-			date2:  nil,
+			name:   "両方データが空だった場合",
+			date1:  CreatedAt(time.Time{}),
+			date2:  CreatedAt(time.Time{}),
 			result: true,
 		},
 		{
-			name:   "date2がnil",
+			name:   "date2が空データ",
 			date1:  date1,
-			date2:  nil,
+			date2:  CreatedAt(time.Time{}),
 			result: false,
 		},
 	}

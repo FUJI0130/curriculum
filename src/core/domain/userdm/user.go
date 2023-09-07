@@ -24,7 +24,7 @@ func NewUser(name string, email string, password string, profile string, created
 	if name == "" || password == "" {
 		return nil, errors.New("name and password cannot be empty")
 	}
-	user_id, err := NewUserID()
+	userID, err := NewUserID()
 	if err != nil {
 		return nil, err
 	}
@@ -68,13 +68,13 @@ func NewUser(name string, email string, password string, profile string, created
 	}
 
 	return &User{
-		id:        user_id,
+		id:        userID,
 		name:      userName,
-		email:     *userEmail,
-		password:  *userPassword,
+		email:     userEmail,
+		password:  userPassword,
 		profile:   userProfile,
-		createdAt: *userCreatedAt,
-		updatedAt: *userUpdatedAt,
+		createdAt: userCreatedAt,
+		updatedAt: userUpdatedAt,
 	}, nil
 }
 
@@ -120,11 +120,11 @@ func ReconstructUser(id UserID, name string, email string, password string, prof
 	return &User{
 		id:        id,
 		name:      userName,
-		email:     *userEmail,
-		password:  *userPassword,
+		email:     userEmail,
+		password:  userPassword,
 		profile:   userProfile,
-		createdAt: *userCreatedAt,
-		updatedAt: *userUpdatedAt,
+		createdAt: userCreatedAt,
+		updatedAt: userUpdatedAt,
 	}, nil
 }
 

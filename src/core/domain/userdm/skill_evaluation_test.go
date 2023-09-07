@@ -47,8 +47,8 @@ func TestSkillEvaluation_Equal(t *testing.T) {
 	evaluation2, _ := userdm.NewSkillEvaluation(3)
 	evaluation3, _ := userdm.NewSkillEvaluation(4)
 
-	assert.True(t, evaluation1.Equal(evaluation2))
-	assert.False(t, evaluation1.Equal(evaluation3))
+	assert.True(t, evaluation1.Equal(&evaluation2))
+	assert.False(t, evaluation1.Equal(&evaluation3))
 	assert.False(t, evaluation1.Equal(nil))
 	assert.True(t, (*userdm.SkillEvaluation)(nil).Equal(nil))
 }
