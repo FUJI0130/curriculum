@@ -3,7 +3,6 @@ package userapp
 import (
 	"context"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -52,7 +51,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	if err != nil {
 		if errors.Is(err, userdm.ErrUserNotFound) {
 		} else {
-			log.Printf("[ERROR] Unexpected error while searching for user with name %s: %v", req.Name, err)
 			return err
 		}
 	}
