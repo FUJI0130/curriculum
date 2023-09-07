@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -35,11 +34,9 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
 
-		log.Printf("[DEBUG] into error handling tag_repository_impl Store err is : %s", err)
 		return err
 	}
 
-	log.Printf("[DEBUG] after error handling tag_repository_impl Store")
 	return nil
 }
 
@@ -52,7 +49,6 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, tagdm.ErrTagNotFound
 		}
-		log.Printf("[DEBUG] Not ErrNoRows")
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 
