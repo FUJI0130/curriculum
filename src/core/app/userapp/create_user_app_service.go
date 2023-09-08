@@ -49,13 +49,13 @@ var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
-
+	existService := userdm.NewExistByNameDomainService(app.userRepo)
+	isExist, err := existService.IsExist(ctx, req.Name)
 	if err != nil {
 		return err
 	}
 
-	if existingUser != nil {
+	if isExist {
 		return ErrUserNameAlreadyExists
 	}
 

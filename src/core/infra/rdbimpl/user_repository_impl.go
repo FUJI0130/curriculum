@@ -35,6 +35,9 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 
 	log.Printf("userRepository Store before user")
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+	log.Println("[DEBUG] CreatedAt DateTime is : %s", user.CreatedAt().DateTime())
+	log.Println("[DEBUG] UpdatedAt DateTime is : %s", user.UpdatedAt().DateTime())
+
 	_, err := repo.Conn.Exec(queryUser, user.ID().String(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 	if err != nil {
 		return err

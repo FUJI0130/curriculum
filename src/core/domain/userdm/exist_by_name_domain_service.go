@@ -1,26 +1,23 @@
+// userdm/exist_by_name_domain_service.go
+
 package userdm
 
 import (
 	"context"
-
-	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 )
 
 type existByNameDomainService struct {
 	userRepo UserRepository
 }
 
-// TODO: コンストラクタ作る
+func NewExistByNameDomainService(userRepo UserRepository) *existByNameDomainService {
+	return &existByNameDomainService{userRepo: userRepo}
+}
 
-func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool, error) {
-	// 元々書いてある処理を書く
-	existingUser, err := userapp.userRepo.FindByName(ctx, name)
-
+func (ds *existByNameDomainService) IsExist(ctx context.Context, name string) (bool, error) {
+	existingUser, err := ds.userRepo.FindByName(ctx, name)
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	if existingUser != nil {
-		return userapp.ErrUserNameAlreadyExists
-	}
+	return existingUser != nil, nil
 }
