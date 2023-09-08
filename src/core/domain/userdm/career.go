@@ -24,12 +24,12 @@ func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userID U
 		return nil, err
 	}
 
-	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(created_at)
+	careerCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	careerUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	careerUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
 		fmt.Printf("NewCareer Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err

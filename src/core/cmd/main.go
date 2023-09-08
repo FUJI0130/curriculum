@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// DB接続の設定
-	db, err := sqlx.Open("mysql", "user:password@tcp(mysql:3306)/sql")
+	db, err := sqlx.Open("mysql", "user:password@tcp(mysql:3306)/sql?parseTime=True")
 	if err != nil {
 		panic(err)
 	}

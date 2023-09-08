@@ -3,6 +3,8 @@ package userapp
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -43,22 +45,17 @@ type CareersRequest struct {
 }
 
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
+var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 
-	userNotFound := false
-
 	if err != nil {
-		if errors.Is(err, userdm.ErrUserNotFound) {
-			userNotFound = true
-		} else {
-			return err
-		}
+		return err
 	}
 
-	if !userNotFound && existingUser != nil {
+	if existingUser != nil {
 		return ErrUserNameAlreadyExists
 	}
 
@@ -67,24 +64,31 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 	}
 
+	log.Printf("before skill Proc")
 	skillsSlice := make([]*userdm.Skill, len(req.Skills))
-
 	var tag *tagdm.Tag
 	for i, s := range req.Skills {
-		// 名前からタグを検索
+		// タグ名からタグを検索
+		log.Printf("s.TagName is : %s", s.TagName)
 		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
-		if errors.Is(err, tagdm.ErrTagNotFound) {
-			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)
-			if err != nil {
-				return err // 新規タグの作成中にエラーが発生した場合
-			}
-		} else {
-			return err // その他のエラー
-		}
-		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
+		log.Printf("after FindByName")
 		if err != nil {
 			return err
 		}
+		log.Printf("after FindByNames error handling")
+		// タグが見つからなかった場合、新規タグを作成
+		if errors.Is(err, tagdm.ErrTagNotFound) {
+			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)
+			if err != nil {
+				return fmt.Errorf("error creating new tag: %v", err)
+			}
+		}
+
+		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
+		if err != nil {
+			return fmt.Errorf("error creating new skill: %v", err)
+		}
+
 		skillsSlice[i] = skill
 	}
 

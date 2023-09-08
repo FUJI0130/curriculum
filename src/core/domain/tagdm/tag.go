@@ -32,12 +32,12 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 		return nil, err
 	}
 	tagName := name
-	tagCreatedAt, err := sharedvo.NewCreatedAtByVal(created_at)
+	tagCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	tagUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	tagUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
 		fmt.Printf("NewTag Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err

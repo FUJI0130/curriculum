@@ -56,12 +56,12 @@ func NewUser(name string, email string, password string, profile string, created
 		return nil, errors.New("userProfile length over 256")
 	}
 
-	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	userCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	userUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
 		fmt.Printf("NewUser Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
@@ -107,12 +107,12 @@ func ReconstructUser(id UserID, name string, email string, password string, prof
 		return nil, errors.New("userProfile length over 256")
 	}
 
-	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	userCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
 		return nil, err
 	}
 
-	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	userUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
 		fmt.Printf("ReconstructUser Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
