@@ -48,14 +48,17 @@ var ErrUserNameAlreadyExists = errors.New("user name already exists")
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	existingUser, err := app.userRepo.FindByName(ctx, req.Name)
 
+	userNotFound := false
+
 	if err != nil {
 		if errors.Is(err, userdm.ErrUserNotFound) {
+			userNotFound = true
 		} else {
 			return err
 		}
 	}
 
-	if existingUser != nil {
+	if !userNotFound && existingUser != nil {
 		return ErrUserNameAlreadyExists
 	}
 
@@ -71,11 +74,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		// 名前からタグを検索
 		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
 		if errors.Is(err, tagdm.ErrTagNotFound) {
-			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName) // 仮にTagNameがタグの名前を示すものとして
+			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)
 			if err != nil {
 				return err // 新規タグの作成中にエラーが発生した場合
 			}
-		} else if err != nil {
+		} else {
 			return err // その他のエラー
 		}
 		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())

@@ -15,9 +15,18 @@ type Tag struct {
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-var ErrTagNotFound = errors.New("tag not found")
+// エラーメッセージの追加
+var (
+	ErrTagNameEmpty = errors.New("tag name cannot be empty")
+	ErrTagNotFound  = errors.New("tag not found")
+)
 
 func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
+
+	if name == "" {
+		return nil, ErrTagNameEmpty
+	}
+
 	tagID, err := NewTagID()
 	if err != nil {
 		return nil, err
@@ -41,19 +50,11 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 	}, nil
 }
 
-// エラーメッセージの追加
-var (
-	ErrTagNameEmpty = errors.New("tag name cannot be empty")
-)
-
-// func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
 func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
 	// タグの名前が空の場合はエラー
 	if name == "" {
 		return nil, ErrTagNameEmpty
 	}
-
-	// 他のエラーチェックもここで行うことができます。
 
 	return &Tag{
 		id:        id,

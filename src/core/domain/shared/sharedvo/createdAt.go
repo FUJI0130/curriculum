@@ -5,17 +5,18 @@ import (
 	"time"
 )
 
+type NewCreatedAtByVal time.Time
 type CreatedAt time.Time
 
-func NewCreatedAt(createdAt time.Time) (CreatedAt, error) {
+func NewCreatedAt(createdAt time.Time) (NewCreatedAtByVal, error) {
 	if createdAt.IsZero() {
-		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be zero value")
+		return NewCreatedAtByVal(time.Time{}), errors.New("CreatedAt cannot be zero value")
 	}
 	if createdAt.After(time.Now()) {
-		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be future date")
+		return NewCreatedAtByVal(time.Time{}), errors.New("CreatedAt cannot be future date")
 	}
-	CreatedAtValueObject := CreatedAt(createdAt)
-	return CreatedAtValueObject, nil
+	NewCreatedAtValueObject := NewCreatedAtByVal(createdAt)
+	return NewCreatedAtValueObject, nil
 }
 
 func (createdAt CreatedAt) DateTime() time.Time {

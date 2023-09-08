@@ -2,7 +2,6 @@ package sharedvo
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -20,12 +19,10 @@ func NewUpdatedAt(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.Before(adjustTime) {
 
 		LastDuration = time.Since(adjustTime)
-		fmt.Printf("NewUpdatedAt Time taken for updatedAt.Before(time.Now()): %v\n", LastDuration)
 		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be past date")
 	}
 
-	updatedAtReturn := UpdatedAt(updatedAt)
-	return updatedAtReturn, nil
+	return UpdatedAt(updatedAt), nil
 }
 
 func (updatedAt UpdatedAt) DateTime() time.Time {

@@ -1,79 +1,64 @@
 // src/core/domain/tagdm/tag_test.go
-
 package tagdm_test
 
 import (
-	"context"
 	"testing"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockTag" // ここでモックをインポート
-	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestTagRepositoryMethods(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockTagRepo := mockTag.NewMockTagRepository(ctrl)
-	ctx := context.TODO()
-
-	tests := []struct {
-		name          string
-		tagName       string
-		storeErr      error
-		findByNameErr error
-		findByIDErr   error
-	}{
-		{
-			name:          "Successful flow",
-			tagName:       "testTag",
-			storeErr:      nil,
-			findByNameErr: nil,
-			findByIDErr:   nil,
-		},
-		// 追加テストケース
-		{
-			name:          "Failed due to empty tag name",
-			tagName:       "",
-			storeErr:      tagdm.ErrTagNameEmpty,
-			findByNameErr: tagdm.ErrTagNameEmpty,
-			findByIDErr:   tagdm.ErrTagNameEmpty,
-		},
+func TestNewTag(t *testing.T) {
+	// createdAtとupdatedAtの作成
+	createdAt, err := sharedvo.NewCreatedAt(time.Now())
+	if err != nil {
+		t.Fatalf("createdAtの作成に失敗しました: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tag, err := tagdm.NewTag(tt.tagName, time.Now(), time.Now())
-			if err != nil {
-				t.Fatalf("Unexpected error: %v", err)
-			}
+	startTime := time.Now()
+	updatedAt, err := sharedvo.NewUpdatedAt(startTime)
+	if err != nil {
+		t.Logf("updatedAt.Before(time.Now())にかかった時間: %v", sharedvo.LastDuration)
+		t.Fatalf("updatedAtの作成に失敗しました: %v", err)
+	}
 
-			// Store mock
-			mockTagRepo.EXPECT().Store(ctx, tag).Return(tt.storeErr)
+	tests := []struct {
+		name        string
+		tagName     string
+		createdAt   sharedvo.CreatedAt
+		updatedAt   sharedvo.UpdatedAt
+		expectError bool
+	}{
+		{
+			name:        "TestTag",
+			tagName:     "testTag",
+			createdAt:   createdAt,
+			updatedAt:   updatedAt,
+			expectError: false,
+		},
+		{
+			name:        "タグ名が空のため失敗",
+			tagName:     "",
+			createdAt:   createdAt,
+			updatedAt:   updatedAt,
+			expectError: true,
+		},
+		// ここに他のテストケースを追加することができます。
+	}
 
-			// FindByName mock
-			mockTagRepo.EXPECT().FindByName(ctx, tt.tagName).Return(tag, tt.findByNameErr)
+	for _, test := range tests {
+		tag, err := tagdm.NewTag(test.tagName, test.createdAt.DateTime(), test.updatedAt.DateTime())
 
-			// FindByID mock
-			mockTagRepo.EXPECT().FindByID(ctx, string(tag.ID())).Return(tag, tt.findByIDErr)
-
-			// ここで実際のテストロジックを書く。上記はモックの期待値を設定するだけです。
-
-			if err := mockTagRepo.Store(ctx, tag); err != tt.storeErr {
-				t.Fatalf("Expected storeErr: %v, got: %v", tt.storeErr, err)
-			}
-
-			foundTag, err := mockTagRepo.FindByName(ctx, tt.tagName)
-			if err != tt.findByNameErr || foundTag.Name() != tt.tagName {
-				t.Fatalf("Expected findByNameErr: %v, got: %v", tt.findByNameErr, err)
-			}
-
-			foundTagByID, err := mockTagRepo.FindByID(ctx, string(tag.ID()))
-			if err != tt.findByIDErr || foundTagByID.ID() != tag.ID() {
-				t.Fatalf("Expected findByIDErr: %v, got: %v", tt.findByIDErr, err)
-			}
-		})
+		if test.expectError {
+			require.Error(t, err)
+			return
+		}
+		require.NoError(t, err)
+		assert.Equal(t, test.tagName, tag.Name())
+		assert.Equal(t, test.createdAt, tag.CreatedAt())
+		assert.Equal(t, test.updatedAt, tag.UpdatedAt())
 	}
 }
