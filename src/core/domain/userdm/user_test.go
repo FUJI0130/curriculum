@@ -13,13 +13,13 @@ func TestNewUser(t *testing.T) {
 	// createdAtとupdatedAtの作成
 
 	//●error処理を書く
-	createdAt, err := sharedvo.NewCreatedAt(time.Now())
+	createdAt, err := sharedvo.NewCreatedAtByVal(time.Now())
 	if err != nil {
 		t.Fatalf("failed to create createdAt: %v", err) // テストを失敗させてエラーメッセージを表示
 	}
 
 	startTime := time.Now()
-	updatedAt, err := sharedvo.NewUpdatedAt(startTime)
+	updatedAt, err := sharedvo.NewUpdatedAtByVal(startTime)
 	if err != nil {
 		t.Logf("Time taken for updatedAt.Before(time.Now()): %v", sharedvo.LastDuration)
 		t.Fatalf("failed to create updatedAt: %v", err) // テストを失敗させてエラーメッセージを表示

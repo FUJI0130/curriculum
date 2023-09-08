@@ -28,12 +28,12 @@ func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, c
 	if err != nil {
 		return nil, err
 	}
-	skillCreatedAt, err := sharedvo.NewCreatedAt(createdAt)
+	skillCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
 		return nil, err
 	}
 
-	skillUpdatedAt, err := sharedvo.NewUpdatedAt(updatedAt)
+	skillUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
 	if err != nil {
 		fmt.Printf("Skill NewUpdatedAt  Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err

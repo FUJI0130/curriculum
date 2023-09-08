@@ -5,26 +5,28 @@ import (
 	"time"
 )
 
-type NewCreatedAtByVal time.Time
 type CreatedAt time.Time
 
-func NewCreatedAt(createdAt time.Time) (NewCreatedAtByVal, error) {
+// NewCreatedAtByVal は指定した時刻での CreatedAt を生成する
+func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return NewCreatedAtByVal(time.Time{}), errors.New("CreatedAt cannot be zero value")
+		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be zero value")
 	}
 	if createdAt.After(time.Now()) {
-		return NewCreatedAtByVal(time.Time{}), errors.New("CreatedAt cannot be future date")
+		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be future date")
 	}
-	NewCreatedAtValueObject := NewCreatedAtByVal(createdAt)
-	return NewCreatedAtValueObject, nil
+	return CreatedAt(createdAt), nil
+}
+
+// NewCreatedAt は現在の時刻での CreatedAt を生成する
+func NewCreatedAt() CreatedAt {
+	return CreatedAt(time.Now())
 }
 
 func (createdAt CreatedAt) DateTime() time.Time {
-	CreatedAtDateTime := time.Time(createdAt)
-	return CreatedAtDateTime
+	return time.Time(createdAt)
 }
 
 func (createdAt1 CreatedAt) Equal(createdAt2 CreatedAt) bool {
-
 	return createdAt1 == createdAt2
 }
