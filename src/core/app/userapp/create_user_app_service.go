@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -64,18 +63,14 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return err
 	}
 
-	log.Printf("before skill Proc")
 	skillsSlice := make([]*userdm.Skill, len(req.Skills))
 	var tag *tagdm.Tag
 	for i, s := range req.Skills {
 		// タグ名からタグを検索
-		log.Printf("s.TagName is : %s", s.TagName)
 		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
-		log.Printf("after FindByName")
 		if err != nil {
 			return err
 		}
-		log.Printf("after FindByNames error handling")
 		// タグが見つからなかった場合、新規タグを作成
 		if errors.Is(err, tagdm.ErrTagNotFound) {
 			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)

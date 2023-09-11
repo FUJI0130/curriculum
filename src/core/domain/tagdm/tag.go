@@ -2,7 +2,6 @@ package tagdm
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -39,7 +38,6 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 
 	tagUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		fmt.Printf("NewTag Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 	return &Tag{

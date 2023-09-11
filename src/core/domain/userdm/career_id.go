@@ -1,8 +1,6 @@
 package userdm
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 )
 
@@ -11,7 +9,6 @@ type CareerID string
 func NewCareerID() (CareerID, error) {
 	careerID, err := uuid.NewRandom()
 	if err != nil {
-		fmt.Printf("Failed to generate UUID: %v", err)
 		return CareerID(""), err
 	}
 	careerIDValueObject := CareerID(careerID.String())

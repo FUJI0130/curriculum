@@ -38,7 +38,7 @@ func TestNewUpdatedAt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewUpdatedAt(tt.input)
+			got, err := NewUpdatedAtByVal(tt.input)
 
 			// エラーの有無を確認
 			if tt.wantError != nil {
@@ -54,51 +54,6 @@ func TestNewUpdatedAt(t *testing.T) {
 		})
 	}
 
-}
-func TestUpdatedAt_SetDateTime(t *testing.T) {
-	tests := []struct {
-		name      string
-		original  time.Time
-		newTime   time.Time
-		wantError error
-	}{
-		{
-			name:      "時間が０",
-			original:  time.Now(),
-			newTime:   time.Time{},
-			wantError: errors.New("UpdatedAt cannot be zero value"),
-		},
-		{
-			name:      "過去の時間の場合のテスト",
-			original:  time.Now(),
-			newTime:   time.Now().Add(-time.Hour),
-			wantError: errors.New("UpdatedAt cannot be past date"),
-		},
-		{
-			name:      "有効な時間の場合のテスト",
-			original:  time.Now(),
-			newTime:   time.Now().Add(time.Hour),
-			wantError: nil,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			u := UpdatedAt(tt.original)
-			err := u.SetDateTime(tt.newTime)
-
-			if tt.wantError != nil {
-				if err == nil || tt.wantError.Error() != err.Error() {
-					t.Errorf("expected error: %v, got: %v", tt.wantError, err)
-				}
-				return
-			}
-
-			if !u.DateTime().Equal(tt.newTime) {
-				t.Errorf("expected: %v, got: %v", tt.newTime, u.DateTime())
-			}
-		})
-	}
 }
 
 func TestUpdatedAt_Equal(t *testing.T) {

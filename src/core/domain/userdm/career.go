@@ -1,7 +1,6 @@
 package userdm
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -31,7 +30,6 @@ func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userID U
 
 	careerUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		fmt.Printf("NewCareer Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 

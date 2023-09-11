@@ -35,7 +35,7 @@ func TestNewCreatedAt(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewCreatedAt(tt.input)
+			_, err := NewCreatedAtByVal(tt.input)
 			if tt.expectErr && err == nil {
 				t.Errorf("Expected error, but got none")
 			} else if !tt.expectErr && err != nil {
@@ -48,9 +48,9 @@ func TestNewCreatedAt(t *testing.T) {
 }
 
 func TestCreatedAt_Equal(t *testing.T) {
-	date1, _ := NewCreatedAt(time.Now())
-	date2, _ := NewCreatedAt(time.Now())
-	date3, _ := NewCreatedAt(time.Now().Add(-1 * time.Hour))
+	date1, _ := NewCreatedAtByVal(time.Now())
+	date2, _ := NewCreatedAtByVal(time.Now())
+	date3, _ := NewCreatedAtByVal(time.Now().Add(-1 * time.Hour))
 
 	tests := []struct {
 		name   string

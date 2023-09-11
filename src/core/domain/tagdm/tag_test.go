@@ -13,13 +13,13 @@ import (
 
 func TestNewTag(t *testing.T) {
 	// createdAtとupdatedAtの作成
-	createdAt := sharedvo.NewCreatedAtByVal(time.Now())
+	createdAt, err := sharedvo.NewCreatedAtByVal(time.Now())
 	if err != nil {
 		t.Fatalf("createdAtの作成に失敗しました: %v", err)
 	}
 
 	startTime := time.Now()
-	updatedAt := sharedvo.NewUpdatedAtByVal(startTime)
+	updatedAt, err := sharedvo.NewUpdatedAtByVal(startTime)
 	if err != nil {
 		t.Logf("updatedAt.Before(time.Now())にかかった時間: %v", sharedvo.LastDuration)
 		t.Fatalf("updatedAtの作成に失敗しました: %v", err)

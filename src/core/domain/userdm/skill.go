@@ -1,7 +1,6 @@
 package userdm
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -35,7 +34,6 @@ func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, c
 
 	skillUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		fmt.Printf("Skill NewUpdatedAt  Time taken for updatedAt.Before(time.Now()): %v\n", sharedvo.LastDuration)
 		return nil, err
 	}
 	return &Skill{

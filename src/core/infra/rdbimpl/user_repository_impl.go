@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -33,10 +32,7 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 // error　が戻り値の型
 func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skill []*userdm.Skill, career []*userdm.Career) error {
 
-	log.Printf("userRepository Store before user")
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-	log.Printf("[DEBUG] CreatedAt DateTime is : %s", user.CreatedAt().DateTime())
-	log.Printf("[DEBUG] UpdatedAt DateTime is : %s", user.UpdatedAt().DateTime())
 
 	_, err := repo.Conn.Exec(queryUser, user.ID().String(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
 	if err != nil {
@@ -46,7 +42,6 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 	// Skillsの保存
 	for _, skill := range skill {
 
-		log.Printf("userRepository Store before skill")
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
@@ -58,7 +53,6 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 
 	for _, career := range career {
 
-		log.Printf("userRepository Store before career")
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		// ad_from, ad_to を Date() メソッドで取得
 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
