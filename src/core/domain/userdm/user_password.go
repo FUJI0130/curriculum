@@ -3,17 +3,18 @@ package userdm
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 )
 
 type UserPassword string
 
 func NewUserPassword(userPassword string) (UserPassword, error) {
-	count := len([]rune(userPassword))
+	count := utf8.RuneCountInString(userPassword)
 	fmt.Println("Password Length:", count)
 	if userPassword == "" {
 		return "", errors.New("userPassword cannot be empty")
-	} else if 255 < count {
-		return "", errors.New("userPassword length over 256")
+	} else if nameMaxlength < count {
+		return "", errors.New("userPassword length over nameMaxlength")
 	} else if count < 13 {
 		return "", errors.New("userPassword length under 12")
 	}

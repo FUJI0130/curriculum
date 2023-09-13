@@ -94,7 +94,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 func (repo *tagRepositoryImpl) CreateNewTag(ctx context.Context, name string) (*tagdm.Tag, error) {
 	// 新規タグを作成
 
-	newTag, err := tagdm.NewTag(name, time.Now(), time.Now())
+	newTag, err := tagdm.NewTag(name)
 	if err != nil {
 		return nil, err
 	}

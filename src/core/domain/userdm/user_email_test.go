@@ -41,7 +41,7 @@ func TestNewUserEmail(t *testing.T) {
 		{
 			name:          "emailの長さが256文字以上の場合のテスト",
 			input:         "a" + string(make([]rune, 255)) + "@example.com",
-			expectedError: errors.New("userEmail length over 256"),
+			expectedError: errors.New("userEmail length over nameMaxlength"),
 			expectedValue: nil,
 		},
 	}
@@ -51,6 +51,7 @@ func TestNewUserEmail(t *testing.T) {
 			result, err := NewUserEmail(tt.input)
 			if err != nil && err.Error() != tt.expectedError.Error() {
 				t.Errorf("got error %v, want %v", err, tt.expectedError)
+				return
 			}
 			if tt.expectedValue != nil && result.String() != tt.expectedValue.String() {
 				t.Errorf("got result %v, want %v", result, tt.expectedValue)

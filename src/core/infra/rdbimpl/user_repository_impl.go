@@ -77,8 +77,9 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	}
 
 	// userRequestからuserdm.Userへの変換
-	userID := userdm.UserID(tempUser.ID) // UserID の型に合わせて変換が必要な場合
-	user, err := userdm.ReconstructUser(userID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt, tempUser.UpdatedAt)
+	userFactory := userdm.NewUserFactory()
+	user, err := userFactory.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+
 	if err != nil {
 		return nil, fmt.Errorf("error reconstructing user from userRequest: %v", err)
 	}

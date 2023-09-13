@@ -11,14 +11,22 @@ import (
 )
 
 type CreateUserAppService struct {
-	userRepo userdm.UserRepository
-	tagRepo  tagdm.TagRepository
+	userRepo     userdm.UserRepository
+	tagRepo      tagdm.TagRepository
+	existService userdm.ExistByNameDomainService
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
+//	func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
+//		return &CreateUserAppService{
+//			userRepo: userRepo,
+//			tagRepo:  tagRepo,
+//		}
+//	}
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
 	return &CreateUserAppService{
-		userRepo: userRepo,
-		tagRepo:  tagRepo,
+		userRepo:     userRepo,
+		tagRepo:      tagRepo,
+		existService: existService,
 	}
 }
 
@@ -48,8 +56,8 @@ var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	existService := userdm.NewExistByNameDomainService(app.userRepo)
-	isExist, err := existService.IsExist(ctx, req.Name)
+	// existService := userdm.NewExistByNameDomainService(app.userRepo)
+	isExist, err := app.existService.IsExist(ctx, req.Name)
 	if err != nil {
 		return err
 	}
@@ -58,7 +66,9 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return ErrUserNameAlreadyExists
 	}
 
-	user, err := userdm.NewUser(req.Name, req.Email, req.Password, req.Profile, time.Now(), time.Now())
+	userFactory := userdm.NewUserFactory()
+	user, err := userFactory.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile)
+
 	if err != nil {
 		return err
 	}
@@ -90,7 +100,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	// careersSlice の作成
 	careersSlice := make([]*userdm.Career, len(req.Careers))
 	for i, c := range req.Careers {
-		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo, user.ID(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo, user.ID())
 		if err != nil {
 			return err
 		}

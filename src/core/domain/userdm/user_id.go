@@ -1,6 +1,8 @@
 package userdm
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
 )
 
@@ -15,6 +17,14 @@ func NewUserID() (UserID, error) {
 	return userIDValueObject, nil
 }
 
+func NewUserIDFromString(idStr string) (UserID, error) {
+	// UUIDの形式であるか確認
+	_, err := uuid.Parse(idStr)
+	if err != nil {
+		return "", errors.New("invalid UUID format")
+	}
+	return UserID(idStr), nil
+}
 func (id UserID) String() string {
 	uuidString := string(id)
 	return uuidString

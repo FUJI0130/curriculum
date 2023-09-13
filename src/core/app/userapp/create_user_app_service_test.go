@@ -2,12 +2,10 @@ package userapp
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
-	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/golang/mock/gomock"
@@ -15,112 +13,103 @@ import (
 )
 
 func TestCreateUserAppService_Exec(t *testing.T) {
-	type testCase struct {
-		name     string
-		request  *CreateUserRequest
-		wantErr  error
-		mockFunc func(*mockUser.MockUserRepository, *mockTag.MockTagRepository)
-	}
+	// Set up common data for all tests
+	mockName := "Test User"
+	mockEmail := "test@example.com"
+	mockPassword := "newuserpassword"
+	mockProfile := "Sample Profile"
+	mockTagName := "Test Tag"
 
-	tests := []testCase{
+	ctx := context.TODO()
+
+	tests := []struct {
+		name     string
+		input    *CreateUserRequest
+		mockFunc func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService)
+		wantErr  error
+	}{
 		{
-			name: "存在しないユーザーを新規作成",
-			request: &CreateUserRequest{
-				Name:     "newUser",
-				Email:    "new@example.com",
-				Password: "newpassword12345",
-				Profile:  "new profile",
-				Skills: []SkillRequest{
-					{Evaluation: 5, Years: 3},
-				},
-				Careers: []CareersRequest{
-					{Detail: "Software Developer", AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC), AdTo: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC)},
-				},
+			name: "ユーザー新規作成",
+			input: &CreateUserRequest{
+				Name:     mockName,
+				Email:    mockEmail,
+				Password: mockPassword,
+				Skills:   []SkillRequest{{TagName: mockTagName, Evaluation: 5, Years: 2}},
+				Profile:  mockProfile,
+				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+			},
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+				// mockExistService.EXPECT().IsExist(gomock.Any(), mockName).Return(false, nil)
+				// mockTagRepo.EXPECT().FindByName(gomock.Any(), mockTagName).Return(nil, tagdm.ErrTagNotFound)
+				// mockTagRepo.EXPECT().CreateNewTag(gomock.Any(), mockTagName).Return(&tagdm.Tag{}, nil)
+				// mockUserRepo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+				mockExistService.EXPECT().IsExist(ctx, mockName).Return(false, nil).Times(1)
+				mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(nil, tagdm.ErrTagNotFound).Times(1)
+				mockTagRepo.EXPECT().CreateNewTag(ctx, mockTagName).Return(&tagdm.Tag{}, nil).Times(1)
+				mockUserRepo.EXPECT().Store(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
+
 			},
 			wantErr: nil,
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository) {
-				mockUserRepo.EXPECT().FindByName(gomock.Any(), "newUser").Return(nil, userdm.ErrUserNotFound)
-				mockTagRepo.EXPECT().FindByName(gomock.Any(), gomock.Any()).Return(nil, tagdm.ErrTagNotFound)
-				mockTagRepo.EXPECT().CreateNewTag(gomock.Any(), gomock.Any()).Return(&tagdm.Tag{}, nil)
-				mockUserRepo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil) // <---- Here
-
-			},
 		},
 		{
 			name: "存在するユーザーを作成",
-			request: &CreateUserRequest{
-				Name:     "testUser",
-				Email:    "test@example.com",
-				Password: "password01234",
-				Profile:  "test profile",
-				Skills: []SkillRequest{
-					{Evaluation: 4, Years: 2},
-				},
-				Careers: []CareersRequest{
-					{Detail: "Backend Developer", AdFrom: time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC), AdTo: time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC)},
-				},
+			input: &CreateUserRequest{
+				Name:     mockName,
+				Email:    mockEmail,
+				Password: mockPassword,
+			},
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+				mockExistService.EXPECT().IsExist(gomock.Any(), mockName).Return(true, nil)
 			},
 			wantErr: ErrUserNameAlreadyExists,
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository) {
-				existingUser := &userdm.User{}
-				mockUserRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(existingUser, nil)
-			},
 		},
+		// Add more test cases as needed
 		{
-			name: "パスワードが１２文字以下",
-			request: &CreateUserRequest{
-				Name:     "testUser",
-				Email:    "test@example.com",
-				Password: "pass",
-				Profile:  "test profile",
-				Skills: []SkillRequest{
-					{Evaluation: 3, Years: 1},
-				},
-				Careers: []CareersRequest{
-					{Detail: "Backend Developer", AdFrom: time.Date(2020, time.January, 1, 0, 0, 0, 0, time.UTC), AdTo: time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC)},
-				},
+			name: "タグの新規作成",
+			input: &CreateUserRequest{
+				Name:     mockName,
+				Email:    mockEmail,
+				Password: mockPassword,
+				Skills:   []SkillRequest{{TagName: "New Tag", Evaluation: 5, Years: 2}},
+				Profile:  mockProfile,
+				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
-			wantErr: errors.New("userPassword length under 12"),
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository) {
-				mockUserRepo.EXPECT().FindByName(gomock.Any(), "testUser").Return(nil, nil)
-			},
-		},
-		{
-			name: "新規タグの作成",
-			request: &CreateUserRequest{
-				Name:     "tagTestUser",
-				Email:    "tagtest@example.com",
-				Password: "tagpassword12345",
-				Profile:  "tag test profile",
-				Skills: []SkillRequest{
-					{TagName: "Go", Evaluation: 5, Years: 3},
-				},
-				Careers: nil,
-			},
-			wantErr: nil,
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository) {
-				mockUserRepo.EXPECT().FindByName(gomock.Any(), "tagTestUser").Return(nil, userdm.ErrUserNotFound)
-				mockTagRepo.EXPECT().FindByName(gomock.Any(), "Go").Return(nil, tagdm.ErrTagNotFound)
-				mockTagRepo.EXPECT().CreateNewTag(gomock.Any(), "Go").Return(&tagdm.Tag{}, nil)
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+				mockExistService.EXPECT().IsExist(gomock.Any(), mockName).Return(false, nil)
+				mockTagRepo.EXPECT().FindByName(gomock.Any(), "New Tag").Return(nil, tagdm.ErrTagNotFound)
+				mockTagRepo.EXPECT().CreateNewTag(gomock.Any(), "New Tag").Return(&tagdm.Tag{}, nil)
 				mockUserRepo.EXPECT().Store(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
+			wantErr: nil,
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			// t.Parallel()
+
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)
 			mockTagRepo := mockTag.NewMockTagRepository(ctrl)
-			tt.mockFunc(mockUserRepo, mockTagRepo)
+			mockExistService := mockUser.NewMockExistByNameDomainService(ctrl)
+			app := NewCreateUserAppService(mockUserRepo, mockTagRepo, mockExistService)
+			// Call the mock functions
+			tt.mockFunc(mockUserRepo, mockTagRepo, mockExistService)
 
-			service := NewCreateUserAppService(mockUserRepo, mockTagRepo)
+			// app := &CreateUserAppService{
+			// 	userRepo:     mockUserRepo,
+			// 	tagRepo:      mockTagRepo,
+			// 	existService: mockExistService,
+			// }
 
-			err := service.Exec(context.TODO(), tt.request)
-
-			assert.Equal(t, tt.wantErr, err)
+			err := app.Exec(context.TODO(), tt.input)
+			if tt.wantErr != nil {
+				assert.EqualError(t, err, tt.wantErr.Error())
+			} else {
+				assert.NoError(t, err)
+			}
 		})
 	}
 }

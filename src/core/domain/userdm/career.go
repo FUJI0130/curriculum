@@ -16,9 +16,9 @@ type Career struct {
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userID UserID, created_at time.Time, updatedAt time.Time) (*Career, error) {
+func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
 
-	career_id, err := NewCareerID()
+	careerID, err := NewCareerID()
 	if err != nil {
 		return nil, err
 	}
@@ -34,10 +34,10 @@ func NewCareer(detail string, adFrom_Set time.Time, adTo_Set time.Time, userID U
 	}
 
 	return &Career{
-		id:        career_id,
+		id:        careerID,
 		detail:    detail,
-		adFrom:    adFrom_Set,
-		adTo:      adTo_Set,
+		adFrom:    adFromSet,
+		adTo:      adToSet,
 		userID:    userID,
 		createdAt: careerCreatedAt,
 		updatedAt: careerUpdatedAt,

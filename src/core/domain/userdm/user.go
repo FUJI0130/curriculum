@@ -2,10 +2,11 @@ package userdm
 
 import (
 	"errors"
-	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
+
+const nameMaxlength = 256
 
 type User struct {
 	id        UserID             `db:"id"`
@@ -18,112 +19,6 @@ type User struct {
 }
 
 var ErrUserNotFound = errors.New("user not found")
-
-func NewUser(name string, email string, password string, profile string, createdAt time.Time, updatedAt time.Time) (*User, error) {
-	if name == "" || password == "" {
-		return nil, errors.New("name and password cannot be empty")
-	}
-	userID, err := NewUserID()
-	if err != nil {
-		return nil, err
-	}
-
-	userName := name
-	//エラー処理ここに入れる
-	countName := len([]rune(userName))
-	if userName == "" {
-		return nil, errors.New("userName cannot be empty")
-	} else if 255 < countName {
-		return nil, errors.New("userName length over 256")
-	}
-
-	userEmail, err := NewUserEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	userPassword, err := NewUserPassword(password)
-	if err != nil {
-		return nil, err
-	}
-
-	userProfile := profile
-	count_profile := len([]rune(profile))
-	if userProfile == "" {
-		return nil, errors.New("userProfile cannot be empty")
-	} else if 255 < count_profile {
-		return nil, errors.New("userProfile length over 256")
-	}
-
-	userCreatedAt := sharedvo.NewCreatedAt()
-	if err != nil {
-		return nil, err
-	}
-
-	userUpdatedAt := sharedvo.NewUpdatedAt()
-	if err != nil {
-		return nil, err
-	}
-
-	return &User{
-		id:        userID,
-		name:      userName,
-		email:     userEmail,
-		password:  userPassword,
-		profile:   userProfile,
-		createdAt: userCreatedAt,
-		updatedAt: userUpdatedAt,
-	}, nil
-}
-
-func ReconstructUser(id UserID, name string, email string, password string, profile string, createdAt time.Time, updatedAt time.Time) (*User, error) {
-	// 名前、Eメール、パスワードなどのエラーチェックをここで行うことができます
-	userName := name
-	//エラー処理ここに入れる
-	countName := len([]rune(userName))
-	if userName == "" {
-		return nil, errors.New("userName cannot be empty")
-	} else if 255 < countName {
-		return nil, errors.New("userName length over 256")
-	}
-
-	userEmail, err := NewUserEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	userPassword, err := NewUserPassword(password)
-	if err != nil {
-		return nil, err
-	}
-
-	userProfile := profile
-	count_profile := len([]rune(profile))
-	if userProfile == "" {
-		return nil, errors.New("userProfile cannot be empty")
-	} else if 255 < count_profile {
-		return nil, errors.New("userProfile length over 256")
-	}
-
-	userCreatedAt := sharedvo.NewCreatedAt()
-	if err != nil {
-		return nil, err
-	}
-
-	userUpdatedAt := sharedvo.NewUpdatedAt()
-	if err != nil {
-		return nil, err
-	}
-	return &User{
-		id:        id,
-		name:      userName,
-		email:     userEmail,
-		password:  userPassword,
-		profile:   userProfile,
-		createdAt: userCreatedAt,
-		updatedAt: userUpdatedAt,
-	}, nil
-}
 
 func (u *User) ID() UserID {
 	return u.id

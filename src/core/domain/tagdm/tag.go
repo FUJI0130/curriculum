@@ -20,7 +20,7 @@ var (
 	ErrTagNotFound  = errors.New("tag not found")
 )
 
-func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
+func NewTag(name string) (*Tag, error) {
 
 	if name == "" {
 		return nil, ErrTagNameEmpty
@@ -32,14 +32,8 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 	}
 	tagName := name
 	tagCreatedAt := sharedvo.NewCreatedAt()
-	if err != nil {
-		return nil, err
-	}
-
 	tagUpdatedAt := sharedvo.NewUpdatedAt()
-	if err != nil {
-		return nil, err
-	}
+
 	return &Tag{
 		id:        tagID,
 		name:      tagName,
@@ -48,7 +42,7 @@ func NewTag(name string, created_at time.Time, updatedAt time.Time) (*Tag, error
 	}, nil
 }
 
-func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.Time) (*Tag, error) {
+func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	// タグの名前が空の場合はエラー
 	if name == "" {
 		return nil, ErrTagNameEmpty
@@ -57,7 +51,7 @@ func ReconstructTag(id TagID, name string, created_at time.Time, updatedAt time.
 	return &Tag{
 		id:        id,
 		name:      name,
-		createdAt: sharedvo.CreatedAt(created_at),
+		createdAt: sharedvo.CreatedAt(createdAt),
 		updatedAt: sharedvo.UpdatedAt(updatedAt),
 	}, nil
 }
