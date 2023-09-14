@@ -7,53 +7,56 @@ import (
 )
 
 func TestNewSkillID_check(t *testing.T) {
-	testSkillID1, err := NewSkillID()
-	if err != nil {
-		t.Fatalf("Failed to create testSkillID1: %v", err)
-	}
-
-	testSkillID2, err := NewSkillID()
-	if err != nil {
-		t.Fatalf("Failed to create testSkillID2: %v", err)
-	}
 
 	// テストケースを定義
 	tests := []struct {
-		name  string
-		id1   SkillID
-		id2   SkillID
-		isErr bool
+		name    string
+		idGen   func() (SkillID, error) // SkillIDとerrorを返す関数を追加
+		wantErr bool                    // エラーが発生することを期待するかのフラグ
+		isErr   bool                    // id1とid2が等しいかどうか
 	}{
 		{
-			name:  "testSkillID1 と testSkillID2 は等しくない事を確認するテスト",
-			id1:   testSkillID1,
-			id2:   testSkillID2,
-			isErr: false,
+			name:    "testSkillID1 と testSkillID2 は等しくない事を確認するテスト",
+			idGen:   NewSkillID,
+			wantErr: false,
+			isErr:   false,
 		},
 		{
-			name:  "testSkillID1 自身を比べて等しい事を確認するテスト",
-			id1:   testSkillID1,
-			id2:   testSkillID1,
-			isErr: true,
+			name:    "testSkillID1 自身を比べて等しい事を確認するテスト",
+			idGen:   NewSkillID,
+			wantErr: false,
+			isErr:   true,
 		},
 		{
-			name:  "testSkillID2 自身を比べて等しい事を確認するテスト",
-			id1:   testSkillID2,
-			id2:   testSkillID2,
-			isErr: true,
+			name:    "testSkillID2 自身を比べて等しい事を確認するテスト",
+			idGen:   NewSkillID,
+			wantErr: false,
+			isErr:   true,
 		},
 	}
 
-	// tt = 現在のループでのtestcase
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			id1, err1 := tt.idGen()
 
-			// tt.id1 tt.id2が等しいかどうかをチェックして、結果を格納
-			equal := tt.id1.Equal(tt.id2)
+			// 自身と比べるテストケースの場合、id1をid2にコピー
+			var id2 SkillID
 			if tt.isErr {
-				assert.True(t, equal, "%v should be equal to %v", tt.id1, tt.id2)
+				id2 = id1
 			} else {
-				assert.False(t, equal, "%v should not be equal to %v", tt.id1, tt.id2)
+				var err2 error
+				id2, err2 = tt.idGen()
+				assert.NoError(t, err2)
+			}
+
+			assert.NoError(t, err1)
+
+			// id1とid2が等しいかどうかをチェックして、結果を格納
+			equal := id1.Equal(id2)
+			if tt.isErr {
+				assert.True(t, equal, "%v should be equal to %v", id1, id2)
+			} else {
+				assert.False(t, equal, "%v should not be equal to %v", id1, id2)
 			}
 		})
 	}

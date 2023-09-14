@@ -7,16 +7,6 @@ import (
 )
 
 func TestNewUserID_check(t *testing.T) {
-	testUserID1, err := NewUserID()
-	if err != nil {
-		t.Fatalf("Failed to create userID1: %v", err)
-	}
-
-	testUserID2, err := NewUserID()
-	if err != nil {
-		t.Fatalf("Failed to create userID2: %v", err)
-	}
-
 	// テストケースを定義
 	tests := []struct {
 		name  string
@@ -26,37 +16,52 @@ func TestNewUserID_check(t *testing.T) {
 	}{
 		{
 			name:  "testUserID1 と testUserID2 は等しくない事を確認するテスト",
-			id1:   testUserID1,
-			id2:   testUserID2,
 			isErr: false,
 		},
 		{
 			name:  "testUserID1 自身を比べて等しい事を確認するテスト",
-			id1:   testUserID1,
-			id2:   testUserID1,
 			isErr: true,
 		},
 		{
-			name:  "testUserID2  自身を比べて等しい事を確認するテスト",
-			id1:   testUserID2,
-			id2:   testUserID2,
+			name:  "testUserID2 自身を比べて等しい事を確認するテスト",
 			isErr: true,
 		},
 	}
 
-	//tt= 現在のループでのtestcase
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		//テストケースのサブテストを実行するための関数 第１引数：サブテストの名前　第２引数：実際のテストのコード（関数)
 		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 
-			//tt.id1 tt.id2が等しいかどうかをチェックして、結果を格納
-			equal := tt.id1.Equal(tt.id2)
+			testUserID1, err := NewUserID()
+			if err != nil {
+				t.Fatalf("Failed to create userID1: %v", err)
+			}
+
+			testUserID2, err := NewUserID()
+			if err != nil {
+				t.Fatalf("Failed to create userID2: %v", err)
+			}
+
+			// テストケース名に応じて、比較するUserIDを決定
+			var compare1, compare2 UserID
+			switch tt.name {
+			case "testUserID1 と testUserID2 は等しくない事を確認するテスト":
+				compare1 = testUserID1
+				compare2 = testUserID2
+			case "testUserID1 自身を比べて等しい事を確認するテスト":
+				compare1 = testUserID1
+				compare2 = testUserID1
+			case "testUserID2 自身を比べて等しい事を確認するテスト":
+				compare1 = testUserID2
+				compare2 = testUserID2
+			}
+
+			equal := compare1.Equal(compare2)
 			if tt.isErr {
-				assert.True(t, equal, "%v should be equal to %v", tt.id1, tt.id2)
+				assert.True(t, equal, "%v should be equal to %v", compare1, compare2)
 			} else {
-				assert.False(t, equal, "%v should not be equal to %v", tt.id1, tt.id2)
+				assert.False(t, equal, "%v should not be equal to %v", compare1, compare2)
 			}
 		})
 	}

@@ -35,6 +35,10 @@ func TestNewSkillYear(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			_, err := userdm.NewSkillYear(tt.years)
+
+			// Check if the error is nil or not
+			assert.Equal(t, tt.wantErr, err != nil)
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {

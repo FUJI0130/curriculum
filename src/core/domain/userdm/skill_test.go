@@ -41,12 +41,17 @@ func TestNewSkill(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 
-			dummyTagID, _ := tagdm.NewTagID()
-			dummyUserID, _ := userdm.NewUserID()
+			dummyTagID, err := tagdm.NewTagID()
+			assert.NoError(t, err)
+
+			dummyUserID, err := userdm.NewUserID()
+			assert.NoError(t, err)
+
 			dummyCreatedAt := time.Now()
 			dummyUpdatedAt := time.Now()
 
-			_, err := userdm.NewSkill(dummyTagID, dummyUserID, tt.evaluation, tt.years, dummyCreatedAt, dummyUpdatedAt)
+			_, err = userdm.NewSkill(dummyTagID, dummyUserID, tt.evaluation, tt.years, dummyCreatedAt, dummyUpdatedAt)
+
 			if tt.wantErr {
 				assert.NotNil(t, err)
 			} else {

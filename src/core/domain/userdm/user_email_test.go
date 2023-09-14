@@ -54,7 +54,12 @@ func TestNewUserEmail(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			result, err := NewUserEmail(tt.input)
 
-			assert.Equal(t, tt.expectedError, err)
+			if tt.expectedError == nil {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			}
 
 			if tt.expectedValue != nil {
 				assert.Equal(t, tt.expectedValue.String(), result.String())
