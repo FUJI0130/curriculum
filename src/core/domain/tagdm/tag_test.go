@@ -27,7 +27,9 @@ func TestNewTag(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test // capture the range variable for parallel execution
 		t.Run(test.name, func(t *testing.T) {
+			t.Parallel() // this allows the subtest to run in parallel
 			tag, err := tagdm.NewTag(test.tagName)
 
 			if test.expectError {

@@ -3,6 +3,8 @@ package sharedvo
 import (
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewCreatedAt(t *testing.T) {
@@ -34,14 +36,15 @@ func TestNewCreatedAt(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // capture the range variable for parallel execution
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel() // this allows the subtest to run in parallel
 			_, err := NewCreatedAtByVal(tt.input)
-			if tt.expectErr && err == nil {
-				t.Errorf("Expected error, but got none")
-			} else if !tt.expectErr && err != nil {
-				t.Errorf("Did not expect an error, but got: %v", err)
-			} else if tt.expectErr && err != nil && err.Error() != tt.errorMsg {
-				t.Errorf("Expected error message %q, but got %q", tt.errorMsg, err.Error())
+			if tt.expectErr {
+				assert.Error(t, err)
+				assert.Equal(t, tt.errorMsg, err.Error())
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -85,10 +88,10 @@ func TestCreatedAt_Equal(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // capture the range variable for parallel execution
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.date1.Equal(tt.date2) != tt.result {
-				t.Errorf("Expected %v, but got %v", tt.result, !tt.result)
-			}
+			t.Parallel() // this allows the subtest to run in parallel
+			assert.Equal(t, tt.result, tt.date1.Equal(tt.date2))
 		})
 	}
 }

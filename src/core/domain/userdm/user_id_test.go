@@ -46,8 +46,10 @@ func TestNewUserID_check(t *testing.T) {
 
 	//tt= 現在のループでのtestcase
 	for _, tt := range tests {
+		tt := tt // capture the range variable for parallel execution
 		//テストケースのサブテストを実行するための関数 第１引数：サブテストの名前　第２引数：実際のテストのコード（関数)
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel() // this allows the subtest to run in parallel
 
 			//tt.id1 tt.id2が等しいかどうかをチェックして、結果を格納
 			equal := tt.id1.Equal(tt.id2)

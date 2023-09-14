@@ -3,6 +3,8 @@ package userdm
 import (
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewUserEmail(t *testing.T) {
@@ -47,14 +49,15 @@ func TestNewUserEmail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt // capture the range variable for parallel execution
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel() // this allows the subtest to run in parallel
 			result, err := NewUserEmail(tt.input)
-			if err != nil && err.Error() != tt.expectedError.Error() {
-				t.Errorf("got error %v, want %v", err, tt.expectedError)
-				return
-			}
-			if tt.expectedValue != nil && result.String() != tt.expectedValue.String() {
-				t.Errorf("got result %v, want %v", result, tt.expectedValue)
+
+			assert.Equal(t, tt.expectedError, err)
+
+			if tt.expectedValue != nil {
+				assert.Equal(t, tt.expectedValue.String(), result.String())
 			}
 		})
 	}

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewUpdatedAt(t *testing.T) {
@@ -37,19 +39,18 @@ func TestNewUpdatedAt(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			got, err := NewUpdatedAtByVal(tt.input)
 
 			// エラーの有無を確認
 			if tt.wantError != nil {
-				if err == nil || tt.wantError.Error() != err.Error() {
-					t.Errorf("expected error: %v, got: %v", tt.wantError, err)
-				}
-				return
-			}
-
-			if !got.DateTime().Equal(tt.want.DateTime()) {
-				t.Errorf("expected: %v, got: %v", tt.want.DateTime(), got.DateTime())
+				assert.Error(t, err)
+				assert.Equal(t, tt.wantError.Error(), err.Error())
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.want.DateTime(), got.DateTime())
 			}
 		})
 	}
@@ -79,10 +80,11 @@ func TestUpdatedAt_Equal(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.u1.Equal(tt.u2); got != tt.result {
-				t.Errorf("expected: %v, got: %v", tt.result, got)
-			}
+			t.Parallel()
+			got := tt.u1.Equal(tt.u2)
+			assert.Equal(t, tt.result, got)
 		})
 	}
 }

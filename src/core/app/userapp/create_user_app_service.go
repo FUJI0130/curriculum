@@ -16,12 +16,6 @@ type CreateUserAppService struct {
 	existService userdm.ExistByNameDomainService
 }
 
-//	func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
-//		return &CreateUserAppService{
-//			userRepo: userRepo,
-//			tagRepo:  tagRepo,
-//		}
-//	}
 func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo:     userRepo,
@@ -56,7 +50,6 @@ var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 // create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	// existService := userdm.NewExistByNameDomainService(app.userRepo)
 	isExist, err := app.existService.IsExist(ctx, req.Name)
 	if err != nil {
 		return err
@@ -78,15 +71,13 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	for i, s := range req.Skills {
 		// タグ名からタグを検索
 		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
-		if err != nil {
-			return err
-		}
-		// タグが見つからなかった場合、新規タグを作成
 		if errors.Is(err, tagdm.ErrTagNotFound) {
 			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)
 			if err != nil {
 				return fmt.Errorf("error creating new tag: %v", err)
 			}
+		} else if err != nil {
+			return err
 		}
 
 		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
