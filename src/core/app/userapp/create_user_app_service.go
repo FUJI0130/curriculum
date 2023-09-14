@@ -24,6 +24,7 @@ func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 	}
 }
 
+// 要は、curlコマンドで送信されてくるコマンドの形を定義している
 type CreateUserRequest struct {
 	Name     string
 	Email    string
