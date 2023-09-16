@@ -7,7 +7,6 @@ import (
 
 type CreatedAt time.Time
 
-// NewCreatedAtByVal は指定した時刻での CreatedAt を生成する
 func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
 		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be zero value")
@@ -18,7 +17,6 @@ func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	return CreatedAt(createdAt), nil
 }
 
-// NewCreatedAt は現在の時刻での CreatedAt を生成する
 func NewCreatedAt() CreatedAt {
 	return CreatedAt(time.Now())
 }

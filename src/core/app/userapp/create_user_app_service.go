@@ -8,15 +8,16 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm/interfaces"
 )
 
 type CreateUserAppService struct {
 	userRepo     userdm.UserRepository
 	tagRepo      tagdm.TagRepository
-	existService userdm.ExistByNameDomainService
+	existService interfaces.ExistByNameDomainService
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService interfaces.ExistByNameDomainService) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo:     userRepo,
 		tagRepo:      tagRepo,
@@ -24,7 +25,6 @@ func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 	}
 }
 
-// 要は、curlコマンドで送信されてくるコマンドの形を定義している
 type CreateUserRequest struct {
 	Name     string
 	Email    string
@@ -49,7 +49,6 @@ type CareersRequest struct {
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
 var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
-// create_user_controller.goのcreateの中で呼び出されてる
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	isExist, err := app.existService.IsExist(ctx, req.Name)
 	if err != nil {
@@ -66,20 +65,45 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	if err != nil {
 		return err
 	}
-
-	skillsSlice := make([]*userdm.Skill, len(req.Skills))
-	var tag *tagdm.Tag
+	// 全てのタグ名を一度に取得するためのスライスの作成
+	tagNames := make([]string, len(req.Skills))
 	for i, s := range req.Skills {
-		// タグ名からタグを検索
-		tag, err = app.tagRepo.FindByName(ctx, s.TagName)
-		if errors.Is(err, tagdm.ErrTagNotFound) {
-			tag, err = app.tagRepo.CreateNewTag(ctx, s.TagName)
-			if err != nil {
-				return fmt.Errorf("error creating new tag: %v", err)
-			}
-		} else if err != nil {
-			return err
+		tagNames[i] = s.TagName
+	}
+
+	// 一度のクエリでタグを取得
+	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
+	if err != nil {
+		return err
+	}
+
+	seenSkills := make(map[string]bool)
+	skillsSlice := make([]*userdm.Skill, len(req.Skills))
+	// var tag *tagdm.Tag
+	for i, s := range req.Skills {
+
+		if seenSkills[s.TagName] {
+			return errors.New("同じスキルタグを複数回持つことはできません")
 		}
+		seenSkills[s.TagName] = true
+
+		// tag, err = app.tagRepo.FindByName(ctx, s.TagName)
+		// if errors.Is(err, tagdm.ErrTagNotFound) {
+		tag, ok := tags[s.TagName]
+		// タグが存在しない場合は新しく作成
+		if !ok {
+			tag, err = tagdm.NewTag(s.TagName)
+			if err != nil {
+				return err
+			}
+
+			if err = app.tagRepo.Store(ctx, tag); err != nil {
+				return err
+			}
+		}
+		// } else if err != nil {
+		// return err
+		// }
 
 		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
 		if err != nil {
@@ -89,7 +113,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		skillsSlice[i] = skill
 	}
 
-	// careersSlice の作成
 	careersSlice := make([]*userdm.Career, len(req.Careers))
 	for i, c := range req.Careers {
 		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo, user.ID())

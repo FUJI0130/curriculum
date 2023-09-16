@@ -1,6 +1,4 @@
-// - `Store() error`というインターフェースでユーザ作成をするので、作っておく
-// - また`FindByName() (*User, error)`は名前の重複チェックで使うので入れておく
-//go:generate mockgen -destination=../../mock/mockUser/tag_repository_mock.go -package=mockUser . TagRepository
+//go:generate mockgen -destination=../../mock/mockTag/tag_repository_mock.go -package=mockTag . TagRepository
 
 package tagdm
 
@@ -9,6 +7,6 @@ import "context"
 type TagRepository interface {
 	Store(ctx context.Context, tag *Tag) error
 	FindByName(ctx context.Context, name string) (*Tag, error)
+	FindByNames(ctx context.Context, names []string) (map[string]*Tag, error)
 	FindByID(ctx context.Context, id string) (*Tag, error)
-	CreateNewTag(ctx context.Context, name string) (*Tag, error)
 }

@@ -29,7 +29,6 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
-// error　が戻り値の型
 func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skill []*userdm.Skill, career []*userdm.Career) error {
 
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -39,7 +38,6 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 		return err
 	}
 
-	// Skillsの保存
 	for _, skill := range skill {
 
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -49,12 +47,9 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, sk
 		}
 	}
 
-	// Careersの保存
-
 	for _, career := range career {
 
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		// ad_from, ad_to を Date() メソッドで取得
 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
 			return err
@@ -71,12 +66,11 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, nil
+			return nil, userdm.ErrUserNotFound
 		}
 		return nil, fmt.Errorf("user_repository FindByName database error: %v", err)
 	}
 
-	// userRequestからuserdm.Userへの変換
 	userFactory := userdm.NewUserFactory()
 	user, err := userFactory.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
@@ -85,4 +79,29 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	}
 
 	return user, nil
+}
+func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+	query := "SELECT * FROM users WHERE name IN (?)"
+	var tempUsers []userRequest
+	query, args, err := sqlx.In(query, names)
+	if err != nil {
+		return nil, err
+	}
+
+	err = repo.Conn.Select(&tempUsers, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("database error: %v", err)
+	}
+
+	userMap := make(map[string]*userdm.User)
+	userFactory := userdm.NewUserFactory()
+	for _, tempUser := range tempUsers {
+		user, err := userFactory.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("error converting userRequest to User: %v", err)
+		}
+		userMap[tempUser.Name] = user
+	}
+
+	return userMap, nil
 }

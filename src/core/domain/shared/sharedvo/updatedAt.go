@@ -15,11 +15,6 @@ func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be zero value")
 	}
 
-	// 制約を確認: 過去の日付であってはならない
-	if updatedAt.Before(time.Now().Add(-time.Second)) {
-		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be past date")
-	}
-
 	return UpdatedAt(updatedAt), nil
 }
 

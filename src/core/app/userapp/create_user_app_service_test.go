@@ -2,10 +2,12 @@ package userapp
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+	"github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/golang/mock/gomock"
@@ -13,7 +15,6 @@ import (
 )
 
 func TestCreateUserAppService_Exec(t *testing.T) {
-	// Set up common data for all tests
 	mockName := "Test User"
 	mockEmail := "test@example.com"
 	mockPassword := "newuserpassword"
@@ -25,7 +26,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    *CreateUserRequest
-		mockFunc func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService)
+		mockFunc func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService)
 		wantErr  error
 	}{
 		{
@@ -38,13 +39,13 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Profile:  mockProfile,
 				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 
 				mockExistService.EXPECT().IsExist(ctx, mockName).Return(false, nil).Times(1)
-				mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(nil, tagdm.ErrTagNotFound).Times(1)
-				mockTagRepo.EXPECT().CreateNewTag(ctx, mockTagName).Return(&tagdm.Tag{}, nil).Times(1)
+				// mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(nil, tagdm.ErrTagNotFound).Times(1)
+				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName}).Return(map[string]*tagdm.Tag{}, nil).Times(1)
+				mockTagRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil).Times(1)
 				mockUserRepo.EXPECT().Store(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(1)
-
 			},
 			wantErr: nil,
 		},
@@ -55,12 +56,11 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Email:    mockEmail,
 				Password: mockPassword,
 			},
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().IsExist(ctx, mockName).Return(true, nil)
 			},
 			wantErr: ErrUserNameAlreadyExists,
 		},
-		// Add more test cases as needed
 		{
 			name: "タグの新規作成",
 			input: &CreateUserRequest{
@@ -71,10 +71,13 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Profile:  mockProfile,
 				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().IsExist(ctx, mockName).Return(false, nil)
-				mockTagRepo.EXPECT().FindByName(ctx, "New Tag").Return(nil, tagdm.ErrTagNotFound)
-				mockTagRepo.EXPECT().CreateNewTag(ctx, "New Tag").Return(&tagdm.Tag{}, nil)
+				// mockTagRepo.EXPECT().FindByName(ctx, "New Tag").Return(nil, tagdm.ErrTagNotFound)
+				// mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName}).Return(map[string]*tagdm.Tag{}, nil).Times(1)
+				mockTagRepo.EXPECT().FindByNames(ctx, []string{"New Tag"}).Return(map[string]*tagdm.Tag{}, nil).Times(1)
+
+				mockTagRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil).Times(1)
 				mockUserRepo.EXPECT().Store(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr: nil,
@@ -89,15 +92,36 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Profile:  mockProfile,
 				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
-			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockUser.MockExistByNameDomainService) {
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().IsExist(ctx, mockName).Return(false, nil)
 
-				// 既存のタグオブジェクトを作成
 				existingTag, _ := tagdm.NewTag(mockTagName)
-				mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(existingTag, nil)
+				// mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(existingTag, nil)
+				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName}).Return(map[string]*tagdm.Tag{mockTagName: existingTag}, nil).Times(1)
+
 				mockUserRepo.EXPECT().Store(ctx, gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
 			},
 			wantErr: nil,
+		},
+		{
+			name: "ユーザーが同じスキルタグを複数回持つ場合",
+			input: &CreateUserRequest{
+				Name:     mockName,
+				Email:    mockEmail,
+				Password: mockPassword,
+				Skills:   []SkillRequest{{TagName: mockTagName, Evaluation: 5, Years: 2}, {TagName: mockTagName, Evaluation: 4, Years: 1}},
+				Profile:  mockProfile,
+				Careers:  []CareersRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+			},
+			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
+				mockExistService.EXPECT().IsExist(ctx, mockName).Return(false, nil)
+
+				existingTag, _ := tagdm.NewTag(mockTagName)
+				// mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(existingTag, nil).Times(1)
+				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName, mockTagName}).Return(map[string]*tagdm.Tag{mockTagName: existingTag}, nil).Times(1)
+
+			},
+			wantErr: errors.New("同じスキルタグを複数回持つことはできません"), // 期待されるエラーメッセージ
 		},
 	}
 
@@ -110,7 +134,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			defer ctrl.Finish()
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)
 			mockTagRepo := mockTag.NewMockTagRepository(ctrl)
-			mockExistService := mockUser.NewMockExistByNameDomainService(ctrl)
+			mockExistService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
 			app := NewCreateUserAppService(mockUserRepo, mockTagRepo, mockExistService)
 			tt.mockFunc(mockUserRepo, mockTagRepo, mockExistService)
 
