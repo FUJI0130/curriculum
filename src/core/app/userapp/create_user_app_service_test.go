@@ -131,7 +131,6 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)
 			mockTagRepo := mockTag.NewMockTagRepository(ctrl)
 			mockExistService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
