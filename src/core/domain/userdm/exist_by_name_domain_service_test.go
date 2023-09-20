@@ -1,4 +1,6 @@
-package interfaces
+// package interfaces
+// package userdm_test
+package userdm
 
 import (
 	"context"
@@ -62,7 +64,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			defer ctrl.Finish()
 			mockRepo := mockUser.NewMockUserRepository(ctrl)
 
-			domainService := NewExistByNameDomainService(mockRepo)
+			domainService := userdm.NewExistByNameDomainService(mockRepo)
 
 			tt.mockFunc(mockRepo)
 
