@@ -53,7 +53,6 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			wantResult: false,
 			wantErr:    errors.New("unexpected error"),
 		},
-		// Add more test cases as needed.
 	}
 
 	for _, tt := range tests {
@@ -62,7 +61,6 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			// defer ctrl.Finish()
 			mockRepo := mockUser.NewMockUserRepository(ctrl)
 
 			// まず、モックの定義を行う
@@ -80,24 +78,5 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			}
 		})
 	}
-
-	// for _, tt := range tests {
-	// 		tt := tt
-	// 		t.Run(tt.name, func(t *testing.T) {
-	// 			t.Parallel()
-	// 			ctrl := gomock.NewController(t)
-	// 			defer ctrl.Finish()
-	// 			mockRepo := mockUser.NewMockUserRepository(ctrl)
-	// 			domainService := userdm.NewExistByNameDomainService(mockRepo)
-	// 			tt.mockFunc(mockRepo)
-	// 			result, err := domainService.IsExist(ctx, tt.inputName)
-	// 			assert.Equal(t, tt.wantResult, result)
-	// 			if tt.wantErr != nil {
-	// 				assert.EqualError(t, err, tt.wantErr.Error())
-	// 			} else {
-	// 				assert.NoError(t, err)
-	// 			}
-	// 		})
-	// 	}
 
 }
