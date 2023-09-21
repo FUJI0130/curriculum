@@ -7,7 +7,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	// "github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	// "github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	// "github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -19,8 +21,9 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 	ctx := context.TODO()
 
 	tests := []struct {
-		name       string
-		inputName  string
+		name      string
+		inputName string
+		// mockFunc   func(mockRepo *mockUser.MockUserRepository)
 		mockFunc   func(mockRepo *mockUser.MockUserRepository)
 		wantResult bool
 		wantErr    error
@@ -29,7 +32,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			name:      "User exists",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&userdm.User{}, nil).Times(1)
+				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&User{}, nil).Times(1)
 			},
 			wantResult: true,
 			wantErr:    nil,
@@ -38,7 +41,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			name:      "User does not exist",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, userdm.ErrUserNotFound).Times(1)
+				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, ErrUserNotFound).Times(1)
 			},
 			wantResult: false,
 			wantErr:    nil,
@@ -64,7 +67,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			defer ctrl.Finish()
 			mockRepo := mockUser.NewMockUserRepository(ctrl)
 
-			domainService := userdm.NewExistByNameDomainService(mockRepo)
+			domainService := NewExistByNameDomainService(mockRepo)
 
 			tt.mockFunc(mockRepo)
 

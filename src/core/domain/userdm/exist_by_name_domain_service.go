@@ -8,7 +8,6 @@ package userdm
 import (
 	"context"
 	"errors"
-	// "github.com/FUJI0130/curriculum/src/core/domain/userdm"
 )
 
 type ExistByNameDomainService interface {

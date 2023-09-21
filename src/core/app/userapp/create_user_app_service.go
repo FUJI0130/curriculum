@@ -8,16 +8,16 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	"github.com/FUJI0130/curriculum/src/core/domain/userdm/interfaces"
 )
 
 type CreateUserAppService struct {
+	// userRepo     userdm.UserRepository
 	userRepo     userdm.UserRepository
 	tagRepo      tagdm.TagRepository
-	existService interfaces.ExistByNameDomainService
+	existService userdm.ExistByNameDomainService
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService interfaces.ExistByNameDomainService) *CreateUserAppService {
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo:     userRepo,
 		tagRepo:      tagRepo,
