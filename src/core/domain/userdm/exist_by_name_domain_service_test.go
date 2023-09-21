@@ -1,15 +1,13 @@
 // package interfaces
 // package userdm_test
-package userdm
+package userdm_test
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	// "github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	// "github.com/FUJI0130/curriculum/src/core/mock/mockUser"
-	// "github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
@@ -32,7 +30,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			name:      "User exists",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&User{}, nil).Times(1)
+				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&userdm.User{}, nil).Times(1)
 			},
 			wantResult: true,
 			wantErr:    nil,
@@ -41,7 +39,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			name:      "User does not exist",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, ErrUserNotFound).Times(1)
+				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, userdm.ErrUserNotFound).Times(1)
 			},
 			wantResult: false,
 			wantErr:    nil,
@@ -64,12 +62,14 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
+			// defer ctrl.Finish()
 			mockRepo := mockUser.NewMockUserRepository(ctrl)
 
-			domainService := NewExistByNameDomainService(mockRepo)
-
+			// まず、モックの定義を行う
 			tt.mockFunc(mockRepo)
+
+			// 次に、そのモックを利用してdomainServiceを定義する
+			domainService := userdm.NewExistByNameDomainService(mockRepo)
 
 			result, err := domainService.IsExist(ctx, tt.inputName)
 			assert.Equal(t, tt.wantResult, result)
@@ -80,5 +80,24 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			}
 		})
 	}
+
+	// for _, tt := range tests {
+	// 		tt := tt
+	// 		t.Run(tt.name, func(t *testing.T) {
+	// 			t.Parallel()
+	// 			ctrl := gomock.NewController(t)
+	// 			defer ctrl.Finish()
+	// 			mockRepo := mockUser.NewMockUserRepository(ctrl)
+	// 			domainService := userdm.NewExistByNameDomainService(mockRepo)
+	// 			tt.mockFunc(mockRepo)
+	// 			result, err := domainService.IsExist(ctx, tt.inputName)
+	// 			assert.Equal(t, tt.wantResult, result)
+	// 			if tt.wantErr != nil {
+	// 				assert.EqualError(t, err, tt.wantErr.Error())
+	// 			} else {
+	// 				assert.NoError(t, err)
+	// 			}
+	// 		})
+	// 	}
 
 }
