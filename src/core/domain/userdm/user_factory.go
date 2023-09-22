@@ -9,19 +9,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
 
-type UserFactory interface {
-	Reconstruct(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error)
-	GenWhenCreate(name string, email string, password string, profile string) (*User, error)
-	TestNewUser(id string, name string, email string) (*User, error)
-}
-
-type userFactory struct{}
-
-func NewUserFactory() UserFactory {
-	return &userFactory{}
-}
-
-func (f *userFactory) Reconstruct(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
+func Reconstruct(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
 	userId, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
@@ -57,7 +45,7 @@ func (f *userFactory) Reconstruct(id string, name string, email string, password
 	}, nil
 }
 
-func (f *userFactory) GenWhenCreate(name string, email string, password string, profile string) (*User, error) {
+func GenWhenCreate(name string, email string, password string, profile string) (*User, error) {
 	userId, err := NewUserID()
 	if err != nil {
 		return nil, err
@@ -94,7 +82,7 @@ func (f *userFactory) GenWhenCreate(name string, email string, password string, 
 	}, nil
 }
 
-func (f *userFactory) TestNewUser(id string, name string, email string) (*User, error) {
+func TestNewUser(id string, name string, email string) (*User, error) {
 	userId, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
