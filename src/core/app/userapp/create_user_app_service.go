@@ -95,6 +95,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 
 		skillsParams[i] = userdm.SkillParam{
+			TagID:      tags[s.TagName].ID(),
 			TagName:    s.TagName,
 			Evaluation: s.Evaluation,
 			Years:      s.Years,

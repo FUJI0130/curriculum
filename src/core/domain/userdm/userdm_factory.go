@@ -7,6 +7,7 @@ import (
 )
 
 type SkillParam struct {
+	TagID      tagdm.TagID
 	TagName    string
 	Evaluation uint8
 	Years      uint8
@@ -26,8 +27,7 @@ func GenWhenCreate(name string, email string, password string, profile string, s
 
 	skills := make([]*Skill, 0, len(skillParams))
 	for _, param := range skillParams {
-		tag, err := tagdm.GenWhenCreateTag(param.TagName)
-		skill, err := NewSkill(tag.ID(), user.ID(), param.Evaluation, param.Years, user.createdAt.DateTime(), user.updatedAt.DateTime())
+		skill, err := NewSkill(param.TagID, user.ID(), param.Evaluation, param.Years, user.createdAt.DateTime(), user.updatedAt.DateTime())
 		if err != nil {
 			return nil, err
 		}
