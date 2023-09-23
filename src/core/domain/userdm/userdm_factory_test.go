@@ -8,7 +8,6 @@ import (
 )
 
 func TestReconstruct(t *testing.T) {
-	factory := NewUserFactory()
 	validTime := time.Now()
 
 	tests := []struct {
@@ -44,7 +43,8 @@ func TestReconstruct(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := factory.Reconstruct(tt.id, "TestName", tt.email, tt.password, tt.profile, tt.createdAt)
+			_, err := Reconstruct(tt.id, tt.name, tt.email, tt.password, tt.profile, tt.createdAt)
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -55,7 +55,6 @@ func TestReconstruct(t *testing.T) {
 }
 
 func TestGenWhenCreate(t *testing.T) {
-	factory := NewUserFactory()
 
 	tests := []struct {
 		name     string
@@ -84,7 +83,8 @@ func TestGenWhenCreate(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := factory.GenWhenCreate("TestName", tt.email, tt.password, tt.profile)
+			_, err := GenWhenCreate("TestName", tt.email, tt.password, tt.profile, []SkillParam{}, []CareerParam{})
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -95,7 +95,6 @@ func TestGenWhenCreate(t *testing.T) {
 }
 
 func TestTestNewUser(t *testing.T) {
-	factory := NewUserFactory()
 
 	tests := []struct {
 		name    string
@@ -122,7 +121,7 @@ func TestTestNewUser(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			_, err := factory.TestNewUser(tt.id, "TestName", tt.email)
+			_, err := TestNewUser(tt.id, "TestName", tt.email)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

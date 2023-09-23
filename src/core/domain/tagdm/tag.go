@@ -2,9 +2,7 @@ package tagdm
 
 import (
 	"errors"
-	"fmt"
 	"time"
-	"unicode/utf8"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
@@ -22,29 +20,6 @@ var (
 )
 
 const nameMaxLength = 15
-
-func NewTag(name string) (*Tag, error) {
-
-	if name == "" {
-		return nil, ErrTagNameEmpty
-	}
-	if utf8.RuneCountInString(name) > nameMaxLength {
-		return nil, fmt.Errorf("タグの名前が最大許容長の%dを超えています", nameMaxLength)
-	}
-	tagID, err := NewTagID()
-	if err != nil {
-		return nil, err
-	}
-	tagCreatedAt := sharedvo.NewCreatedAt()
-	tagUpdatedAt := sharedvo.NewUpdatedAt()
-
-	return &Tag{
-		id:        tagID,
-		name:      name,
-		createdAt: tagCreatedAt,
-		updatedAt: tagUpdatedAt,
-	}, nil
-}
 
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {

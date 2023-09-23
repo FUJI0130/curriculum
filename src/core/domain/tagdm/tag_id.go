@@ -16,7 +16,7 @@ func NewTagID() (TagID, error) {
 	tagIDValueObject := TagID(tagID.String())
 	return tagIDValueObject, nil
 }
-func NewsTagIDFromString(idStr string) (TagID, error) {
+func NewTagIDFromString(idStr string) (TagID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {

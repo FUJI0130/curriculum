@@ -9,7 +9,7 @@ import (
 )
 
 type UserRepository interface {
-	Store(ctx context.Context, user *User, skills []*Skill, careers []*Career) error
+	Store(ctx context.Context, userdomain *UserDomain) error
 	FindByName(ctx context.Context, name string) (*User, error)
 	FindByNames(ctx context.Context, names []string) (map[string]*User, error)
 }

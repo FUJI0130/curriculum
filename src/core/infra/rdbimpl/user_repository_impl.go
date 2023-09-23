@@ -29,26 +29,24 @@ func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 
-func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User, skill []*userdm.Skill, career []*userdm.Career) error {
+func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
 
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
-	_, err := repo.Conn.Exec(queryUser, user.ID().String(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), user.UpdatedAt().DateTime())
+	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
 		return err
 	}
 
-	for _, skill := range skill {
-
+	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
 			return err
 		}
 	}
 
-	for _, career := range career {
-
+	for _, career := range userdomain.Careers {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
@@ -71,8 +69,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 		return nil, fmt.Errorf("user_repository FindByName database error: %v", err)
 	}
 
-	userFactory := userdm.NewUserFactory()
-	user, err := userFactory.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+	user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
 	if err != nil {
 		return nil, fmt.Errorf("error reconstructing user from userRequest: %v", err)
@@ -80,6 +77,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 
 	return user, nil
 }
+
 func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
 	query := "SELECT * FROM users WHERE name IN (?)"
 	var tempUsers []userRequest
@@ -94,9 +92,8 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 	}
 
 	userMap := make(map[string]*userdm.User)
-	userFactory := userdm.NewUserFactory()
 	for _, tempUser := range tempUsers {
-		user, err := userFactory.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+		user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("error converting userRequest to User: %v", err)
 		}

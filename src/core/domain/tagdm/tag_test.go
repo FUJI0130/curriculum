@@ -30,7 +30,7 @@ func TestNewTag(t *testing.T) {
 		test := test // capture the range variable for parallel execution
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
-			tag, err := tagdm.NewTag(test.tagName)
+			tag, err := tagdm.GenWhenCreateTag(test.tagName)
 
 			if test.expectError {
 				require.Error(t, err)

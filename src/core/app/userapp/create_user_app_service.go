@@ -3,7 +3,6 @@ package userapp
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -46,6 +45,8 @@ type CareersRequest struct {
 	AdTo   time.Time
 }
 
+var test = ""
+
 var ErrUserNameAlreadyExists = errors.New("user name already exists")
 var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
@@ -59,12 +60,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		return ErrUserNameAlreadyExists
 	}
 
-	userFactory := userdm.NewUserFactory()
-	user, err := userFactory.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile)
-
-	if err != nil {
-		return err
-	}
 	// 全てのタグ名を一度に取得するためのスライスの作成
 	tagNames := make([]string, len(req.Skills))
 	for i, s := range req.Skills {
@@ -78,8 +73,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	seenSkills := make(map[string]bool)
-	skillsSlice := make([]*userdm.Skill, len(req.Skills))
-	// var tag *tagdm.Tag
+	skillsParams := make([]userdm.SkillParam, len(req.Skills))
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
@@ -87,12 +81,9 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 		seenSkills[s.TagName] = true
 
-		// tag, err = app.tagRepo.FindByName(ctx, s.TagName)
-		// if errors.Is(err, tagdm.ErrTagNotFound) {
-		tag, ok := tags[s.TagName]
 		// タグが存在しない場合は新しく作成
-		if !ok {
-			tag, err = tagdm.NewTag(s.TagName)
+		if _, ok := tags[s.TagName]; !ok {
+			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
 				return err
 			}
@@ -100,27 +91,30 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
-		}
-		// } else if err != nil {
-		// return err
-		// }
-
-		skill, err := userdm.NewSkill(tag.ID(), user.ID(), s.Evaluation, s.Years, time.Now(), time.Now())
-		if err != nil {
-			return fmt.Errorf("error creating new skill: %v", err)
+			tags[s.TagName] = tag
 		}
 
-		skillsSlice[i] = skill
+		skillsParams[i] = userdm.SkillParam{
+			TagName:    s.TagName,
+			Evaluation: s.Evaluation,
+			Years:      s.Years,
+		}
+
 	}
 
-	careersSlice := make([]*userdm.Career, len(req.Careers))
+	careersParams := make([]userdm.CareerParam, len(req.Careers))
 	for i, c := range req.Careers {
-		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo, user.ID())
-		if err != nil {
-			return err
+		careersParams[i] = userdm.CareerParam{
+			Detail: c.Detail,
+			AdFrom: c.AdFrom,
+			AdTo:   c.AdTo,
 		}
-		careersSlice[i] = career
 	}
 
-	return app.userRepo.Store(ctx, user, skillsSlice, careersSlice)
+	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
+	if err != nil {
+		return err
+	}
+
+	return app.userRepo.Store(ctx, userdomain)
 }
