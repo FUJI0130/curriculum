@@ -13,11 +13,10 @@ type CreateUserAppService struct {
 	// userRepo     userdm.UserRepository
 	userRepo     userdm.UserRepository
 	tagRepo      tagdm.TagRepository
-	existService *userdm.ExistByNameDomainService
+	existService userdm.ExistByNameDomainService
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
-	existService := userdm.NewExistByNameDomainService(userRepo)
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
 	return &CreateUserAppService{
 		userRepo:     userRepo,
 		tagRepo:      tagRepo,

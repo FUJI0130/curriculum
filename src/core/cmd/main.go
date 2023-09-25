@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/gin-gonic/gin"
@@ -19,9 +20,9 @@ func main() {
 
 	userRepo := rdbimpl.NewUserRepository(db)
 	tagRepo := rdbimpl.NewTagRepository(db)
-	// existService := userdm.NewExistByNameDomainService(userRepo)
-	// createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
-	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo)
+	existService := userdm.NewExistByNameDomainService(userRepo)
+	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
+	// createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo)
 
 	r := gin.Default()
 	controllers.InitControllers(r, createUserService)
