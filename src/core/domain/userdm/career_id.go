@@ -16,8 +16,7 @@ func NewCareerID() (CareerID, error) {
 }
 
 func (id CareerID) String() string {
-	uuidString := string(id)
-	return uuidString
+	return string(id)
 }
 
 func (careerID1 CareerID) Equal(careerID2 CareerID) bool {

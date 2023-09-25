@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestExistByNameDomainService_IsExist(t *testing.T) {
+func TestExistByNameDomainService_Exec(t *testing.T) {
 	mockName := "Test User"
 
 	ctx := context.TODO()
@@ -69,7 +69,7 @@ func TestExistByNameDomainService_IsExist(t *testing.T) {
 			// 次に、そのモックを利用してdomainServiceを定義する
 			domainService := userdm.NewExistByNameDomainService(mockRepo)
 
-			result, err := domainService.IsExist(ctx, tt.inputName)
+			result, err := domainService.Exec(ctx, tt.inputName)
 			assert.Equal(t, tt.wantResult, result)
 			if tt.wantErr != nil {
 				assert.EqualError(t, err, tt.wantErr.Error())

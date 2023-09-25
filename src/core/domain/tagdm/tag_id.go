@@ -25,8 +25,7 @@ func NewTagIDFromString(idStr string) (TagID, error) {
 	return TagID(idStr), nil
 }
 func (id TagID) String() string {
-	uuidString := string(id)
-	return uuidString
+	return string(id)
 }
 
 func (tagID1 TagID) Equal(tagID2 TagID) bool {

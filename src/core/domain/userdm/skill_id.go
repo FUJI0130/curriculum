@@ -25,8 +25,7 @@ func NewsSkillIDFromString(idStr string) (SkillID, error) {
 	return SkillID(idStr), nil
 }
 func (id SkillID) String() string {
-	uuidString := string(id)
-	return uuidString
+	return string(id)
 }
 
 func (tagID1 SkillID) Equal(tagID2 SkillID) bool {

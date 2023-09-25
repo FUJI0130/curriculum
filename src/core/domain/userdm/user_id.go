@@ -26,8 +26,7 @@ func NewUserIDFromString(idStr string) (UserID, error) {
 	return UserID(idStr), nil
 }
 func (id UserID) String() string {
-	uuidString := string(id)
-	return uuidString
+	return string(id)
 }
 
 func (userID1 UserID) Equal(userID2 UserID) bool {

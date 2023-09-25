@@ -13,10 +13,11 @@ type CreateUserAppService struct {
 	// userRepo     userdm.UserRepository
 	userRepo     userdm.UserRepository
 	tagRepo      tagdm.TagRepository
-	existService userdm.ExistByNameDomainService
+	existService *userdm.ExistByNameDomainService
 }
 
-func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository, existService userdm.ExistByNameDomainService) *CreateUserAppService {
+func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRepository) *CreateUserAppService {
+	existService := userdm.NewExistByNameDomainService(userRepo)
 	return &CreateUserAppService{
 		userRepo:     userRepo,
 		tagRepo:      tagRepo,
@@ -51,7 +52,7 @@ var ErrUserNameAlreadyExists = errors.New("user name already exists")
 var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	isExist, err := app.existService.IsExist(ctx, req.Name)
+	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
 		return err
 	}
@@ -74,6 +75,16 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	seenSkills := make(map[string]bool)
 	skillsParams := make([]userdm.SkillParam, len(req.Skills))
+
+	findTagByName := func(name string) *tagdm.Tag {
+		for _, tag := range tags {
+			if tag.Name() == name {
+				return tag
+			}
+		}
+		return nil
+	}
+
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
@@ -82,8 +93,9 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		seenSkills[s.TagName] = true
 
 		// タグが存在しない場合は新しく作成
-		if _, ok := tags[s.TagName]; !ok {
-			tag, err := tagdm.GenWhenCreateTag(s.TagName)
+		tag := findTagByName(s.TagName)
+		if tag == nil {
+			tag, err = tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
 				return err
 			}
@@ -91,11 +103,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
-			tags[s.TagName] = tag
+			tags = append(tags, tag) // Add the new tag to the slice for future searches
 		}
 
 		skillsParams[i] = userdm.SkillParam{
-			TagID:      tags[s.TagName].ID(),
+			TagID:      tag.ID(),
 			TagName:    s.TagName,
 			Evaluation: s.Evaluation,
 			Years:      s.Years,

@@ -10,20 +10,16 @@ import (
 	"errors"
 )
 
-type ExistByNameDomainService interface {
-	IsExist(ctx context.Context, name string) (bool, error)
-}
-type existByNameDomainService struct {
-	// userRepo userdm.UserRepository
+type ExistByNameDomainService struct {
 	userRepo UserRepository
 }
 
 // func NewExistByNameDomainService(userRepo userdm.UserRepository) *existByNameDomainService {
-func NewExistByNameDomainService(userRepo UserRepository) *existByNameDomainService {
-	return &existByNameDomainService{userRepo: userRepo}
+func NewExistByNameDomainService(userRepo UserRepository) *ExistByNameDomainService {
+	return &ExistByNameDomainService{userRepo: userRepo}
 }
 
-func (ds *existByNameDomainService) IsExist(ctx context.Context, name string) (bool, error) {
+func (ds *ExistByNameDomainService) Exec(ctx context.Context, name string) (bool, error) {
 	existingUser, err := ds.userRepo.FindByName(ctx, name)
 	if err != nil {
 		// if errors.Is(err, userdm.ErrUserNotFound) {

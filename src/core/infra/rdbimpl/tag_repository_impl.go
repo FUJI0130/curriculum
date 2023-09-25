@@ -59,7 +59,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 	return tag, nil
 }
 
-func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*tagdm.Tag, error) {
+func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) ([]*tagdm.Tag, error) {
 	query := "SELECT * FROM tags WHERE name IN (?)"
 	var tempTags []tagRequest
 	query, args, err := sqlx.In(query, names)
@@ -72,17 +72,17 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 		return nil, fmt.Errorf("database error: %v", err)
 	}
 
-	tagMap := make(map[string]*tagdm.Tag)
+	var tags []*tagdm.Tag
 	for _, tempTag := range tempTags {
 		tagID := tagdm.TagID(tempTag.ID)
 		tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
 		}
-		tagMap[tempTag.Name] = tag
+		tags = append(tags, tag)
 	}
 
-	return tagMap, nil
+	return tags, nil
 }
 
 func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.Tag, error) {
