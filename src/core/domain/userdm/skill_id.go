@@ -1,8 +1,7 @@
 package userdm
 
 import (
-	"errors"
-
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/google/uuid"
 )
 
@@ -11,7 +10,7 @@ type SkillID string
 func NewSkillID() (SkillID, error) {
 	skillID, err := uuid.NewRandom()
 	if err != nil {
-		return SkillID(""), err
+		return SkillID(""), customerrors.ErrInvalidSkillIDFormat()
 	}
 	skillIDValueObject := SkillID(skillID.String())
 	return skillIDValueObject, nil
@@ -20,7 +19,7 @@ func NewsSkillIDFromString(idStr string) (SkillID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", errors.New("invalid UUID format")
+		return "", customerrors.ErrInvalidSkillIDFormat()
 	}
 	return SkillID(idStr), nil
 }

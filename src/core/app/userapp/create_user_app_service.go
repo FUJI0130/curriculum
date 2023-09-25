@@ -70,10 +70,12 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	if err != nil {
 		return err
 	}
+
 	tagsMap := make(map[string]*tagdm.Tag)
 	for _, tag := range tags {
 		tagsMap[tag.Name()] = tag
 	}
+
 	seenSkills := make(map[string]bool)
 	skillsParams := make([]userdm.SkillParam, len(req.Skills))
 

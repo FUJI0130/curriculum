@@ -3,6 +3,7 @@ package userdm
 import (
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
 
@@ -17,6 +18,10 @@ type Career struct {
 }
 
 func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
+
+	if detail == "" { // 例えば、detailが空の場合のエラーハンドリング
+		return nil, customerrors.ErrInvalidCareerDetail(detail)
+	}
 
 	careerID, err := NewCareerID()
 	if err != nil {
