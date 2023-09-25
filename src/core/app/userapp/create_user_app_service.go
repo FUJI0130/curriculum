@@ -10,7 +10,6 @@ import (
 )
 
 type CreateUserAppService struct {
-	// userRepo     userdm.UserRepository
 	userRepo     userdm.UserRepository
 	tagRepo      tagdm.TagRepository
 	existService userdm.ExistByNameDomainService
@@ -71,18 +70,12 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	if err != nil {
 		return err
 	}
-
+	tagsMap := make(map[string]*tagdm.Tag)
+	for _, tag := range tags {
+		tagsMap[tag.Name()] = tag
+	}
 	seenSkills := make(map[string]bool)
 	skillsParams := make([]userdm.SkillParam, len(req.Skills))
-
-	findTagByName := func(name string) *tagdm.Tag {
-		for _, tag := range tags {
-			if tag.Name() == name {
-				return tag
-			}
-		}
-		return nil
-	}
 
 	for i, s := range req.Skills {
 
@@ -92,9 +85,8 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		seenSkills[s.TagName] = true
 
 		// タグが存在しない場合は新しく作成
-		tag := findTagByName(s.TagName)
-		if tag == nil {
-			tag, err = tagdm.GenWhenCreateTag(s.TagName)
+		if _, ok := tagsMap[s.TagName]; !ok {
+			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
 				return err
 			}
@@ -102,11 +94,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
-			tags = append(tags, tag) // Add the new tag to the slice for future searches
+			tagsMap[s.TagName] = tag
 		}
 
 		skillsParams[i] = userdm.SkillParam{
-			TagID:      tag.ID(),
+			TagID:      tagsMap[s.TagName].ID(),
 			TagName:    s.TagName,
 			Evaluation: s.Evaluation,
 			Years:      s.Years,

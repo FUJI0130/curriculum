@@ -94,7 +94,6 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(false, nil)
 
 				existingTag, _ := tagdm.GenWhenCreateTag(mockTagName)
-				// mockTagRepo.EXPECT().FindByName(ctx, mockTagName).Return(existingTag, nil)
 				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName}).Return([]*tagdm.Tag{existingTag}, nil).Times(1)
 
 				mockUserRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil)
