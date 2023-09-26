@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -65,7 +66,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.ErrUserNotFound()
+			return nil, domainErrors.ErrUserNotFound()
 		}
 		return nil, customerrors.ErrDatabaseError(fmt.Sprintf("user_repository FindByName database error: %v", err))
 	}

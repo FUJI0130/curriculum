@@ -5,19 +5,19 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/common/base"
 )
 
-type UserNotFoundError struct {
-	base.BaseError
-}
+// type UserNotFoundError struct {
+// 	base.BaseError
+// }
 
-func ErrUserNotFound() error {
-	return &UserNotFoundError{
-		BaseError: *base.NewBaseError(
-			"User not found",
-			404,
-			"The specified user could not be found in the database",
-		),
-	}
-}
+// func ErrUserNotFound() error {
+// 	return &UserNotFoundError{
+// 		BaseError: *base.NewBaseError(
+// 			"User not found",
+// 			404,
+// 			"The specified user could not be found in the database",
+// 		),
+// 	}
+// }
 
 type DatabaseError struct {
 	base.BaseError

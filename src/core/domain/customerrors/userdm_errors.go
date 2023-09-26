@@ -223,19 +223,24 @@ type UserNotFoundError struct {
 func (e *UserNotFoundError) Unwrap() error {
 	return &e.BaseError
 }
+
 func (e *UserNotFoundError) Is(target error) bool {
 	_, ok := target.(*UserNotFoundError)
 	return ok
 }
 
+// シングルトンインスタンスとしてのエラー
+var userNotFoundError = &UserNotFoundError{
+	BaseError: *base.NewBaseError(
+		"User could not be found in the database",
+		404,
+		"User not found",
+	),
+}
+
+// ErrUserNotFoundは常に上で定義したシングルトンインスタンスを返します。
 func ErrUserNotFound() error {
-	return &UserNotFoundError{
-		BaseError: *base.NewBaseError(
-			"User could not be found in the database",
-			404,
-			"User not found",
-		),
-	}
+	return userNotFoundError
 }
 func TestErrorIs(t *testing.T) {
 	err := ErrUserNotFound()
