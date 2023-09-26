@@ -23,7 +23,6 @@ func main() {
 	tagRepo := rdbimpl.NewTagRepository(db)
 	existService := userdm.NewExistByNameDomainService(userRepo)
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
-	// createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo)
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
