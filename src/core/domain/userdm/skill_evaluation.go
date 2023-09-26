@@ -3,25 +3,20 @@
 package userdm
 
 import (
-	"errors"
-	"fmt"
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
 )
 
 type SkillEvaluation uint8
 
 // スキルの評価は1から10の間とします。
-const (
-	MinSkillEvaluationValue = 1
-	MaxSkillEvaluationValue = 5
-)
 
 func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
-	if value < MinSkillEvaluationValue || value > MaxSkillEvaluationValue {
-		return 0, errors.New(fmt.Sprintf("SkillEvaluation must be between %d and %d", MinSkillEvaluationValue, MaxSkillEvaluationValue))
+	if value < constants.MinSkillEvaluationValue || value > constants.MaxSkillEvaluationValue {
+		return 0, customerrors.ErrSkillEvaluationOutOfRange(value)
 	}
 
-	evaluation := SkillEvaluation(value)
-	return evaluation, nil
+	return SkillEvaluation(value), nil
 }
 
 func (evaluation SkillEvaluation) Value() uint8 {

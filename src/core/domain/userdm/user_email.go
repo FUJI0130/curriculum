@@ -1,9 +1,11 @@
 package userdm
 
 import (
-	"errors"
 	"regexp"
 	"unicode/utf8"
+
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
 )
 
 type UserEmail string
@@ -13,14 +15,14 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 func NewUserEmail(userEmail string) (UserEmail, error) {
 	count := utf8.RuneCountInString(userEmail)
 	if userEmail == "" {
-		return "", errors.New("userEmail cannot be empty")
-	} else if nameMaxlength < count {
-		return "", errors.New("userEmail length over nameMaxlength")
+		return "", customerrors.ErrUserEmailEmpty()
+	} else if constants.EmailMaxlength < count {
+		return "", customerrors.ErrUserEmailTooLong()
 	}
 
 	// メールアドレスの形式のチェック
 	if !emailRegex.MatchString(userEmail) {
-		return "", errors.New("userEmail format is invalid")
+		return "", customerrors.ErrUserEmailInvalidFormat()
 	}
 
 	return UserEmail(userEmail), nil

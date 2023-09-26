@@ -3,8 +3,10 @@ package userapp
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 )
@@ -52,11 +54,11 @@ var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
-		return err
+		return customerrors.ErrDatabaseError(fmt.Sprintf("Failed to check existence of user name: %v", err))
 	}
 
 	if isExist {
-		return ErrUserNameAlreadyExists
+		return customerrors.ErrUserNameAlreadyExists(req.Name)
 	}
 
 	// 全てのタグ名を一度に取得するためのスライスの作成
@@ -70,17 +72,19 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	if err != nil {
 		return err
 	}
+
 	tagsMap := make(map[string]*tagdm.Tag)
 	for _, tag := range tags {
 		tagsMap[tag.Name()] = tag
 	}
+
 	seenSkills := make(map[string]bool)
 	skillsParams := make([]userdm.SkillParam, len(req.Skills))
 
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return errors.New("同じスキルタグを複数回持つことはできません")
+			return customerrors.ErrDuplicateSkillTag(s.TagName)
 		}
 		seenSkills[s.TagName] = true
 

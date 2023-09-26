@@ -4,6 +4,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
+	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
@@ -22,9 +23,9 @@ func main() {
 	tagRepo := rdbimpl.NewTagRepository(db)
 	existService := userdm.NewExistByNameDomainService(userRepo)
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
-	// createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo)
 
 	r := gin.Default()
+	r.Use(middleware.ErrorHandler)
 	controllers.InitControllers(r, createUserService)
 	r.Run(":8080")
 }

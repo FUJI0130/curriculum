@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+	"github.com/FUJI0130/curriculum/src/core/infra/customerrors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -31,8 +32,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
-
-		return err
+		return customerrors.ErrDatabaseError(fmt.Sprintf("Failed to store tag: %v", err))
 	}
 
 	return nil
@@ -44,7 +44,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 	err := repo.Conn.Get(&tempTag, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, tagdm.ErrTagNotFound
+			return nil, customerrors.ErrTagNotFound()
 		}
 		return nil, fmt.Errorf("tag_repository_impl FindByName database error: %v", err)
 	}
@@ -91,7 +91,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 	err := repo.Conn.Get(&tempTag, query, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, tagdm.ErrTagNotFound
+			return nil, customerrors.ErrTagNotFound()
 		}
 		return nil, fmt.Errorf("database error: %v", err)
 	}

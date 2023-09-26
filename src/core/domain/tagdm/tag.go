@@ -1,9 +1,9 @@
 package tagdm
 
 import (
-	"errors"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 )
 
@@ -14,16 +14,9 @@ type Tag struct {
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-var (
-	ErrTagNameEmpty = errors.New("tag name cannot be empty")
-	ErrTagNotFound  = errors.New("tag not found")
-)
-
-const nameMaxLength = 15
-
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
-		return nil, ErrTagNameEmpty
+		return nil, customerrors.ErrTagNameEmpty() // カスタムエラーに差し替え
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
