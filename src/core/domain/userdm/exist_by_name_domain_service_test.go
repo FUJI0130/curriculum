@@ -19,7 +19,7 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 	ctx := context.TODO()
 
 	tests := []struct {
-		name      string
+		title     string
 		inputName string
 		// mockFunc   func(mockRepo *mockUser.MockUserRepository)
 		mockFunc   func(mockRepo *mockUser.MockUserRepository)
@@ -27,7 +27,7 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 		wantErr    error
 	}{
 		{
-			name:      "User exists",
+			title:     "User exists",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
 				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&userdm.User{}, nil).Times(1)
@@ -36,7 +36,7 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			wantErr:    nil,
 		},
 		{
-			name:      "User does not exist",
+			title:     "User does not exist",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
 				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, userdm.ErrUserNotFound).Times(1)
@@ -45,7 +45,7 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			wantErr:    nil,
 		},
 		{
-			name:      "Repository error",
+			title:     "Repository error",
 			inputName: mockName,
 			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
 				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, errors.New("unexpected error")).Times(1)
@@ -57,7 +57,7 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)

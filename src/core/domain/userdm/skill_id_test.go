@@ -10,25 +10,25 @@ func TestNewSkillID_check(t *testing.T) {
 
 	// テストケースを定義
 	tests := []struct {
-		name    string
+		title   string
 		idGen   func() (SkillID, error) // SkillIDとerrorを返す関数を追加
 		wantErr bool                    // エラーが発生することを期待するかのフラグ
 		isErr   bool                    // id1とid2が等しいかどうか
 	}{
 		{
-			name:    "testSkillID1 と testSkillID2 は等しくない事を確認するテスト",
+			title:   "testSkillID1 と testSkillID2 は等しくない事を確認するテスト",
 			idGen:   NewSkillID,
 			wantErr: false,
 			isErr:   false,
 		},
 		{
-			name:    "testSkillID1 自身を比べて等しい事を確認するテスト",
+			title:   "testSkillID1 自身を比べて等しい事を確認するテスト",
 			idGen:   NewSkillID,
 			wantErr: false,
 			isErr:   true,
 		},
 		{
-			name:    "testSkillID2 自身を比べて等しい事を確認するテスト",
+			title:   "testSkillID2 自身を比べて等しい事を確認するテスト",
 			idGen:   NewSkillID,
 			wantErr: false,
 			isErr:   true,
@@ -36,7 +36,7 @@ func TestNewSkillID_check(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			id1, err1 := tt.idGen()
 
 			// 自身と比べるテストケースの場合、id1をid2にコピー

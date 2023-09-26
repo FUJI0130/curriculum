@@ -11,24 +11,24 @@ func TestNewCreatedAt(t *testing.T) {
 	now := time.Now()
 
 	tests := []struct {
-		name      string
+		title     string
 		input     time.Time
 		expectErr bool
 		errorMsg  string
 	}{
 		{
-			name:      "valid date",
+			title:     "valid date",
 			input:     now.Add(-1 * time.Hour),
 			expectErr: false,
 		},
 		{
-			name:      "zero date",
+			title:     "zero date",
 			input:     time.Time{},
 			expectErr: true,
 			errorMsg:  "CreatedAt cannot be zero value",
 		},
 		{
-			name:      "future date",
+			title:     "future date",
 			input:     now.Add(1 * time.Hour),
 			expectErr: true,
 			errorMsg:  "CreatedAt cannot be future date",
@@ -37,7 +37,7 @@ func TestNewCreatedAt(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			_, err := NewCreatedAtByVal(tt.input)
 			if tt.expectErr {
@@ -56,31 +56,31 @@ func TestCreatedAt_Equal(t *testing.T) {
 	date3, _ := NewCreatedAtByVal(time.Now().Add(-1 * time.Hour))
 
 	tests := []struct {
-		name   string
+		title  string
 		date1  CreatedAt
 		date2  CreatedAt
 		result bool
 	}{
 		{
-			name:   "日付が等しい",
+			title:  "日付が等しい",
 			date1:  date1,
 			date2:  date2,
 			result: false,
 		},
 		{
-			name:   "異なる日付",
+			title:  "異なる日付",
 			date1:  date1,
 			date2:  date3,
 			result: false,
 		},
 		{
-			name:   "両方データが空だった場合",
+			title:  "両方データが空だった場合",
 			date1:  CreatedAt(time.Time{}),
 			date2:  CreatedAt(time.Time{}),
 			result: true,
 		},
 		{
-			name:   "date2が空データ",
+			title:  "date2が空データ",
 			date1:  date1,
 			date2:  CreatedAt(time.Time{}),
 			result: false,
@@ -89,7 +89,7 @@ func TestCreatedAt_Equal(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			assert.Equal(t, tt.result, tt.date1.Equal(tt.date2))
 		})

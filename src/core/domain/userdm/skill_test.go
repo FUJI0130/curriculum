@@ -11,25 +11,25 @@ import (
 
 func TestNewSkill(t *testing.T) {
 	tests := []struct {
-		name       string
+		title      string
 		evaluation uint8
 		years      uint8
 		wantErr    bool
 	}{
 		{
-			name:       "invalid evaluation and valid years",
+			title:      "invalid evaluation and valid years",
 			evaluation: 0,
 			years:      5,
 			wantErr:    true,
 		},
 		{
-			name:       "valid evaluation and invalid years",
+			title:      "valid evaluation and invalid years",
 			evaluation: 3,
 			years:      0,
 			wantErr:    true,
 		},
 		{
-			name:       "valid evaluation and years",
+			title:      "valid evaluation and years",
 			evaluation: 3,
 			years:      5,
 			wantErr:    false,
@@ -38,7 +38,7 @@ func TestNewSkill(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 
 			dummyTagID, err := tagdm.NewTagID()
