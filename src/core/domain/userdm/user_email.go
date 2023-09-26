@@ -8,9 +8,7 @@ import (
 
 type UserEmail string
 
-func emailRegex() string {
-	return `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-}
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 
 func NewUserEmail(userEmail string) (UserEmail, error) {
 	count := utf8.RuneCountInString(userEmail)
@@ -20,10 +18,8 @@ func NewUserEmail(userEmail string) (UserEmail, error) {
 		return "", errors.New("userEmail length over nameMaxlength")
 	}
 
-	// メールアドレスの形式の正規表現
-	// var emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	re := regexp.MustCompile(emailRegex())
-	if !re.MatchString(userEmail) {
+	// メールアドレスの形式のチェック
+	if !emailRegex.MatchString(userEmail) {
 		return "", errors.New("userEmail format is invalid")
 	}
 

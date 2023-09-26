@@ -9,28 +9,28 @@ import (
 func TestNewUserID_check(t *testing.T) {
 	// テストケースを定義
 	tests := []struct {
-		name  string
+		title string
 		id1   UserID
 		id2   UserID
 		isErr bool
 	}{
 		{
-			name:  "testUserID1 と testUserID2 は等しくない事を確認するテスト",
+			title: "testUserID1 と testUserID2 は等しくない事を確認するテスト",
 			isErr: false,
 		},
 		{
-			name:  "testUserID1 自身を比べて等しい事を確認するテスト",
+			title: "testUserID1 自身を比べて等しい事を確認するテスト",
 			isErr: true,
 		},
 		{
-			name:  "testUserID2 自身を比べて等しい事を確認するテスト",
+			title: "testUserID2 自身を比べて等しい事を確認するテスト",
 			isErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 
 			testUserID1, err := NewUserID()
@@ -45,7 +45,7 @@ func TestNewUserID_check(t *testing.T) {
 
 			// テストケース名に応じて、比較するUserIDを決定
 			var compare1, compare2 UserID
-			switch tt.name {
+			switch tt.title {
 			case "testUserID1 と testUserID2 は等しくない事を確認するテスト":
 				compare1 = testUserID1
 				compare2 = testUserID2

@@ -9,22 +9,22 @@ import (
 
 func TestNewSkillYear(t *testing.T) {
 	tests := []struct {
-		name    string
+		title   string
 		years   uint8
 		wantErr bool
 	}{
 		{
-			name:    "zero years",
+			title:   "zero years",
 			years:   0,
 			wantErr: true,
 		},
 		{
-			name:    "over 100 years",
+			title:   "over 100 years",
 			years:   101,
 			wantErr: true,
 		},
 		{
-			name:    "valid years",
+			title:   "valid years",
 			years:   5,
 			wantErr: false,
 		},
@@ -32,7 +32,7 @@ func TestNewSkillYear(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			_, err := userdm.NewSkillYear(tt.years)
 

@@ -9,22 +9,22 @@ import (
 
 func TestNewSkillEvaluation(t *testing.T) {
 	tests := []struct {
-		name       string
+		title      string
 		evaluation uint8
 		wantErr    bool
 	}{
 		{
-			name:       "below minimum",
+			title:      "below minimum",
 			evaluation: 0,
 			wantErr:    true,
 		},
 		{
-			name:       "above maximum",
+			title:      "above maximum",
 			evaluation: 6,
 			wantErr:    true,
 		},
 		{
-			name:       "valid evaluation",
+			title:      "valid evaluation",
 			evaluation: 3,
 			wantErr:    false,
 		},
@@ -32,7 +32,7 @@ func TestNewSkillEvaluation(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt // capture the range variable for parallel execution
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel() // this allows the subtest to run in parallel
 			_, err := userdm.NewSkillEvaluation(tt.evaluation)
 			if tt.wantErr {

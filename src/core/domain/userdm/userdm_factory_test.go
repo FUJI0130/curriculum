@@ -11,7 +11,7 @@ func TestReconstruct(t *testing.T) {
 	validTime := time.Now()
 
 	tests := []struct {
-		name      string
+		title     string
 		id        string
 		email     string
 		password  string
@@ -21,7 +21,7 @@ func TestReconstruct(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name:      "valid user reconstruction",
+			title:     "valid user reconstruction",
 			id:        "550e8400-e29b-41d4-a716-446655440000",
 			email:     "test@example.com",
 			password:  "someValidPassword",
@@ -31,7 +31,7 @@ func TestReconstruct(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name:    "invalid email format",
+			title:   "invalid email format",
 			id:      "550e8400-e29b-41d4-a716-446655440000",
 			email:   "invalidEmail",
 			wantErr: true,
@@ -41,9 +41,9 @@ func TestReconstruct(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
-			_, err := Reconstruct(tt.id, tt.name, tt.email, tt.password, tt.profile, tt.createdAt)
+			_, err := Reconstruct(tt.id, tt.title, tt.email, tt.password, tt.profile, tt.createdAt)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -57,21 +57,21 @@ func TestReconstruct(t *testing.T) {
 func TestGenWhenCreate(t *testing.T) {
 
 	tests := []struct {
-		name     string
+		title    string
 		email    string
 		password string
 		profile  string
 		wantErr  bool
 	}{
 		{
-			name:     "valid user generation",
+			title:    "valid user generation",
 			email:    "test@example.com",
 			password: "someValidPassword",
 			profile:  "validProfile",
 			wantErr:  false,
 		},
 		{
-			name:    "empty profile",
+			title:   "empty profile",
 			email:   "test@example.com",
 			profile: "",
 			wantErr: true,
@@ -81,7 +81,7 @@ func TestGenWhenCreate(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 			_, err := GenWhenCreate("TestName", tt.email, tt.password, tt.profile, []SkillParam{}, []CareerParam{})
 
@@ -97,19 +97,19 @@ func TestGenWhenCreate(t *testing.T) {
 func TestTestNewUser(t *testing.T) {
 
 	tests := []struct {
-		name    string
+		title   string
 		id      string
 		email   string
 		wantErr bool
 	}{
 		{
-			name:    "valid test user",
+			title:   "valid test user",
 			id:      "550e8400-e29b-41d4-a716-446655440000",
 			email:   "test@example.com",
 			wantErr: false,
 		},
 		{
-			name:    "invalid email format",
+			title:   "invalid email format",
 			id:      "550e8400-e29b-41d4-a716-446655440000",
 			email:   "invalidEmail",
 			wantErr: true,
@@ -119,7 +119,7 @@ func TestTestNewUser(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 			_, err := TestNewUser(tt.id, "TestName", tt.email)
 			if tt.wantErr {

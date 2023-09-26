@@ -25,13 +25,13 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 	ctx := context.TODO()
 
 	tests := []struct {
-		name     string
+		title    string
 		input    *userapp.CreateUserRequest
 		mockFunc func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService)
 		wantErr  error
 	}{
 		{
-			name: "ユーザー新規作成",
+			title: "ユーザー新規作成",
 			input: &userapp.CreateUserRequest{
 				Name:     mockName,
 				Email:    mockEmail,
@@ -50,7 +50,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "存在するユーザーを作成",
+			title: "存在するユーザーを作成",
 			input: &userapp.CreateUserRequest{
 				Name:     mockName,
 				Email:    mockEmail,
@@ -62,7 +62,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			wantErr: userapp.ErrUserNameAlreadyExists,
 		},
 		{
-			name: "タグの新規作成",
+			title: "タグの新規作成",
 			input: &userapp.CreateUserRequest{
 				Name:     mockName,
 				Email:    mockEmail,
@@ -81,7 +81,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "既存のタグを使用してユーザーを作成",
+			title: "既存のタグを使用してユーザーを作成",
 			input: &userapp.CreateUserRequest{
 				Name:     mockName,
 				Email:    mockEmail,
@@ -101,7 +101,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "ユーザーが同じスキルタグを複数回持つ場合",
+			title: "ユーザーが同じスキルタグを複数回持つ場合",
 			input: &userapp.CreateUserRequest{
 				Name:     mockName,
 				Email:    mockEmail,
@@ -123,7 +123,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 
 			ctrl := gomock.NewController(t)

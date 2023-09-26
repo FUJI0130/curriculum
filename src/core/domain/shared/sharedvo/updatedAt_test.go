@@ -8,30 +8,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewUpdatedAt(t *testing.T) {
+func TestNewUpdatedAtByVal(t *testing.T) {
 	// validTime := time.Now().Add(time.Hour)
 	// validTime := time.Now().Add(0)
 	validTime := time.Now().Add(time.Millisecond)
+	pastTime := time.Now().Add(-time.Hour * 24)
 	tests := []struct {
-		name      string
+		title     string
 		input     time.Time
 		want      UpdatedAt
 		wantError error
 	}{
 		{
-			name:      "時間が０",
+			title:     "時間が０",
 			input:     time.Time{},
 			want:      UpdatedAt(time.Time{}),
 			wantError: errors.New("UpdatedAt cannot be zero value"),
 		},
 		{
-			name:      "過去の時間の場合のテスト",
-			input:     time.Now().Add(-time.Hour * 24),
-			want:      UpdatedAt(time.Time{}),
-			wantError: errors.New("UpdatedAt cannot be past date"),
+			title:     "過去の時間の場合のテスト",
+			input:     pastTime,
+			want:      UpdatedAt(pastTime),
+			wantError: nil,
 		},
 		{
-			name:      "有効な時間の場合のテスト",
+			title:     "有効な時間の場合のテスト",
 			input:     validTime,
 			want:      (UpdatedAt)(validTime),
 			wantError: nil,
@@ -40,7 +41,7 @@ func TestNewUpdatedAt(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 			got, err := NewUpdatedAtByVal(tt.input)
 
@@ -60,19 +61,19 @@ func TestNewUpdatedAt(t *testing.T) {
 func TestUpdatedAt_Equal(t *testing.T) {
 	now := time.Now()
 	tests := []struct {
-		name   string
+		title  string
 		u1     UpdatedAt
 		u2     UpdatedAt
 		result bool
 	}{
 		{
-			name:   "等しい場合のテスト",
+			title:  "等しい場合のテスト",
 			u1:     UpdatedAt(now),
 			u2:     UpdatedAt(now),
 			result: true,
 		},
 		{
-			name:   "等しくない場合のテスト",
+			title:  "等しくない場合のテスト",
 			u1:     UpdatedAt(now),
 			u2:     UpdatedAt(now.Add(time.Hour)),
 			result: false,
@@ -81,7 +82,7 @@ func TestUpdatedAt_Equal(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 			got := tt.u1.Equal(tt.u2)
 			assert.Equal(t, tt.result, got)
