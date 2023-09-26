@@ -2,14 +2,17 @@
 
 package userdm
 
-import "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+import (
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+)
 
 type SkillEvaluation uint8
 
 // スキルの評価は1から10の間とします。
 
 func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
-	if value < customerrors.MinSkillEvaluationValue || value > customerrors.MaxSkillEvaluationValue {
+	if value < constants.MinSkillEvaluationValue || value > constants.MaxSkillEvaluationValue {
 		return 0, customerrors.ErrSkillEvaluationOutOfRange(value)
 	}
 

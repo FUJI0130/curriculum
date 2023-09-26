@@ -8,6 +8,8 @@ package userdm
 import (
 	"context"
 	"errors"
+
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 )
 
 type ExistByNameDomainService interface {
@@ -26,8 +28,7 @@ func NewExistByNameDomainService(userRepo UserRepository) *existByNameDomainServ
 func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool, error) {
 	existingUser, err := ds.userRepo.FindByName(ctx, name)
 	if err != nil {
-		// if errors.Is(err, userdm.ErrUserNotFound) {
-		if errors.Is(err, ErrUserNotFound) {
+		if errors.Is(err, customerrors.ErrUserNotFound()) {
 			return false, nil
 		}
 		return false, err

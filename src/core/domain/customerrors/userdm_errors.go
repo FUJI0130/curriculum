@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/FUJI0130/curriculum/src/core/common/base"
+	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
 )
+
+//career
 
 type CareerError struct {
 	base.BaseError
@@ -26,7 +29,7 @@ func ErrInvalidCareerIDFormat(id string) error {
 	}
 }
 
-// customerrors/userdm_errors.go
+//Skill
 
 type SkillError struct {
 	base.BaseError
@@ -52,8 +55,6 @@ func ErrInvalidSkillYear(year uint8) error {
 	}
 }
 
-// customerrors/userdm_errors.go
-
 type SkillYearError struct {
 	base.BaseError
 }
@@ -78,8 +79,6 @@ func ErrSkillYearTooLong() error {
 	}
 }
 
-// customerrors/userdm_errors.go
-
 type SkillIDError struct {
 	base.BaseError
 }
@@ -94,12 +93,6 @@ func ErrInvalidSkillIDFormat() error {
 	}
 }
 
-// customerrors/userdm_errors.go
-const (
-	MinSkillEvaluationValue = 1
-	MaxSkillEvaluationValue = 5
-)
-
 type SkillEvaluationError struct {
 	base.BaseError
 }
@@ -107,9 +100,144 @@ type SkillEvaluationError struct {
 func ErrSkillEvaluationOutOfRange(value uint8) error {
 	return &SkillEvaluationError{
 		BaseError: *base.NewBaseError(
-			fmt.Sprintf("SkillEvaluation must be between %d and %d", MinSkillEvaluationValue, MaxSkillEvaluationValue),
+			fmt.Sprintf("SkillEvaluation must be between %d and %d", constants.MinSkillEvaluationValue, constants.MaxSkillEvaluationValue),
 			400,
 			fmt.Sprintf("Evaluation provided: %d", value),
+		),
+	}
+}
+
+// user
+type UserIDError struct {
+	base.BaseError
+}
+
+func ErrInvalidUserIDFormat() error {
+	return &UserIDError{
+		BaseError: *base.NewBaseError(
+			"Invalid user ID format provided",
+			400,
+			"Invalid UUID format",
+		),
+	}
+}
+
+type UserEmailError struct {
+	base.BaseError
+}
+
+func ErrUserEmailEmpty() error {
+	return &UserEmailError{
+		BaseError: *base.NewBaseError(
+			"UserEmail cannot be empty",
+			400,
+			"Provided email is empty",
+		),
+	}
+}
+
+func ErrUserEmailTooLong() error {
+	return &UserEmailError{
+		BaseError: *base.NewBaseError(
+			"UserEmail length over maximum allowed length",
+			400,
+			"Provided email exceeds the maximum length",
+		),
+	}
+}
+
+func ErrUserEmailInvalidFormat() error {
+	return &UserEmailError{
+		BaseError: *base.NewBaseError(
+			"UserEmail format is invalid",
+			400,
+			"Invalid email format",
+		),
+	}
+}
+
+type UserPasswordError struct {
+	base.BaseError
+}
+
+func ErrUserPasswordEmpty() error {
+	return &UserPasswordError{
+		BaseError: *base.NewBaseError(
+			"UserPassword cannot be empty",
+			400,
+			"Provided password is empty",
+		),
+	}
+}
+
+func ErrUserPasswordTooLong() error {
+	return &UserPasswordError{
+		BaseError: *base.NewBaseError(
+			"UserPassword length over maximum allowed length",
+			400,
+			"Provided password exceeds the maximum length",
+		),
+	}
+}
+
+func ErrUserPasswordTooShort() error {
+	return &UserPasswordError{
+		BaseError: *base.NewBaseError(
+			"UserPassword length under minimum required length",
+			400,
+			"Provided password is too short",
+		),
+	}
+}
+
+type UserProfileError struct {
+	base.BaseError
+}
+
+func ErrUserProfileEmpty() error {
+	return &UserProfileError{
+		BaseError: *base.NewBaseError(
+			"User profile cannot be empty",
+			400,
+			"Provided profile is empty",
+		),
+	}
+}
+
+func ErrUserProfileTooLong() error {
+	return &UserProfileError{
+		BaseError: *base.NewBaseError(
+			"User profile length over maximum allowed length",
+			400,
+			"Provided profile exceeds the maximum length",
+		),
+	}
+}
+
+type UserNotFoundError struct {
+	base.BaseError
+}
+
+func ErrUserNotFound() error {
+	return &UserNotFoundError{
+		BaseError: *base.NewBaseError(
+			"User could not be found in the database",
+			404,
+			"User not found",
+		),
+	}
+}
+
+type UserNameAlreadyExistsError struct {
+	base.BaseError
+}
+
+func ErrUserNameAlreadyExists(name string) error {
+	return &UserNameAlreadyExistsError{
+		BaseError: *base.NewBaseError(
+			fmt.Sprintf("Name provided: %s", name),
+			400,
+			"User name already exists",
 		),
 	}
 }

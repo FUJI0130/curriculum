@@ -13,8 +13,7 @@ func NewCareerID() (CareerID, error) {
 		// もしUUIDの生成が失敗した場合に新しいカスタムエラーを返す
 		return CareerID(""), customerrors.ErrInvalidCareerIDFormat(err.Error())
 	}
-	careerIDValueObject := CareerID(careerID.String())
-	return careerIDValueObject, nil
+	return CareerID(careerID.String()), nil
 }
 
 func (id CareerID) String() string {
