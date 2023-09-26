@@ -1,7 +1,9 @@
 package customerrors
 
 import (
+	"errors"
 	"fmt"
+	"testing"
 
 	"github.com/FUJI0130/curriculum/src/core/common/base"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
@@ -218,6 +220,14 @@ type UserNotFoundError struct {
 	base.BaseError
 }
 
+func (e *UserNotFoundError) Unwrap() error {
+	return &e.BaseError
+}
+func (e *UserNotFoundError) Is(target error) bool {
+	_, ok := target.(*UserNotFoundError)
+	return ok
+}
+
 func ErrUserNotFound() error {
 	return &UserNotFoundError{
 		BaseError: *base.NewBaseError(
@@ -225,6 +235,12 @@ func ErrUserNotFound() error {
 			404,
 			"User not found",
 		),
+	}
+}
+func TestErrorIs(t *testing.T) {
+	err := ErrUserNotFound()
+	if !errors.Is(err, ErrUserNotFound()) {
+		t.Fatal("errors.Is did not recognize ErrUserNotFound")
 	}
 }
 

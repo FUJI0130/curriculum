@@ -2,10 +2,11 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+	appErrors "github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	"github.com/gin-gonic/gin"
 )
 
@@ -22,17 +23,22 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(errorcodes.BadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
-		// エラーの種類によってHTTPステータスコードを変更
-
-		if errors.Is(err, userapp.ErrUserNameAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		switch err.(type) {
+		case *appErrors.UserNameAlreadyExistsError:
+			c.JSON(errorcodes.Conflict, gin.H{"error": err.Error()})
+		case *appErrors.TagNameAlreadyExistsError:
+			c.JSON(errorcodes.BadRequest, gin.H{"error": err.Error()})
+		case *appErrors.DuplicateSkillTagError:
+			c.JSON(errorcodes.BadRequest, gin.H{"error": err.Error()})
+		case *appErrors.DatabaseError:
+			c.JSON(errorcodes.InternalServerError, gin.H{"error": err.Error()})
+		default:
+			c.JSON(errorcodes.InternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す
 		}
 		return
 	}

@@ -2,8 +2,8 @@ package userapp
 
 import (
 	"context"
-	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
@@ -48,12 +48,14 @@ type CareersRequest struct {
 
 var test = ""
 
-var ErrUserNameAlreadyExists = errors.New("user name already exists")
-var ErrTagNameAlreadyExists = errors.New("tag name already exists")
+// var ErrUserNameAlreadyExists = errors.New("user name already exists")
+// var ErrTagNameAlreadyExists = errors.New("tag name already exists")
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
+		log.Printf("test")
+		log.Printf("err != nil  after exist_by_name_domain_service  ErrUserNotFound  err is : %s ", err)
 		return customerrors.ErrDatabaseError(fmt.Sprintf("Failed to check existence of user name: %v", err))
 	}
 
