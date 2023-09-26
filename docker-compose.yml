@@ -10,6 +10,10 @@ services:
     container_name: my_app_server
     ports:
       - "8080:8080"
+    volumes:
+      - .:/app # ホストのカレントディレクトリをコンテナの/appディレクトリにマウント
+    environment:
+      - TZ=Asia/Tokyo
   mysql:
     build: 
       context: .
@@ -19,6 +23,7 @@ services:
       - "9999:3306"
     volumes:
       - sql:/var/lib/mysql
+      - ./.docker/my.cnf:/etc/mysql/my.cnf
     environment:
       - MYSQL_DATABASE=sql
       - MYSQL_USER=user

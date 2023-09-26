@@ -1,7 +1,16 @@
 package controllers
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+	"github.com/gin-gonic/gin"
+)
 
-func InitControllers(r *gin.Engine) {
+func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService) {
 	InitHealthController(r)
+	InitCreateUserController(r, createUserService)
+}
+
+func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
+	ctrl := NewCreateUserController(s)
+	r.POST("/users", ctrl.Create)
 }

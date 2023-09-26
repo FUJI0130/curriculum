@@ -3,6 +3,7 @@
   cmd = "go build -o ./main ./src/core/cmd/main.go"
   bin = "./main"
   tmp_dir = "./tmp"
+  delay=1000
 
 
 [watch]
