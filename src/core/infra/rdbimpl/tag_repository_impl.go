@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/common/database_errors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -32,7 +33,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
-		return customerrors.ErrDatabaseError(fmt.Sprintf("Failed to store tag: %v", err))
+		return database_errors.ErrDatabaseError(fmt.Sprintf("Failed to store tag: %v", err))
 	}
 
 	return nil

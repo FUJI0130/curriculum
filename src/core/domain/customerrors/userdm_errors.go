@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/FUJI0130/curriculum/src/core/common/base"
+	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
 )
 
@@ -17,7 +18,7 @@ type CareerError struct {
 
 func ErrInvalidCareerDetail(detail string) error {
 	return &CareerError{
-		BaseError: *base.NewBaseError("Invalid career detail provided", 400, "Detail provided: "+detail),
+		BaseError: *base.NewBaseError("Invalid career detail provided", errorcodes.BadRequest, "Detail provided: "+detail),
 	}
 }
 
@@ -27,7 +28,7 @@ type CareerIDError struct {
 
 func ErrInvalidCareerIDFormat(id string) error {
 	return &CareerIDError{
-		BaseError: *base.NewBaseError("Invalid career ID format provided", 400, "ID provided: "+id),
+		BaseError: *base.NewBaseError("Invalid career ID format provided", errorcodes.BadRequest, "ID provided: "+id),
 	}
 }
 
@@ -41,7 +42,7 @@ func ErrInvalidSkillEvaluation(value uint8) error {
 	return &SkillError{
 		BaseError: *base.NewBaseError(
 			"Invalid skill evaluation provided",
-			400,
+			errorcodes.BadRequest,
 			fmt.Sprintf("Evaluation provided: %d", value),
 		),
 	}
@@ -51,7 +52,7 @@ func ErrInvalidSkillYear(year uint8) error {
 	return &SkillError{
 		BaseError: *base.NewBaseError(
 			"Invalid skill year provided",
-			400,
+			errorcodes.BadRequest,
 			fmt.Sprintf("Year provided: %d", year),
 		),
 	}
@@ -65,7 +66,7 @@ func ErrSkillYearZeroOrNegative() error {
 	return &SkillYearError{
 		BaseError: *base.NewBaseError(
 			"SkillYear cannot be zero or negative value",
-			400,
+			errorcodes.BadRequest,
 			"SkillYear should be a positive value",
 		),
 	}
@@ -75,7 +76,7 @@ func ErrSkillYearTooLong() error {
 	return &SkillYearError{
 		BaseError: *base.NewBaseError(
 			"SkillYear is too long",
-			400,
+			errorcodes.BadRequest,
 			"SkillYear should be less than or equal to 100",
 		),
 	}
@@ -89,7 +90,7 @@ func ErrInvalidSkillIDFormat() error {
 	return &SkillIDError{
 		BaseError: *base.NewBaseError(
 			"Invalid skill ID format provided",
-			400,
+			errorcodes.BadRequest,
 			"Invalid UUID format",
 		),
 	}
@@ -103,7 +104,7 @@ func ErrSkillEvaluationOutOfRange(value uint8) error {
 	return &SkillEvaluationError{
 		BaseError: *base.NewBaseError(
 			fmt.Sprintf("SkillEvaluation must be between %d and %d", constants.MinSkillEvaluationValue, constants.MaxSkillEvaluationValue),
-			400,
+			errorcodes.BadRequest,
 			fmt.Sprintf("Evaluation provided: %d", value),
 		),
 	}
@@ -118,7 +119,7 @@ func ErrInvalidUserIDFormat() error {
 	return &UserIDError{
 		BaseError: *base.NewBaseError(
 			"Invalid user ID format provided",
-			400,
+			errorcodes.BadRequest,
 			"Invalid UUID format",
 		),
 	}
@@ -132,7 +133,7 @@ func ErrUserEmailEmpty() error {
 	return &UserEmailError{
 		BaseError: *base.NewBaseError(
 			"UserEmail cannot be empty",
-			400,
+			errorcodes.BadRequest,
 			"Provided email is empty",
 		),
 	}
@@ -142,7 +143,7 @@ func ErrUserEmailTooLong() error {
 	return &UserEmailError{
 		BaseError: *base.NewBaseError(
 			"UserEmail length over maximum allowed length",
-			400,
+			errorcodes.BadRequest,
 			"Provided email exceeds the maximum length",
 		),
 	}
@@ -152,7 +153,7 @@ func ErrUserEmailInvalidFormat() error {
 	return &UserEmailError{
 		BaseError: *base.NewBaseError(
 			"UserEmail format is invalid",
-			400,
+			errorcodes.BadRequest,
 			"Invalid email format",
 		),
 	}
@@ -166,7 +167,7 @@ func ErrUserPasswordEmpty() error {
 	return &UserPasswordError{
 		BaseError: *base.NewBaseError(
 			"UserPassword cannot be empty",
-			400,
+			errorcodes.BadRequest,
 			"Provided password is empty",
 		),
 	}
@@ -176,7 +177,7 @@ func ErrUserPasswordTooLong() error {
 	return &UserPasswordError{
 		BaseError: *base.NewBaseError(
 			"UserPassword length over maximum allowed length",
-			400,
+			errorcodes.BadRequest,
 			"Provided password exceeds the maximum length",
 		),
 	}
@@ -186,7 +187,7 @@ func ErrUserPasswordTooShort() error {
 	return &UserPasswordError{
 		BaseError: *base.NewBaseError(
 			"UserPassword length under minimum required length",
-			400,
+			errorcodes.BadRequest,
 			"Provided password is too short",
 		),
 	}
@@ -200,7 +201,7 @@ func ErrUserProfileEmpty() error {
 	return &UserProfileError{
 		BaseError: *base.NewBaseError(
 			"User profile cannot be empty",
-			400,
+			errorcodes.BadRequest,
 			"Provided profile is empty",
 		),
 	}
@@ -210,7 +211,7 @@ func ErrUserProfileTooLong() error {
 	return &UserProfileError{
 		BaseError: *base.NewBaseError(
 			"User profile length over maximum allowed length",
-			400,
+			errorcodes.BadRequest,
 			"Provided profile exceeds the maximum length",
 		),
 	}
@@ -229,19 +230,16 @@ func (e *UserNotFoundError) Is(target error) bool {
 	return ok
 }
 
-// シングルトンインスタンスとしてのエラー
-var userNotFoundError = &UserNotFoundError{
-	BaseError: *base.NewBaseError(
-		"User could not be found in the database",
-		404,
-		"User not found",
-	),
+func ErrUserNotFound() error {
+	return &UserNotFoundError{
+		BaseError: *base.NewBaseError(
+			"User could not be found in the database",
+			errorcodes.NotFound,
+			"User not found",
+		),
+	}
 }
 
-// ErrUserNotFoundは常に上で定義したシングルトンインスタンスを返します。
-func ErrUserNotFound() error {
-	return userNotFoundError
-}
 func TestErrorIs(t *testing.T) {
 	err := ErrUserNotFound()
 	if !errors.Is(err, ErrUserNotFound()) {
@@ -257,7 +255,7 @@ func ErrUserNameAlreadyExists(name string) error {
 	return &UserNameAlreadyExistsError{
 		BaseError: *base.NewBaseError(
 			fmt.Sprintf("Name provided: %s", name),
-			400,
+			errorcodes.BadRequest,
 			"User name already exists",
 		),
 	}

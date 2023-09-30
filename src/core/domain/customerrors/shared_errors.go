@@ -2,6 +2,7 @@ package customerrors
 
 import (
 	"github.com/FUJI0130/curriculum/src/core/common/base"
+	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 )
 
 //createdAt
@@ -14,7 +15,7 @@ func ErrCreatedAtZeroValue() error {
 	return &CreatedAtError{
 		BaseError: *base.NewBaseError(
 			"CreatedAt cannot be zero value",
-			400,
+			errorcodes.BadRequest,
 			"Provided CreatedAt value is zero",
 		),
 	}
@@ -24,7 +25,7 @@ func ErrCreatedAtFutureValue() error {
 	return &CreatedAtError{
 		BaseError: *base.NewBaseError(
 			"CreatedAt cannot be future date",
-			400,
+			errorcodes.BadRequest,
 			"Provided CreatedAt value is in the future",
 		),
 	}
@@ -40,7 +41,7 @@ func ErrUpdatedAtZeroValue() error {
 	return &UpdatedAtError{
 		BaseError: *base.NewBaseError(
 			"UpdatedAt cannot be zero value",
-			400,
+			errorcodes.BadRequest,
 			"Provided UpdatedAt value is zero",
 		),
 	}

@@ -6,7 +6,8 @@ import (
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
-	"github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
@@ -59,7 +60,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(true, nil)
 			},
-			wantErr: customerrors.ErrUserNameAlreadyExists(mockName),
+			wantErr: domainErrors.ErrUserNameAlreadyExists(mockName),
 		},
 		{
 			title: "タグの新規作成",

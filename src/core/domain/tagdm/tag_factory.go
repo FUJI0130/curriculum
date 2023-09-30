@@ -16,10 +16,10 @@ type TagParam struct {
 // GenWhenCreateTag creates a new tag with the given parameters.
 func GenWhenCreateTag(name string) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.ErrTagNameEmpty() // カスタムエラーに差し替え
+		return nil, customerrors.ErrTagNameEmpty()
 	}
 	if utf8.RuneCountInString(name) > constants.NameMaxLength {
-		return nil, customerrors.ErrTagNameTooLong() // カスタムエラーに差し替え
+		return nil, customerrors.ErrTagNameTooLong()
 	}
 	tagID, err := NewTagID()
 	if err != nil {
@@ -39,10 +39,10 @@ func GenWhenCreateTag(name string) (*Tag, error) {
 // TestNewTag is a function for testing purposes and creates a tag with predefined values.
 func TestNewTag(id string, name string) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.ErrTagNameEmpty() // カスタムエラーに差し替え
+		return nil, customerrors.ErrTagNameEmpty()
 	}
 	if utf8.RuneCountInString(name) > constants.NameMaxLength {
-		return nil, customerrors.ErrTagNameTooLong() // カスタムエラーに差し替え
+		return nil, customerrors.ErrTagNameTooLong()
 	}
 	tagID, err := NewTagIDFromString(id)
 	if err != nil {

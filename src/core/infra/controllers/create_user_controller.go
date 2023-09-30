@@ -5,8 +5,9 @@ import (
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
-	appErrors "github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
+	databaseErrors "github.com/FUJI0130/curriculum/src/core/common/database_errors"
 	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
+	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,13 +30,13 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		switch err.(type) {
-		case *appErrors.UserNameAlreadyExistsError:
+		case *domainErrors.UserNameAlreadyExistsError:
 			c.JSON(errorcodes.Conflict, gin.H{"error": err.Error()})
-		case *appErrors.TagNameAlreadyExistsError:
+		case *domainErrors.TagNameAlreadyExistsError:
 			c.JSON(errorcodes.BadRequest, gin.H{"error": err.Error()})
-		case *appErrors.DuplicateSkillTagError:
+		case *domainErrors.DuplicateSkillTagError:
 			c.JSON(errorcodes.BadRequest, gin.H{"error": err.Error()})
-		case *appErrors.DatabaseError:
+		case *databaseErrors.DatabaseError:
 			c.JSON(errorcodes.InternalServerError, gin.H{"error": err.Error()})
 		default:
 			c.JSON(errorcodes.InternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す

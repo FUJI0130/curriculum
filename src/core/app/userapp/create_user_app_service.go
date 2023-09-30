@@ -6,7 +6,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/app/userapp/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/common/database_errors"
+	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 )
@@ -48,19 +49,16 @@ type CareersRequest struct {
 
 var test = ""
 
-// var ErrUserNameAlreadyExists = errors.New("user name already exists")
-// var ErrTagNameAlreadyExists = errors.New("tag name already exists")
-
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
 		log.Printf("test")
 		log.Printf("err != nil  after exist_by_name_domain_service  ErrUserNotFound  err is : %s ", err)
-		return customerrors.ErrDatabaseError(fmt.Sprintf("Failed to check existence of user name: %v", err))
+		return database_errors.ErrDatabaseError(fmt.Sprintf("Failed to check existence of user name: %v", err))
 	}
 
 	if isExist {
-		return customerrors.ErrUserNameAlreadyExists(req.Name)
+		return domainErrors.ErrUserNameAlreadyExists(req.Name)
 	}
 
 	// 全てのタグ名を一度に取得するためのスライスの作成
@@ -86,7 +84,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return customerrors.ErrDuplicateSkillTag(s.TagName)
+			return domainErrors.ErrDuplicateSkillTag(s.TagName)
 		}
 		seenSkills[s.TagName] = true
 

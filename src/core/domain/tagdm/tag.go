@@ -16,7 +16,7 @@ type Tag struct {
 
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.ErrTagNameEmpty() // カスタムエラーに差し替え
+		return nil, customerrors.ErrTagNameEmpty()
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
