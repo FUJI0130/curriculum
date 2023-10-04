@@ -1,21 +1,21 @@
 package base
 
 type ErrorDetails struct {
-	Message     string
-	StatusCode  int
-	Description string
+	Message    string
+	StatusCode int
+	Trace      error
 }
 
 type BaseError struct {
 	details ErrorDetails
 }
 
-func NewBaseError(message string, statusCode int, description string) *BaseError {
+func NewBaseError(message string, statusCode int, trace error) *BaseError {
 	return &BaseError{
 		details: ErrorDetails{
-			Message:     message,
-			StatusCode:  statusCode,
-			Description: description,
+			Message:    message,
+			StatusCode: statusCode,
+			Trace:      trace,
 		},
 	}
 }

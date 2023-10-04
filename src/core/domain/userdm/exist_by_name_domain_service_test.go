@@ -43,10 +43,10 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			title:     "Service error",
 			inputName: mockName,
 			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
-				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.ErrUserNotFound()).Times(1)
+				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.ErrUserNotFound(nil)).Times(1)
 			},
 			wantResult: false,
-			wantErr:    customerrors.ErrUserNotFound(),
+			wantErr:    customerrors.ErrUserNotFound(nil),
 		},
 	}
 

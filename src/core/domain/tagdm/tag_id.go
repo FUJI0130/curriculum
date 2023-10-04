@@ -10,7 +10,7 @@ type TagID string
 func NewTagID() (TagID, error) {
 	tagID, err := uuid.NewRandom()
 	if err != nil {
-		return TagID(""), customerrors.ErrInvalidTagIDFormat() // カスタムエラーに差し替え
+		return TagID(""), customerrors.ErrInvalidTagIDFormat(nil, "NewTagID") // カスタムエラーに差し替え
 	}
 	return TagID(tagID.String()), nil
 }
@@ -18,7 +18,7 @@ func NewTagIDFromString(idStr string) (TagID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", customerrors.ErrInvalidTagIDFormat() // カスタムエラーに差し替え
+		return "", customerrors.ErrInvalidTagIDFormat(nil, "NewTagIDFromString") // カスタムエラーに差し替え
 	}
 	return TagID(idStr), nil
 }

@@ -8,8 +8,8 @@ import (
 )
 
 func TestErrorIs(t *testing.T) {
-	err := customerrors.ErrUserNotFound()
-	if !errors.Is(err, customerrors.ErrUserNotFound()) {
+	err := customerrors.ErrUserNotFound(nil, "TestErrorIs")
+	if !errors.Is(err, customerrors.ErrUserNotFound(err, "TestErrorIs")) {
 		t.Fatal("errors.Is did not recognize ErrUserNotFound")
 	}
 }

@@ -8,17 +8,22 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm/constants"
 )
 
-// Tag errors
 type TagIDError struct {
 	base.BaseError
 }
 
-func ErrInvalidTagIDFormat() error {
+func ErrInvalidTagIDFormat(cause error, customMsg ...string) error {
+	fullMessage := "Invalid tag ID format provided"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &TagIDError{
 		BaseError: *base.NewBaseError(
-			"Invalid tag ID format provided",
+			fullMessage,
 			errorcodes.BadRequest,
-			"Invalid UUID format",
+			cause,
 		),
 	}
 }
@@ -27,12 +32,18 @@ type TagNameError struct {
 	base.BaseError
 }
 
-func ErrTagNameEmpty() error {
+func ErrTagNameEmpty(cause error, customMsg ...string) error {
+	fullMessage := "Tag name cannot be empty"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &TagNameError{
 		BaseError: *base.NewBaseError(
-			"Tag name cannot be empty",
+			fullMessage,
 			errorcodes.BadRequest,
-			"Provided tag name is empty",
+			cause,
 		),
 	}
 }
@@ -41,12 +52,18 @@ type TagNameTooLongError struct {
 	base.BaseError
 }
 
-func ErrTagNameTooLong() error {
+func ErrTagNameTooLong(cause error, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Tag name must be less than or equal to %d characters", constants.NameMaxLength)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &TagNameTooLongError{
 		BaseError: *base.NewBaseError(
-			"Tag name is too long",
+			fullMessage,
 			errorcodes.BadRequest,
-			fmt.Sprintf("Tag name must be less than or equal to %d characters", constants.NameMaxLength),
+			cause,
 		),
 	}
 }
@@ -55,12 +72,18 @@ type TagNameAlreadyExistsError struct {
 	base.BaseError
 }
 
-func ErrTagNameAlreadyExists(name string) error {
+func ErrTagNameAlreadyExists(cause error, name string, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Tag name provided: %s", name)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &TagNameAlreadyExistsError{
 		BaseError: *base.NewBaseError(
-			fmt.Sprintf("Tag name provided: %s", name),
+			fullMessage,
 			errorcodes.BadRequest,
-			"Tag name already exists",
+			cause,
 		),
 	}
 }
@@ -69,12 +92,18 @@ type DuplicateSkillTagError struct {
 	base.BaseError
 }
 
-func ErrDuplicateSkillTag(name string) error {
+func ErrDuplicateSkillTag(cause error, name string, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Duplicate skill tag provided: %s", name)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &DuplicateSkillTagError{
 		BaseError: *base.NewBaseError(
-			fmt.Sprintf("Duplicate skill tag provided: %s", name),
+			fullMessage,
 			errorcodes.BadRequest,
-			"Cannot have duplicate skill tags",
+			cause,
 		),
 	}
 }

@@ -60,7 +60,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(true, nil)
 			},
-			wantErr: domainErrors.ErrUserNameAlreadyExists(mockName),
+			wantErr: domainErrors.ErrUserNameAlreadyExists(nil, mockName, "TestCreateUserAppService_Exec 存在するユーザーを作成"),
 		},
 		{
 			title: "タグの新規作成",
@@ -118,7 +118,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName, mockTagName}).Return([]*tagdm.Tag{existingTag, existingTag}, nil).Times(1)
 
 			},
-			wantErr: customerrors.ErrDuplicateSkillTag(mockTagName), // 期待されるエラーメッセージ
+			wantErr: customerrors.ErrDuplicateSkillTag(nil, mockTagName, "TestCreateUserAppService_Exec  ユーザーが同じスキルタグを複数持つ場合"), // 期待されるエラーメッセージ
 		},
 	}
 

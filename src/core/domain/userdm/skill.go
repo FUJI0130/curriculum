@@ -21,12 +21,12 @@ type Skill struct {
 func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
-		return nil, customerrors.ErrInvalidSkillEvaluation(evaluation)
+		return nil, customerrors.ErrInvalidSkillEvaluation(err, evaluation, "NewSkill")
 	}
 
 	y, err := NewSkillYear(years)
 	if err != nil {
-		return nil, customerrors.ErrInvalidSkillYear(years)
+		return nil, customerrors.ErrInvalidSkillYear(err, years, "NewSkill")
 	}
 
 	skillCreatedAt := sharedvo.NewCreatedAt()

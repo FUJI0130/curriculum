@@ -16,9 +16,15 @@ type CareerError struct {
 	base.BaseError
 }
 
-func ErrInvalidCareerDetail(detail string) error {
+func ErrInvalidCareerDetail(cause error, customMsg ...string) error {
+	fullMessage := "Invalid career detail provided"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &CareerError{
-		BaseError: *base.NewBaseError("Invalid career detail provided", errorcodes.BadRequest, "Detail provided: "+detail),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -26,9 +32,15 @@ type CareerIDError struct {
 	base.BaseError
 }
 
-func ErrInvalidCareerIDFormat(id string) error {
+func ErrInvalidCareerIDFormat(cause error, customMsg ...string) error {
+	fullMessage := "Invalid career ID format provided"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &CareerIDError{
-		BaseError: *base.NewBaseError("Invalid career ID format provided", errorcodes.BadRequest, "ID provided: "+id),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -38,23 +50,27 @@ type SkillError struct {
 	base.BaseError
 }
 
-func ErrInvalidSkillEvaluation(value uint8) error {
+func ErrInvalidSkillEvaluation(cause error, value uint8, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Invalid skill evaluation provided: %d", value)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillError{
-		BaseError: *base.NewBaseError(
-			"Invalid skill evaluation provided",
-			errorcodes.BadRequest,
-			fmt.Sprintf("Evaluation provided: %d", value),
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrInvalidSkillYear(year uint8) error {
+func ErrInvalidSkillYear(cause error, year uint8, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Invalid skill year provided: %d", year)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillError{
-		BaseError: *base.NewBaseError(
-			"Invalid skill year provided",
-			errorcodes.BadRequest,
-			fmt.Sprintf("Year provided: %d", year),
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -62,23 +78,27 @@ type SkillYearError struct {
 	base.BaseError
 }
 
-func ErrSkillYearZeroOrNegative() error {
+func ErrSkillYearZeroOrNegative(cause error, customMsg ...string) error {
+	fullMessage := "SkillYear cannot be zero or negative value"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillYearError{
-		BaseError: *base.NewBaseError(
-			"SkillYear cannot be zero or negative value",
-			errorcodes.BadRequest,
-			"SkillYear should be a positive value",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrSkillYearTooLong() error {
+func ErrSkillYearTooLong(cause error, customMsg ...string) error {
+	fullMessage := "SkillYear is too long"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillYearError{
-		BaseError: *base.NewBaseError(
-			"SkillYear is too long",
-			errorcodes.BadRequest,
-			"SkillYear should be less than or equal to 100",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -86,13 +106,15 @@ type SkillIDError struct {
 	base.BaseError
 }
 
-func ErrInvalidSkillIDFormat() error {
+func ErrInvalidSkillIDFormat(cause error, customMsg ...string) error {
+	fullMessage := "Invalid skill ID format provided"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillIDError{
-		BaseError: *base.NewBaseError(
-			"Invalid skill ID format provided",
-			errorcodes.BadRequest,
-			"Invalid UUID format",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -100,13 +122,15 @@ type SkillEvaluationError struct {
 	base.BaseError
 }
 
-func ErrSkillEvaluationOutOfRange(value uint8) error {
+func ErrSkillEvaluationOutOfRange(cause error, value uint8, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("SkillEvaluation must be between %d and %d", constants.MinSkillEvaluationValue, constants.MaxSkillEvaluationValue)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &SkillEvaluationError{
-		BaseError: *base.NewBaseError(
-			fmt.Sprintf("SkillEvaluation must be between %d and %d", constants.MinSkillEvaluationValue, constants.MaxSkillEvaluationValue),
-			errorcodes.BadRequest,
-			fmt.Sprintf("Evaluation provided: %d", value),
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -115,13 +139,15 @@ type UserIDError struct {
 	base.BaseError
 }
 
-func ErrInvalidUserIDFormat() error {
+func ErrInvalidUserIDFormat(cause error, customMsg ...string) error {
+	fullMessage := "Invalid user ID format provided"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserIDError{
-		BaseError: *base.NewBaseError(
-			"Invalid user ID format provided",
-			errorcodes.BadRequest,
-			"Invalid UUID format",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -129,33 +155,39 @@ type UserEmailError struct {
 	base.BaseError
 }
 
-func ErrUserEmailEmpty() error {
+func ErrUserEmailEmpty(cause error, customMsg ...string) error {
+	fullMessage := "UserEmail cannot be empty"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserEmailError{
-		BaseError: *base.NewBaseError(
-			"UserEmail cannot be empty",
-			errorcodes.BadRequest,
-			"Provided email is empty",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrUserEmailTooLong() error {
+func ErrUserEmailTooLong(cause error, customMsg ...string) error {
+	fullMessage := "UserEmail length over maximum allowed length"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserEmailError{
-		BaseError: *base.NewBaseError(
-			"UserEmail length over maximum allowed length",
-			errorcodes.BadRequest,
-			"Provided email exceeds the maximum length",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrUserEmailInvalidFormat() error {
+func ErrUserEmailInvalidFormat(cause error, customMsg ...string) error {
+	fullMessage := "UserEmail format is invalid"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserEmailError{
-		BaseError: *base.NewBaseError(
-			"UserEmail format is invalid",
-			errorcodes.BadRequest,
-			"Invalid email format",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -163,33 +195,39 @@ type UserPasswordError struct {
 	base.BaseError
 }
 
-func ErrUserPasswordEmpty() error {
+func ErrUserPasswordEmpty(cause error, customMsg ...string) error {
+	fullMessage := "UserPassword cannot be empty"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserPasswordError{
-		BaseError: *base.NewBaseError(
-			"UserPassword cannot be empty",
-			errorcodes.BadRequest,
-			"Provided password is empty",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrUserPasswordTooLong() error {
+func ErrUserPasswordTooLong(cause error, customMsg ...string) error {
+	fullMessage := "UserPassword length over maximum allowed length"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserPasswordError{
-		BaseError: *base.NewBaseError(
-			"UserPassword length over maximum allowed length",
-			errorcodes.BadRequest,
-			"Provided password exceeds the maximum length",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrUserPasswordTooShort() error {
+func ErrUserPasswordTooShort(cause error, customMsg ...string) error {
+	fullMessage := "UserPassword length under minimum required length"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserPasswordError{
-		BaseError: *base.NewBaseError(
-			"UserPassword length under minimum required length",
-			errorcodes.BadRequest,
-			"Provided password is too short",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -197,23 +235,27 @@ type UserProfileError struct {
 	base.BaseError
 }
 
-func ErrUserProfileEmpty() error {
+func ErrUserProfileEmpty(cause error, customMsg ...string) error {
+	fullMessage := "User profile cannot be empty"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserProfileError{
-		BaseError: *base.NewBaseError(
-			"User profile cannot be empty",
-			errorcodes.BadRequest,
-			"Provided profile is empty",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrUserProfileTooLong() error {
+func ErrUserProfileTooLong(cause error, customMsg ...string) error {
+	fullMessage := "User profile length over maximum allowed length"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserProfileError{
-		BaseError: *base.NewBaseError(
-			"User profile length over maximum allowed length",
-			errorcodes.BadRequest,
-			"Provided profile exceeds the maximum length",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }
 
@@ -230,19 +272,22 @@ func (e *UserNotFoundError) Is(target error) bool {
 	return ok
 }
 
-func ErrUserNotFound() error {
+func ErrUserNotFound(cause error, customMsg ...string) error {
+	fullMessage := "User could not be found in the database"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserNotFoundError{
-		BaseError: *base.NewBaseError(
-			"User could not be found in the database",
-			errorcodes.NotFound,
-			"User not found",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.NotFound, cause),
 	}
 }
 
+// Test function remains unchanged
 func TestErrorIs(t *testing.T) {
-	err := ErrUserNotFound()
-	if !errors.Is(err, ErrUserNotFound()) {
+	err := ErrUserNotFound(nil)
+	if !errors.Is(err, ErrUserNotFound(nil)) {
 		t.Fatal("errors.Is did not recognize ErrUserNotFound")
 	}
 }
@@ -251,12 +296,14 @@ type UserNameAlreadyExistsError struct {
 	base.BaseError
 }
 
-func ErrUserNameAlreadyExists(name string) error {
+func ErrUserNameAlreadyExists(cause error, name string, customMsg ...string) error {
+	fullMessage := fmt.Sprintf("Name provided: %s", name)
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	} else if cause != nil {
+		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
+	}
 	return &UserNameAlreadyExistsError{
-		BaseError: *base.NewBaseError(
-			fmt.Sprintf("Name provided: %s", name),
-			errorcodes.BadRequest,
-			"User name already exists",
-		),
+		BaseError: *base.NewBaseError(fullMessage, errorcodes.BadRequest, cause),
 	}
 }

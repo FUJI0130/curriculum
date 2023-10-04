@@ -1,7 +1,12 @@
+// src/core/cmd/main.go
+
 package main
 
 import (
+	"fmt"
+
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+	"github.com/FUJI0130/curriculum/src/core/config"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
@@ -12,8 +17,10 @@ import (
 )
 
 func main() {
+	env := config.LoadEnv()
+
 	// DB接続の設定
-	db, err := sqlx.Open("mysql", "user:password@tcp(mysql:3306)/sql?parseTime=True&loc=Local")
+	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", env.DbUser, env.DbPassword, env.DbHost, env.DbPort, env.DbName))
 	if err != nil {
 		panic(err)
 	}
@@ -27,5 +34,5 @@ func main() {
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
 	controllers.InitControllers(r, createUserService)
-	r.Run(":8080")
+	r.Run(":" + env.AppPort)
 }

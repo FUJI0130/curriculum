@@ -13,7 +13,7 @@ type SkillEvaluation uint8
 
 func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
 	if value < constants.MinSkillEvaluationValue || value > constants.MaxSkillEvaluationValue {
-		return 0, customerrors.ErrSkillEvaluationOutOfRange(value)
+		return 0, customerrors.ErrSkillEvaluationOutOfRange(nil, value, "NewSkillEvaluation")
 	}
 
 	return SkillEvaluation(value), nil

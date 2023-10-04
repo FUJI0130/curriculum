@@ -10,10 +10,10 @@ type CreatedAt time.Time
 
 func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtZeroValue()
+		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtZeroValue(nil, "NewCreatedAtByVal")
 	}
 	if createdAt.After(time.Now()) {
-		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtFutureValue()
+		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtFutureValue(nil, "NewCreatedAtByVal")
 	}
 	return CreatedAt(createdAt), nil
 }

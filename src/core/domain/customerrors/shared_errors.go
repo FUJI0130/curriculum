@@ -1,6 +1,8 @@
 package customerrors
 
 import (
+	"fmt"
+
 	"github.com/FUJI0130/curriculum/src/core/common/base"
 	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 )
@@ -11,38 +13,47 @@ type CreatedAtError struct {
 	base.BaseError
 }
 
-func ErrCreatedAtZeroValue() error {
+func ErrCreatedAtZeroValue(cause error, customMsg ...string) error {
+	defaultMessage := "CreatedAt cannot be zero value"
+	detail := "Provided CreatedAt value is zero"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		detail = customMsg[0]
+	} else if cause != nil {
+		detail = fmt.Sprintf("%s: %v", detail, cause)
+	}
 	return &CreatedAtError{
-		BaseError: *base.NewBaseError(
-			"CreatedAt cannot be zero value",
-			errorcodes.BadRequest,
-			"Provided CreatedAt value is zero",
-		),
+		BaseError: *base.NewBaseError(defaultMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-func ErrCreatedAtFutureValue() error {
+func ErrCreatedAtFutureValue(cause error, customMsg ...string) error {
+	defaultMessage := "CreatedAt cannot be future date"
+	detail := "Provided CreatedAt value is in the future"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		detail = customMsg[0]
+	} else if cause != nil {
+		detail = fmt.Sprintf("%s: %v", detail, cause)
+	}
 	return &CreatedAtError{
-		BaseError: *base.NewBaseError(
-			"CreatedAt cannot be future date",
-			errorcodes.BadRequest,
-			"Provided CreatedAt value is in the future",
-		),
+		BaseError: *base.NewBaseError(defaultMessage, errorcodes.BadRequest, cause),
 	}
 }
 
-//updatedAt
+// updatedAt
 
 type UpdatedAtError struct {
 	base.BaseError
 }
 
-func ErrUpdatedAtZeroValue() error {
+func ErrUpdatedAtZeroValue(cause error, customMsg ...string) error {
+	defaultMessage := "UpdatedAt cannot be zero value"
+	detail := "Provided UpdatedAt value is zero"
+	if len(customMsg) > 0 && customMsg[0] != "" {
+		detail = customMsg[0]
+	} else if cause != nil {
+		detail = fmt.Sprintf("%s: %v", detail, cause)
+	}
 	return &UpdatedAtError{
-		BaseError: *base.NewBaseError(
-			"UpdatedAt cannot be zero value",
-			errorcodes.BadRequest,
-			"Provided UpdatedAt value is zero",
-		),
+		BaseError: *base.NewBaseError(defaultMessage, errorcodes.BadRequest, cause),
 	}
 }

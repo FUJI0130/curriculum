@@ -10,16 +10,16 @@ type SkillID string
 func NewSkillID() (SkillID, error) {
 	skillID, err := uuid.NewRandom()
 	if err != nil {
-		return SkillID(""), customerrors.ErrInvalidSkillIDFormat()
+		return SkillID(""), customerrors.ErrInvalidSkillIDFormat(err, "NewSkillID")
 	}
 	skillIDValueObject := SkillID(skillID.String())
 	return skillIDValueObject, nil
 }
-func NewsSkillIDFromString(idStr string) (SkillID, error) {
+func NewSkillIDFromString(idStr string) (SkillID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", customerrors.ErrInvalidSkillIDFormat()
+		return "", customerrors.ErrInvalidSkillIDFormat(err, "NewSkillIDFromString")
 	}
 	return SkillID(idStr), nil
 }

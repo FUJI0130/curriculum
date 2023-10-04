@@ -12,11 +12,11 @@ type UserPassword string
 func NewUserPassword(userPassword string) (UserPassword, error) {
 	count := utf8.RuneCountInString(userPassword)
 	if userPassword == "" {
-		return "", customerrors.ErrUserPasswordEmpty()
+		return "", customerrors.ErrUserPasswordEmpty(nil, "NewUserPassword")
 	} else if constants.PasswordMaxlength < count {
-		return "", customerrors.ErrUserPasswordTooLong()
+		return "", customerrors.ErrUserPasswordTooLong(nil, "NewUserPassword")
 	} else if count < constants.PasswordMinlength {
-		return "", customerrors.ErrUserPasswordTooShort()
+		return "", customerrors.ErrUserPasswordTooShort(nil, "NewUserPassword")
 	}
 
 	return UserPassword(userPassword), nil

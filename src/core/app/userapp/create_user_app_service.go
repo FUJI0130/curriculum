@@ -3,13 +3,15 @@ package userapp
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/common/database_errors"
+	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/utils"
+	"github.com/FUJI0130/curriculum/src/core/validator"
+	"github.com/cockroachdb/errors"
 )
 
 type CreateUserAppService struct {
@@ -50,15 +52,27 @@ type CareersRequest struct {
 var test = ""
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-	isExist, err := app.existService.Exec(ctx, req.Name)
+	// Validate request keys
+	reqMap, err := utils.StructToMap(req)
 	if err != nil {
-		log.Printf("test")
-		log.Printf("err != nil  after exist_by_name_domain_service  ErrUserNotFound  err is : %s ", err)
-		return database_errors.ErrDatabaseError(fmt.Sprintf("Failed to check existence of user name: %v", err))
+		errMsg := fmt.Sprintf("Failed to convert struct to map. ErrorCode: %d", errorcodes.InternalServerError)
+		return errors.Wrapf(err, errMsg)
+	}
+	if err := validator.ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
+		errMsg := fmt.Sprintf("Validation failed. ErrorCode: %d", errorcodes.BadRequest)
+		return errors.Wrapf(err, errMsg)
+	}
+
+	isExist, err := app.existService.Exec(ctx, req.Name)
+
+	//ここのエラーハンドリングcauseに差し替え
+	if err != nil {
+		errMsg := fmt.Sprintf("Database error. ErrorCode: %d. Failed to check existence of user name: %v", errorcodes.InternalServerError, err)
+		return errors.Wrap(err, errMsg)
 	}
 
 	if isExist {
-		return domainErrors.ErrUserNameAlreadyExists(req.Name)
+		return domainErrors.ErrUserNameAlreadyExists(nil, req.Name, "Create_user_app_service  Exec")
 	}
 
 	// 全てのタグ名を一度に取得するためのスライスの作成
@@ -70,7 +84,8 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
-		return err
+		errMsg := fmt.Sprintf("Failed to fetch tags. ErrorCode: %d", errorcodes.InternalServerError)
+		return errors.Wrap(err, errMsg)
 	}
 
 	tagsMap := make(map[string]*tagdm.Tag)
@@ -84,7 +99,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return domainErrors.ErrDuplicateSkillTag(s.TagName)
+			return domainErrors.ErrDuplicateSkillTag(nil, s.TagName, "Create_user_app_service  Exec")
 		}
 		seenSkills[s.TagName] = true
 
@@ -92,12 +107,15 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				return err
+				errMsg := fmt.Sprintf("Failed to create tag. ErrorCode: %d", errorcodes.InternalServerError)
+				return errors.Wrap(err, errMsg)
 			}
 
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				return err
+				errMsg := fmt.Sprintf("Failed to store tag. ErrorCode: %d", errorcodes.InternalServerError)
+				return errors.Wrap(err, errMsg)
 			}
+
 			tagsMap[s.TagName] = tag
 		}
 
@@ -121,7 +139,8 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		return err
+		errMsg := fmt.Sprintf("Failed to create user. ErrorCode: %d", errorcodes.InternalServerError)
+		return errors.Wrap(err, errMsg)
 	}
 
 	return app.userRepo.Store(ctx, userdomain)

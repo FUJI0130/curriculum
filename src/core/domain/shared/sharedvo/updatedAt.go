@@ -11,7 +11,7 @@ type UpdatedAt time.Time
 // NewUpdatedAtByVal は指定した時刻での UpdatedAt を生成する
 func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
-		return UpdatedAt(time.Time{}), customerrors.ErrUpdatedAtZeroValue()
+		return UpdatedAt(time.Time{}), customerrors.ErrUpdatedAtZeroValue(nil, "NewUpdatedAtByVal")
 	}
 
 	return UpdatedAt(updatedAt), nil
