@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/common/database_errors"
 	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/customerrors"
+	databaseErrors "github.com/FUJI0130/curriculum/src/core/support/databaseErrors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -34,7 +34,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
-		return database_errors.ErrDatabaseError(err, "Failed to store tag")
+		return databaseErrors.ErrDatabaseError(err, "Failed to store tag")
 	}
 
 	return nil
@@ -66,12 +66,12 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 	var tempTags []tagRequest
 	query, args, err := sqlx.In(query, names)
 	if err != nil {
-		return nil, database_errors.ErrDatabaseError(err, "Error query construction error")
+		return nil, databaseErrors.ErrDatabaseError(err, "Error query construction error")
 	}
 
 	err = repo.Conn.Select(&tempTags, query, args...)
 	if err != nil {
-		return nil, database_errors.ErrDatabaseError(err, "FindByNames Select tag_repository database error")
+		return nil, databaseErrors.ErrDatabaseError(err, "FindByNames Select tag_repository database error")
 	}
 
 	var tags []*tagdm.Tag
@@ -95,7 +95,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, customerrors.ErrTagNotFound(err, "Tag Repository_imple  FindByID")
 		}
-		return nil, database_errors.ErrDatabaseError(err, "tag_repository FindByID database error")
+		return nil, databaseErrors.ErrDatabaseError(err, "tag_repository FindByID database error")
 	}
 
 	tagID := tagdm.TagID(tempTag.ID)

@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
-	databaseErrors "github.com/FUJI0130/curriculum/src/core/common/database_errors"
-	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	databaseErrors "github.com/FUJI0130/curriculum/src/core/support/databaseErrors"
+	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
 	"github.com/gin-gonic/gin"
 )
 

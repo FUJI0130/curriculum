@@ -3,8 +3,8 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/common/base"
-	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
+	"github.com/FUJI0130/curriculum/src/core/support/base"
+	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
 )
 
 type ValidatorError struct {

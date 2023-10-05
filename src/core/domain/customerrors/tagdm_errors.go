@@ -3,19 +3,20 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/common/base"
-	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm/constants"
+	"github.com/FUJI0130/curriculum/src/core/support/base"
+	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
 )
 
 type TagIDError struct {
 	base.BaseError
 }
 
-func ErrInvalidTagIDFormat(cause error, customMsg ...string) error {
+// customMsgをスライスにしている部分を無くしたい
+func ErrInvalidTagIDFormat(cause error, customMsg string) error {
 	fullMessage := "Invalid tag ID format provided"
-	if len(customMsg) > 0 && customMsg[0] != "" {
-		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg[0])
+	if customMsg != "" {
+		fullMessage = fmt.Sprintf("%s: %s", fullMessage, customMsg)
 	} else {
 		fullMessage = fmt.Sprintf("%s: %v", fullMessage, cause)
 	}

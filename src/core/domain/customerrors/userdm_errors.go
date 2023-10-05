@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/FUJI0130/curriculum/src/core/common/base"
-	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+	"github.com/FUJI0130/curriculum/src/core/support/base"
+	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
 )
 
 //career

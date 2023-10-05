@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/common/errorcodes"
 	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
 	"github.com/FUJI0130/curriculum/src/core/utils"
 	"github.com/FUJI0130/curriculum/src/core/validator"
 	"github.com/cockroachdb/errors"
