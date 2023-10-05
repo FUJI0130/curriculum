@@ -1,9 +1,9 @@
 package customerrors
 
 const (
-	ErrCodeBadRequest          = 400
-	ErrCodeNotFound            = 404
 	ErrCodeConflict            = 409
-	ErrCodeInternalServerError = 500
 	ErrCodeDatabaseError       = 5600
+	ErrCodeInternalServerError = 500
+	ErrCodeNotFound            = 404
+	ErrCodeUnprocessableEntity = 400
 )

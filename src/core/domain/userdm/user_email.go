@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"unicode/utf8"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type UserEmail string
@@ -15,14 +15,14 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 func NewUserEmail(userEmail string) (UserEmail, error) {
 	count := utf8.RuneCountInString(userEmail)
 	if userEmail == "" {
-		return "", customerrors.ErrUserEmailEmpty(nil, "NewUserEmail")
+		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is empty")
 	} else if constants.EmailMaxlength < count {
-		return "", customerrors.ErrUserEmailTooLong(nil, "NewUserEmail")
+		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is too long")
 	}
 
 	// メールアドレスの形式のチェック
 	if !emailRegex.MatchString(userEmail) {
-		return "", customerrors.ErrUserEmailInvalidFormat(nil, "NewUserEmail")
+		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is invalid")
 	}
 
 	return UserEmail(userEmail), nil

@@ -3,9 +3,9 @@ package userdm
 import (
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type Skill struct {
@@ -21,12 +21,12 @@ type Skill struct {
 func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
-		return nil, customerrors.ErrInvalidSkillEvaluation(err, evaluation, "NewSkill")
+		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "NewSkill", evaluation)
 	}
 
 	y, err := NewSkillYear(years)
 	if err != nil {
-		return nil, customerrors.ErrInvalidSkillYear(err, years, "NewSkill")
+		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "NewSkill", years)
 	}
 
 	skillCreatedAt := sharedvo.NewCreatedAt()

@@ -3,8 +3,8 @@ package tagdm
 import (
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type Tag struct {
@@ -16,7 +16,7 @@ type Tag struct {
 
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.ErrTagNameEmpty(nil, "ReconstructTag")
+		return nil, customerrors.NewUnprocessableEntityError("ReconstructTag")
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {

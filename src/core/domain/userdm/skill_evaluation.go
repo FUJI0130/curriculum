@@ -3,8 +3,8 @@
 package userdm
 
 import (
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type SkillEvaluation uint8
@@ -13,7 +13,7 @@ type SkillEvaluation uint8
 
 func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
 	if value < constants.MinSkillEvaluationValue || value > constants.MaxSkillEvaluationValue {
-		return 0, customerrors.ErrSkillEvaluationOutOfRange(nil, value, "NewSkillEvaluation")
+		return 0, customerrors.NewUnprocessableEntityErrorf("NewSkillEvaluation SkillEvaluation is out of range value is : %d", value)
 	}
 
 	return SkillEvaluation(value), nil

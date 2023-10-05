@@ -3,8 +3,8 @@ package userdm
 import (
 	"unicode/utf8"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type UserPassword string
@@ -12,11 +12,11 @@ type UserPassword string
 func NewUserPassword(userPassword string) (UserPassword, error) {
 	count := utf8.RuneCountInString(userPassword)
 	if userPassword == "" {
-		return "", customerrors.ErrUserPasswordEmpty(nil, "NewUserPassword")
+		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is empty")
 	} else if constants.PasswordMaxlength < count {
-		return "", customerrors.ErrUserPasswordTooLong(nil, "NewUserPassword")
+		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is too long")
 	} else if count < constants.PasswordMinlength {
-		return "", customerrors.ErrUserPasswordTooShort(nil, "NewUserPassword")
+		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is too short")
 	}
 
 	return UserPassword(userPassword), nil

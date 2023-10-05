@@ -42,3 +42,13 @@ func WrapInternalServerError(err error, message string) *InternalServerErrorType
 		},
 	}
 }
+func WrapInternalServerErrorf(err error, format string, args ...interface{}) *InternalServerErrorType {
+	message := fmt.Sprintf(format, args...)
+	return &InternalServerErrorType{
+		&base.BaseError{
+			Message:    message,
+			StatusCode: ErrCodeInternalServerError,
+			Trace:      errors.Wrap(err, message),
+		},
+	}
+}

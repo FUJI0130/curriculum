@@ -1,18 +1,18 @@
 package userdm
 
-import "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+import "github.com/FUJI0130/curriculum/src/core/support/customerrors"
 
 type SkillYear uint8
 
 func NewSkillYear(yearsOfExperience uint8) (SkillYear, error) {
 	// 経験年数が0以下であればエラーを返す
 	if yearsOfExperience <= 0 {
-		return 0, customerrors.ErrSkillYearZeroOrNegative(nil, "NewSkillYear")
+		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear")
 	}
 
 	// 100年以上の経験は非現実的なので、このような上限も設定することができます。
 	if yearsOfExperience > 100 {
-		return 0, customerrors.ErrSkillYearTooLong(nil, "NewSkillYear")
+		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear")
 	}
 
 	skillsYearValueObject := SkillYear(yearsOfExperience)

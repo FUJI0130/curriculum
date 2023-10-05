@@ -6,9 +6,8 @@ import (
 	"errors"
 	"time"
 
-	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	databaseErrors "github.com/FUJI0130/curriculum/src/core/support/databaseErrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -36,14 +35,14 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
-		return databaseErrors.ErrDatabaseError(err, "Failed to store user")
+		return customerrors.WrapDatabaseError(err, "Failed to store user")
 	}
 
 	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
-			return databaseErrors.ErrDatabaseError(err, "Failed to store skill")
+			return customerrors.WrapDatabaseError(err, "Failed to store skill")
 		}
 	}
 
@@ -51,7 +50,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
-			return databaseErrors.ErrDatabaseError(err, "Failed to store career")
+			return customerrors.WrapDatabaseError(err, "Failed to store career")
 		}
 	}
 
@@ -65,14 +64,14 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domainErrors.ErrUserNotFound(err, "user Repository FindByName")
+			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName")
 		}
-		return nil, databaseErrors.ErrDatabaseError(err, "user_repository FindByName database error")
+		return nil, customerrors.WrapDatabaseError(err, "user_repository FindByName database error")
 	}
 	user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
 	if err != nil {
-		return nil, domainErrors.ErrReconstructionError(err, "FindByName error reconstructing user from userRequest")
+		return nil, customerrors.WrapInternalServerError(err, "FindByName error reconstructing user from userRequest")
 	}
 
 	return user, nil
@@ -83,19 +82,19 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 	var tempUsers []userRequest
 	query, args, err := sqlx.In(query, names)
 	if err != nil {
-		return nil, databaseErrors.ErrDatabaseError(err, "Error query construction error")
+		return nil, customerrors.WrapDatabaseError(err, "Error query construction error")
 	}
 
 	err = repo.Conn.Select(&tempUsers, query, args...)
 	if err != nil {
-		return nil, databaseErrors.ErrDatabaseError(err, "Select Error query construction error")
+		return nil, customerrors.WrapDatabaseError(err, "Select Error query construction error")
 	}
 
 	userMap := make(map[string]*userdm.User)
 	for _, tempUser := range tempUsers {
 		user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 		if err != nil {
-			return nil, domainErrors.ErrReconstructionError(err, "FindByNames error converting userRequest to User")
+			return nil, customerrors.WrapInternalServerError(err, "FindByNames error converting userRequest to User")
 		}
 
 		userMap[tempUser.Name] = user

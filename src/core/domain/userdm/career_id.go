@@ -1,7 +1,7 @@
 package userdm
 
 import (
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/google/uuid"
 )
 
@@ -11,7 +11,7 @@ func NewCareerID() (CareerID, error) {
 	careerID, err := uuid.NewRandom()
 	if err != nil {
 		// もしUUIDの生成が失敗した場合に新しいカスタムエラーを返す
-		return CareerID(""), customerrors.ErrInvalidCareerIDFormat(err, "NewCareerID")
+		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "NewCareerID")
 	}
 	return CareerID(careerID.String()), nil
 }

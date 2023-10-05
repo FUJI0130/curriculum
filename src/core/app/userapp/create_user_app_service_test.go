@@ -6,12 +6,11 @@ import (
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
-	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
 	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -60,7 +59,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(true, nil)
 			},
-			wantErr: domainErrors.ErrUserNameAlreadyExists(nil, mockName, "TestCreateUserAppService_Exec 存在するユーザーを作成"),
+			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", mockName),
 		},
 		{
 			title: "タグの新規作成",
@@ -118,14 +117,14 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName, mockTagName}).Return([]*tagdm.Tag{existingTag, existingTag}, nil).Times(1)
 
 			},
-			wantErr: customerrors.ErrDuplicateSkillTag(nil, mockTagName, "TestCreateUserAppService_Exec  ユーザーが同じスキルタグを複数持つ場合"), // 期待されるエラーメッセージ
+			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", mockTagName), // 期待されるエラーメッセージ
 		},
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 
 			ctrl := gomock.NewController(t)
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)

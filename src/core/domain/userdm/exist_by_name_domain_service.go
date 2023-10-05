@@ -9,7 +9,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type ExistByNameDomainService interface {
@@ -30,7 +30,7 @@ func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool
 
 	if err != nil {
 
-		if errors.Is(err, customerrors.ErrUserNotFound(err, "existByNameDomainService.Exec")) {
+		if errors.Is(err, customerrors.WrapNotFoundError(err, "existByNameDomainService.Exec")) {
 			return false, nil
 		}
 		return false, err

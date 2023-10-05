@@ -3,14 +3,14 @@ package utils
 import (
 	"reflect"
 
-	"github.com/FUJI0130/curriculum/src/core/utils/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 func StructToMap(req interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	val := reflect.ValueOf(req)
 	if val.Kind() != reflect.Ptr {
-		return nil, customerrors.ErrStructToMap(nil, "Expected a pointer but got "+val.Kind().String())
+		return nil, customerrors.NewInternalServerError("StructToMap Expected a pointer but got " + val.Kind().String())
 	}
 	val = val.Elem() // Now it's safe to call Elem
 	typ := val.Type()

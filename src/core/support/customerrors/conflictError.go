@@ -42,3 +42,14 @@ func WrapConflictError(err error, message string) *ConflictErrorType {
 		},
 	}
 }
+
+func WrapConflictErrorf(err error, format string, args ...interface{}) *ConflictErrorType {
+	message := fmt.Sprintf(format, args...)
+	return &ConflictErrorType{
+		&base.BaseError{
+			Message:    message,
+			StatusCode: ErrCodeConflict,
+			Trace:      errors.Wrapf(err, format, args...),
+		},
+	}
+}

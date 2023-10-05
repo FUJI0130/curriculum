@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,10 +43,10 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			title:     "Service error",
 			inputName: mockName,
 			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
-				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.ErrUserNotFound(nil)).Times(1)
+				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.NewNotFoundError("test Service error")).Times(1)
 			},
 			wantResult: false,
-			wantErr:    customerrors.ErrUserNotFound(nil),
+			wantErr:    customerrors.NewNotFoundError("test Service error"),
 		},
 	}
 

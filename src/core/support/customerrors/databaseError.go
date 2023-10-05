@@ -48,3 +48,13 @@ func WrapDatabaseError(err error, format string, args ...interface{}) *DatabaseE
 		},
 	}
 }
+func WrapDatabaseErrorf(err error, format string, args ...interface{}) *DatabaseErrorType {
+	message := fmt.Sprintf(format, args...)
+	return &DatabaseErrorType{
+		&base.BaseError{
+			Message:    message,
+			StatusCode: ErrCodeDatabaseError,
+			Trace:      errors.Wrapf(err, format, args...),
+		},
+	}
+}

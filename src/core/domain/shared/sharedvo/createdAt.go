@@ -3,17 +3,17 @@ package sharedvo
 import (
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type CreatedAt time.Time
 
 func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtZeroValue(nil, "NewCreatedAtByVal")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("NewCreatedAtByVal createdAt is empty")
 	}
 	if createdAt.After(time.Now()) {
-		return CreatedAt(time.Time{}), customerrors.ErrCreatedAtFutureValue(nil, "NewCreatedAtByVal")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("NewCreatedAtByVal createdAt is future")
 	}
 	return CreatedAt(createdAt), nil
 }

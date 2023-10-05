@@ -42,3 +42,13 @@ func WrapNotFoundError(err error, message string) *NotFoundErrorType {
 		},
 	}
 }
+func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
+	message := fmt.Sprintf(format, args...)
+	return &NotFoundErrorType{
+		&base.BaseError{
+			Message:    message,
+			StatusCode: ErrCodeNotFound,
+			Trace:      errors.Wrap(err, message),
+		},
+	}
+}

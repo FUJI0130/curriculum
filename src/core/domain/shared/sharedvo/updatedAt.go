@@ -3,7 +3,7 @@ package sharedvo
 import (
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type UpdatedAt time.Time
@@ -11,7 +11,7 @@ type UpdatedAt time.Time
 // NewUpdatedAtByVal は指定した時刻での UpdatedAt を生成する
 func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
-		return UpdatedAt(time.Time{}), customerrors.ErrUpdatedAtZeroValue(nil, "NewUpdatedAtByVal")
+		return UpdatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("NewUpdatedAtByVal updatedAt is empty")
 	}
 
 	return UpdatedAt(updatedAt), nil

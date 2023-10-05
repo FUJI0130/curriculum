@@ -2,16 +2,13 @@ package userapp
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	domainErrors "github.com/FUJI0130/curriculum/src/core/domain/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	"github.com/FUJI0130/curriculum/src/core/support/errorcodes"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/FUJI0130/curriculum/src/core/utils"
 	"github.com/FUJI0130/curriculum/src/core/validator"
-	"github.com/cockroachdb/errors"
 )
 
 type CreateUserAppService struct {
@@ -55,24 +52,20 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	// Validate request keys
 	reqMap, err := utils.StructToMap(req)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to convert struct to map. ErrorCode: %d", errorcodes.InternalServerError)
-		return errors.Wrapf(err, errMsg)
+		return customerrors.WrapInternalServerErrorf(err, "Failed to convert struct to map. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
 	}
 	if err := validator.ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		errMsg := fmt.Sprintf("Validation failed. ErrorCode: %d", errorcodes.BadRequest)
-		return errors.Wrapf(err, errMsg)
+		return customerrors.WrapUnprocessableEntityErrorf(err, "Validation failed. ErrorCode: %d", customerrors.ErrCodeUnprocessableEntity)
 	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
-	//ここのエラーハンドリングcauseに差し替え
 	if err != nil {
-		errMsg := fmt.Sprintf("Database error. ErrorCode: %d. Failed to check existence of user name: %v", errorcodes.InternalServerError, err)
-		return errors.Wrap(err, errMsg)
+		return customerrors.WrapInternalServerErrorf(err, "Database error. ErrorCode: %d Failed to check existence of user name: %s", customerrors.ErrCodeInternalServerError, req.Name)
 	}
 
 	if isExist {
-		return domainErrors.ErrUserNameAlreadyExists(nil, req.Name, "Create_user_app_service  Exec")
+		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 	}
 
 	// 全てのタグ名を一度に取得するためのスライスの作成
@@ -84,8 +77,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to fetch tags. ErrorCode: %d", errorcodes.InternalServerError)
-		return errors.Wrap(err, errMsg)
+		return customerrors.WrapInternalServerErrorf(err, "Failed to fetch tags. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
 	}
 
 	tagsMap := make(map[string]*tagdm.Tag)
@@ -99,7 +91,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return domainErrors.ErrDuplicateSkillTag(nil, s.TagName, "Create_user_app_service  Exec")
+			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
 		}
 		seenSkills[s.TagName] = true
 
@@ -107,13 +99,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				errMsg := fmt.Sprintf("Failed to create tag. ErrorCode: %d", errorcodes.InternalServerError)
-				return errors.Wrap(err, errMsg)
+				return customerrors.WrapInternalServerErrorf(err, "Failed to create tag. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
 			}
 
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				errMsg := fmt.Sprintf("Failed to store tag. ErrorCode: %d", errorcodes.InternalServerError)
-				return errors.Wrap(err, errMsg)
+				return customerrors.WrapInternalServerErrorf(err, "Failed to store tag. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
 			}
 
 			tagsMap[s.TagName] = tag
@@ -139,8 +129,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		errMsg := fmt.Sprintf("Failed to create user. ErrorCode: %d", errorcodes.InternalServerError)
-		return errors.Wrap(err, errMsg)
+		return customerrors.WrapInternalServerErrorf(err, "Failed to create user. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
 	}
 
 	return app.userRepo.Store(ctx, userdomain)

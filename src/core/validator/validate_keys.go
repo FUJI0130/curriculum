@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/FUJI0130/curriculum/src/core/validator/customerrors"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct interface{}) error {
@@ -18,7 +18,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 	for key, value := range rawReq {
 		// Check if key is expected
 		if _, exists := expectedKeys[key]; !exists {
-			return customerrors.ErrValidateKeysAgainstStruct(nil, fmt.Sprintf("Unexpected key '%s' in the request", key))
+			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("Unexpected key '%s' in the request", key))
 		}
 
 		// Recursively check nested structures
@@ -26,7 +26,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 			field, _ := val.Type().FieldByName(key)
 			if field.Type.Kind() == reflect.Struct {
 				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
-					return customerrors.ErrValidateKeysAgainstStruct(nil, fmt.Sprintf("key '%s': %v", key, err))
+					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s': %v", key, err))
 				}
 			}
 		} else if nestedSlice, ok := value.([]interface{}); ok {
@@ -35,7 +35,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 				for i, nestedElement := range nestedSlice {
 					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
 						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
-							return customerrors.ErrValidateKeysAgainstStruct(nil, fmt.Sprintf("key '%s' index %d: %v", key, i, err))
+							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s' index %d: %v", key, i, err))
 						}
 					}
 				}
