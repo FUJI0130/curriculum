@@ -8,6 +8,7 @@ import (
 func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService) {
 	InitHealthController(r)
 	InitCreateUserController(r, createUserService)
+	// InitCreateUserControllerWithTransaction(r, createUserService)
 }
 
 func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
