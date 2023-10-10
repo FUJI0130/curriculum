@@ -15,9 +15,9 @@ type InternalServerErrorType struct {
 func NewInternalServerError(message string) *InternalServerErrorType {
 	return &InternalServerErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeInternalServerError,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeInternalServerError,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -26,9 +26,9 @@ func NewInternalServerErrorf(format string, args ...interface{}) *InternalServer
 	message := fmt.Sprintf(format, args...)
 	return &InternalServerErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeInternalServerError,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeInternalServerError,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -36,9 +36,9 @@ func NewInternalServerErrorf(format string, args ...interface{}) *InternalServer
 func WrapInternalServerError(err error, message string) *InternalServerErrorType {
 	return &InternalServerErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeInternalServerError,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeInternalServerError,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
@@ -46,9 +46,9 @@ func WrapInternalServerErrorf(err error, format string, args ...interface{}) *In
 	message := fmt.Sprintf(format, args...)
 	return &InternalServerErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeInternalServerError,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeInternalServerError,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }

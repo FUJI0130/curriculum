@@ -15,9 +15,9 @@ type UnprocessableEntityErrorType struct {
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
 	return &UnprocessableEntityErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeUnprocessableEntity,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeUnprocessableEntity,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -26,9 +26,9 @@ func NewUnprocessableEntityErrorf(format string, args ...interface{}) *Unprocess
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeUnprocessableEntity,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeUnprocessableEntity,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -36,9 +36,9 @@ func NewUnprocessableEntityErrorf(format string, args ...interface{}) *Unprocess
 func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
 	return &UnprocessableEntityErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeUnprocessableEntity,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeUnprocessableEntity,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
@@ -46,9 +46,9 @@ func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeUnprocessableEntity,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeUnprocessableEntity,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }

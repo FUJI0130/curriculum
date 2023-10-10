@@ -15,9 +15,9 @@ type NotFoundErrorType struct {
 func NewNotFoundError(message string) *NotFoundErrorType {
 	return &NotFoundErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeNotFound,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeNotFound,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -26,9 +26,9 @@ func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &NotFoundErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeNotFound,
-			Trace:      errors.New(message),
+			Message:       message,
+			StatusCodeVal: ErrCodeNotFound,
+			TraceVal:      errors.New(message),
 		},
 	}
 }
@@ -36,9 +36,9 @@ func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
 func WrapNotFoundError(err error, message string) *NotFoundErrorType {
 	return &NotFoundErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeNotFound,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeNotFound,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
@@ -46,9 +46,9 @@ func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFound
 	message := fmt.Sprintf(format, args...)
 	return &NotFoundErrorType{
 		&base.BaseError{
-			Message:    message,
-			StatusCode: ErrCodeNotFound,
-			Trace:      errors.Wrap(err, message),
+			Message:       message,
+			StatusCodeVal: ErrCodeNotFound,
+			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
