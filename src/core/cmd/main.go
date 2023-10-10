@@ -33,6 +33,7 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
+	r.Use(middleware.TransactionHandler(db))
 	controllers.InitControllers(r, createUserService)
 	r.Run(":" + env.AppPort)
 }
