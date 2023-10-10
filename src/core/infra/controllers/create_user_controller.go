@@ -9,6 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	errCodeConflict            = 409
+	errCodeInternalServerError = 500
+	errCodeNotFound            = 404
+	errCodeUnprocessableEntity = 400
+)
+
 type CreateUserController struct {
 	createUserService *userapp.CreateUserAppService
 }
@@ -22,22 +29,22 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(customerrors.ErrCodeUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		switch err.(type) {
 		case *customerrors.ConflictErrorType:
-			c.JSON(customerrors.ErrCodeConflict, gin.H{"error": err.Error()})
+			c.JSON(errCodeConflict, gin.H{"error": err.Error()})
 		case *customerrors.InternalServerErrorType:
-			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
 		case *customerrors.NotFoundErrorType:
-			c.JSON(customerrors.ErrCodeNotFound, gin.H{"error": err.Error()})
+			c.JSON(errCodeNotFound, gin.H{"error": err.Error()})
 		case *customerrors.UnprocessableEntityErrorType:
-			c.JSON(customerrors.ErrCodeUnprocessableEntity, gin.H{"error": err.Error()})
+			c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
 		default:
-			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す
+			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す
 		}
 		return
 	}

@@ -3,31 +3,32 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
+const errCodeInternalServerError = 500
+
 // InternalServerError
 type InternalServerErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewInternalServerError(message string) *InternalServerErrorType {
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
+			StatusCodeVal: errCodeInternalServerError,
 			TraceVal:      errors.New(message),
 		},
 	}
 }
 
-func NewInternalServerErrorf(format string, args ...interface{}) *InternalServerErrorType {
+func NewInternalServerErrorf(format string, args ...any) *InternalServerErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
+			StatusCodeVal: errCodeInternalServerError,
 			TraceVal:      errors.New(message),
 		},
 	}
@@ -35,19 +36,19 @@ func NewInternalServerErrorf(format string, args ...interface{}) *InternalServer
 
 func WrapInternalServerError(err error, message string) *InternalServerErrorType {
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
+			StatusCodeVal: errCodeInternalServerError,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
-func WrapInternalServerErrorf(err error, format string, args ...interface{}) *InternalServerErrorType {
+func WrapInternalServerErrorf(err error, format string, args ...any) *InternalServerErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
+			StatusCodeVal: errCodeInternalServerError,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}

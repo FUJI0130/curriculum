@@ -3,31 +3,32 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
+const errCodeUnprocessableEntity = 400
+
 // UnprocessableEntityError
 type UnprocessableEntityErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
+			StatusCodeVal: errCodeUnprocessableEntity,
 			TraceVal:      errors.New(message),
 		},
 	}
 }
 
-func NewUnprocessableEntityErrorf(format string, args ...interface{}) *UnprocessableEntityErrorType {
+func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEntityErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
+			StatusCodeVal: errCodeUnprocessableEntity,
 			TraceVal:      errors.New(message),
 		},
 	}
@@ -35,19 +36,19 @@ func NewUnprocessableEntityErrorf(format string, args ...interface{}) *Unprocess
 
 func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
+			StatusCodeVal: errCodeUnprocessableEntity,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
-func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}) *UnprocessableEntityErrorType {
+func WrapUnprocessableEntityErrorf(err error, format string, args ...any) *UnprocessableEntityErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
+			StatusCodeVal: errCodeUnprocessableEntity,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}

@@ -7,9 +7,9 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
-	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mock_exist_by_name_domain_service"
+	mockTag "github.com/FUJI0130/curriculum/src/core/mock/mock_tag"
+	mockUser "github.com/FUJI0130/curriculum/src/core/mock/mock_user"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

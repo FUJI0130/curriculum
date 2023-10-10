@@ -3,31 +3,32 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
+const errCodeNotFound = 404
+
 // NotFoundError
 type NotFoundErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewNotFoundError(message string) *NotFoundErrorType {
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
+			StatusCodeVal: errCodeNotFound,
 			TraceVal:      errors.New(message),
 		},
 	}
 }
 
-func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
+func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
+			StatusCodeVal: errCodeNotFound,
 			TraceVal:      errors.New(message),
 		},
 	}
@@ -35,19 +36,19 @@ func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
 
 func WrapNotFoundError(err error, message string) *NotFoundErrorType {
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
+			StatusCodeVal: errCodeNotFound,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}
 }
-func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
+func WrapNotFoundErrorf(err error, format string, args ...any) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
+			StatusCodeVal: errCodeNotFound,
 			TraceVal:      errors.Wrap(err, message),
 		},
 	}
