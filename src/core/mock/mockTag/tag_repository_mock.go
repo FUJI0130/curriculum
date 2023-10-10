@@ -10,6 +10,7 @@ import (
 
 	tagdm "github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	gomock "github.com/golang/mock/gomock"
+	sqlx "github.com/jmoiron/sqlx"
 )
 
 // MockTagRepository is a mock of TagRepository interface.
@@ -92,4 +93,18 @@ func (m *MockTagRepository) Store(ctx context.Context, tag *tagdm.Tag) error {
 func (mr *MockTagRepositoryMockRecorder) Store(ctx, tag interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockTagRepository)(nil).Store), ctx, tag)
+}
+
+// StoreWithTransaction mocks base method.
+func (m *MockTagRepository) StoreWithTransaction(tx *sqlx.Tx, tag *tagdm.Tag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StoreWithTransaction", tx, tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StoreWithTransaction indicates an expected call of StoreWithTransaction.
+func (mr *MockTagRepositoryMockRecorder) StoreWithTransaction(tx, tag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockTagRepository)(nil).StoreWithTransaction), tx, tag)
 }

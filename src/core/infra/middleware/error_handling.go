@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/FUJI0130/curriculum/src/core/support/base"
+	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 func ErrorHandler(c *gin.Context) {
@@ -21,9 +23,20 @@ func ErrorHandler(c *gin.Context) {
 				err = errors.New("unknown panic")
 			}
 			log.Printf("recovered from panic: %+v", err) // %+v でstack traceもログに出力
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+
+			switch e := err.(type) {
+			case base.BaseErrorHandler:
+				log.Printf("ERROR: %+v", e.Trace())
+				c.JSON(e.StatusCode(), gin.H{
+					"message": fmt.Sprintf("%d: %s", e.StatusCode(), e.Error()),
+				})
+			default:
+				log.Printf("FATAL: %+v", e)
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"message": "Fatal",
+				})
+			}
+
 			c.Abort()
 		}
 	}()

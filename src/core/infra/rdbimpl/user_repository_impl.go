@@ -35,14 +35,14 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
-		return customerrors.WrapDatabaseError(err, "Failed to store user")
+		return customerrors.WrapInternalServerError(err, "Failed to store user")
 	}
 
 	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
-			return customerrors.WrapDatabaseError(err, "Failed to store skill")
+			return customerrors.WrapInternalServerError(err, "Failed to store skill")
 		}
 	}
 
@@ -50,7 +50,35 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
-			return customerrors.WrapDatabaseError(err, "Failed to store career")
+			return customerrors.WrapInternalServerError(err, "Failed to store career")
+		}
+	}
+
+	return nil
+}
+
+func (repo *userRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, userdomain *userdm.UserDomain) error {
+
+	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+
+	_, err := tx.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
+	if err != nil {
+		return customerrors.WrapInternalServerError(err, "Failed to store user")
+	}
+
+	for _, skill := range userdomain.Skills {
+		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
+		_, err = tx.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+		if err != nil {
+			return customerrors.WrapInternalServerError(err, "Failed to store skill")
+		}
+	}
+
+	for _, career := range userdomain.Careers {
+		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+		_, err = tx.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+		if err != nil {
+			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}
 	}
 
@@ -66,7 +94,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName")
 		}
-		return nil, customerrors.WrapDatabaseError(err, "user_repository FindByName database error")
+		return nil, customerrors.WrapInternalServerError(err, "User Repository FindByName database error")
 	}
 	user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
@@ -82,12 +110,12 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 	var tempUsers []userRequest
 	query, args, err := sqlx.In(query, names)
 	if err != nil {
-		return nil, customerrors.WrapDatabaseError(err, "Error query construction error")
+		return nil, customerrors.WrapInternalServerError(err, "Error query construction error")
 	}
 
 	err = repo.Conn.Select(&tempUsers, query, args...)
 	if err != nil {
-		return nil, customerrors.WrapDatabaseError(err, "Select Error query construction error")
+		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
 	}
 
 	userMap := make(map[string]*userdm.User)
