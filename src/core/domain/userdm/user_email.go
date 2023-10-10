@@ -4,8 +4,11 @@ import (
 	"regexp"
 	"unicode/utf8"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+)
+
+const (
+	EmailMaxlength = 256
 )
 
 type UserEmail string
@@ -16,7 +19,7 @@ func NewUserEmail(userEmail string) (UserEmail, error) {
 	count := utf8.RuneCountInString(userEmail)
 	if userEmail == "" {
 		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is empty")
-	} else if constants.EmailMaxlength < count {
+	} else if EmailMaxlength < count {
 		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is too long")
 	}
 

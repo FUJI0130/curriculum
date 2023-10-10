@@ -1,0 +1,1372 @@
+diff --git a/.docker/my.cnf b/.docker/my.cnf
+index 1d604b4..cd74583 100644
+--- a/.docker/my.cnf
++++ b/.docker/my.cnf
+@@ -3,6 +3,8 @@ character_set_server = utf8mb4
+ collation_server = utf8mb4_general_ci
+ default-time-zone='Asia/Tokyo'
+ log_timestamps=SYSTEM
++bind-address = 0.0.0.0
++skip-name-resolve
+ 
+ 
+ [mysql]
+diff --git a/main b/main
+index 039f032..3f9b64c 100755
+Binary files a/main and b/main differ
+diff --git a/src/core/app/userapp/create_user_app_service.go b/src/core/app/userapp/create_user_app_service.go
+index 06f3b24..6241240 100644
+--- a/src/core/app/userapp/create_user_app_service.go
++++ b/src/core/app/userapp/create_user_app_service.go
+@@ -2,13 +2,14 @@ package userapp
+ 
+ import (
+ 	"context"
++	"fmt"
++	"reflect"
+ 	"time"
+ 
+ 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+ 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+ 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+-	"github.com/FUJI0130/curriculum/src/core/utils"
+-	"github.com/FUJI0130/curriculum/src/core/validator"
++	"github.com/jmoiron/sqlx"
+ )
+ 
+ type CreateUserAppService struct {
+@@ -50,18 +51,18 @@ var test = ""
+ 
+ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
+ 	// Validate request keys
+-	reqMap, err := utils.StructToMap(req)
++	reqMap, err := StructToMap(req)
+ 	if err != nil {
+-		return customerrors.WrapInternalServerErrorf(err, "Failed to convert struct to map. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
++		return customerrors.WrapInternalServerError(err, "Failed to convert struct to map.")
+ 	}
+-	if err := validator.ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
+-		return customerrors.WrapUnprocessableEntityErrorf(err, "Validation failed. ErrorCode: %d", customerrors.ErrCodeUnprocessableEntity)
++	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
++		return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
+ 	}
+ 
+ 	isExist, err := app.existService.Exec(ctx, req.Name)
+ 
+ 	if err != nil {
+-		return customerrors.WrapInternalServerErrorf(err, "Database error. ErrorCode: %d Failed to check existence of user name: %s", customerrors.ErrCodeInternalServerError, req.Name)
++		return customerrors.WrapInternalServerErrorf(err, "Database error. Failed to check existence of user name: %s", req.Name)
+ 	}
+ 
+ 	if isExist {
+@@ -77,7 +78,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
+ 	// 一度のクエリでタグを取得
+ 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
+ 	if err != nil {
+-		return customerrors.WrapInternalServerErrorf(err, "Failed to fetch tags. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
++		return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
+ 	}
+ 
+ 	tagsMap := make(map[string]*tagdm.Tag)
+@@ -99,11 +100,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
+ 		if _, ok := tagsMap[s.TagName]; !ok {
+ 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
+ 			if err != nil {
+-				return customerrors.WrapInternalServerErrorf(err, "Failed to create tag. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
++				return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
+ 			}
+ 
+ 			if err = app.tagRepo.Store(ctx, tag); err != nil {
+-				return customerrors.WrapInternalServerErrorf(err, "Failed to store tag. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
++				return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
+ 			}
+ 
+ 			tagsMap[s.TagName] = tag
+@@ -129,8 +130,185 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
+ 
+ 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
+ 	if err != nil {
+-		return customerrors.WrapInternalServerErrorf(err, "Failed to create user. ErrorCode: %d", customerrors.ErrCodeInternalServerError)
++		return customerrors.WrapInternalServerError(err, "Failed to create user. ")
+ 	}
+ 
+ 	return app.userRepo.Store(ctx, userdomain)
+ }
++
++func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sqlx.Tx, req *CreateUserRequest) error {
++
++	// Validate request keys
++	reqMap, err := StructToMap(req)
++	if err != nil {
++		return customerrors.WrapInternalServerError(err, "Failed to convert struct to map. ")
++	}
++	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
++		return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
++	}
++
++	isExist, err := app.existService.Exec(ctx, req.Name)
++
++	if err != nil {
++		return customerrors.WrapInternalServerErrorf(err, "Database error.  Failed to check existence of user name: %s", req.Name)
++	}
++
++	if isExist {
++		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
++	}
++
++	// 全てのタグ名を一度に取得するためのスライスの作成
++	tagNames := make([]string, len(req.Skills))
++	for i, s := range req.Skills {
++		tagNames[i] = s.TagName
++	}
++
++	// 一度のクエリでタグを取得
++	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
++	if err != nil {
++		return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
++	}
++
++	tagsMap := make(map[string]*tagdm.Tag)
++	for _, tag := range tags {
++		tagsMap[tag.Name()] = tag
++	}
++
++	seenSkills := make(map[string]bool)
++	skillsParams := make([]userdm.SkillParam, len(req.Skills))
++
++	for i, s := range req.Skills {
++
++		if seenSkills[s.TagName] {
++			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
++		}
++		seenSkills[s.TagName] = true
++
++		// タグが存在しない場合は新しく作成
++		if _, ok := tagsMap[s.TagName]; !ok {
++			tag, err := tagdm.GenWhenCreateTag(s.TagName)
++			if err != nil {
++				return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
++			}
++
++			if err = app.tagRepo.StoreWithTransaction(tx, tag); err != nil {
++				return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
++			}
++
++			tagsMap[s.TagName] = tag
++		}
++
++		skillsParams[i] = userdm.SkillParam{
++			TagID:      tagsMap[s.TagName].ID(),
++			TagName:    s.TagName,
++			Evaluation: s.Evaluation,
++			Years:      s.Years,
++		}
++
++	}
++
++	careersParams := make([]userdm.CareerParam, len(req.Careers))
++	for i, c := range req.Careers {
++		careersParams[i] = userdm.CareerParam{
++			Detail: c.Detail,
++			AdFrom: c.AdFrom,
++			AdTo:   c.AdTo,
++		}
++	}
++
++	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
++	if err != nil {
++		return customerrors.WrapInternalServerError(err, "Failed to create user. ")
++	}
++
++	return app.userRepo.StoreWithTransaction(tx, userdomain)
++}
++
++func StructToMap(req interface{}) (map[string]interface{}, error) {
++	result := make(map[string]interface{})
++	val := reflect.ValueOf(req)
++	if val.Kind() != reflect.Ptr {
++		return nil, customerrors.NewInternalServerError("StructToMap Expected a pointer but got " + val.Kind().String())
++	}
++	val = val.Elem() // Now it's safe to call Elem
++	typ := val.Type()
++
++	// Iterate over struct fields
++	for i := 0; i < val.NumField(); i++ {
++		field := val.Field(i)
++		fieldType := typ.Field(i)
++
++		// Ignore unexported fields
++		if fieldType.PkgPath != "" {
++			continue
++		}
++
++		key := fieldType.Name
++
++		// Recursively process nested structures
++		if field.Kind() == reflect.Struct {
++			nestedMap, err := StructToMap(field.Addr().Interface())
++			if err != nil {
++				return nil, err
++			}
++			result[key] = nestedMap
++		} else if field.Kind() == reflect.Slice {
++			var sliceData []interface{}
++			for si := 0; si < field.Len(); si++ {
++				sliceElem := field.Index(si)
++				if sliceElem.Kind() == reflect.Struct {
++					nestedMap, err := StructToMap(sliceElem.Addr().Interface())
++					if err != nil {
++						return nil, err
++					}
++					sliceData = append(sliceData, nestedMap)
++				} else {
++					sliceData = append(sliceData, sliceElem.Interface())
++				}
++			}
++			result[key] = sliceData
++		} else {
++			// Plain field, just set the value
++			result[key] = field.Interface()
++		}
++	}
++	return result, nil
++}
++
++func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct interface{}) error {
++	expectedKeys := make(map[string]bool)
++
++	val := reflect.ValueOf(referenceStruct).Elem()
++	for i := 0; i < val.NumField(); i++ {
++		expectedKeys[val.Type().Field(i).Name] = true
++	}
++
++	for key, value := range rawReq {
++		// Check if key is expected
++		if _, exists := expectedKeys[key]; !exists {
++			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("Unexpected key '%s' in the request", key))
++		}
++
++		// Recursively check nested structures
++		if nestedMap, ok := value.(map[string]interface{}); ok {
++			field, _ := val.Type().FieldByName(key)
++			if field.Type.Kind() == reflect.Struct {
++				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
++					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s': %v", key, err))
++				}
++			}
++		} else if nestedSlice, ok := value.([]interface{}); ok {
++			field, _ := val.Type().FieldByName(key)
++			if field.Type.Elem().Kind() == reflect.Struct {
++				for i, nestedElement := range nestedSlice {
++					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
++						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
++							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s' index %d: %v", key, i, err))
++						}
++					}
++				}
++			}
++		}
++	}
++	return nil
++}
+diff --git a/src/core/cmd/main.go b/src/core/cmd/main.go
+index d6757b0..361e547 100644
+--- a/src/core/cmd/main.go
++++ b/src/core/cmd/main.go
+@@ -33,6 +33,7 @@ func main() {
+ 
+ 	r := gin.Default()
+ 	r.Use(middleware.ErrorHandler)
++	r.Use(middleware.TransactionHandler(db))
+ 	controllers.InitControllers(r, createUserService)
+ 	r.Run(":" + env.AppPort)
+ }
+diff --git a/src/core/domain/tagdm/tag_repository.go b/src/core/domain/tagdm/tag_repository.go
+index d7211a5..57c2a8d 100644
+--- a/src/core/domain/tagdm/tag_repository.go
++++ b/src/core/domain/tagdm/tag_repository.go
+@@ -2,10 +2,15 @@
+ 
+ package tagdm
+ 
+-import "context"
++import (
++	"context"
++
++	"github.com/jmoiron/sqlx"
++)
+ 
+ type TagRepository interface {
+ 	Store(ctx context.Context, tag *Tag) error
++	StoreWithTransaction(tx *sqlx.Tx, tag *Tag) error
+ 	FindByName(ctx context.Context, name string) (*Tag, error)
+ 	FindByNames(ctx context.Context, names []string) ([]*Tag, error)
+ 	FindByID(ctx context.Context, id string) (*Tag, error)
+diff --git a/src/core/domain/userdm/constants/constants.go b/src/core/domain/userdm/constants/constants.go
+deleted file mode 100644
+index 77bef4d..0000000
+--- a/src/core/domain/userdm/constants/constants.go
++++ /dev/null
+@@ -1,15 +0,0 @@
+-package constants
+-
+-const (
+-	MinSkillEvaluationValue = 1
+-	MaxSkillEvaluationValue = 5
+-)
+-
+-const (
+-	EmailMaxlength = 256
+-)
+-
+-const (
+-	PasswordMinlength = 13
+-	PasswordMaxlength = 256
+-)
+diff --git a/src/core/domain/userdm/skill_evaluation.go b/src/core/domain/userdm/skill_evaluation.go
+index 2d5d026..8c59611 100644
+--- a/src/core/domain/userdm/skill_evaluation.go
++++ b/src/core/domain/userdm/skill_evaluation.go
+@@ -3,16 +3,20 @@
+ package userdm
+ 
+ import (
+-	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+ 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+ )
+ 
++const (
++	MinSkillEvaluationValue = 1
++	MaxSkillEvaluationValue = 5
++)
++
+ type SkillEvaluation uint8
+ 
+ // スキルの評価は1から10の間とします。
+ 
+ func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
+-	if value < constants.MinSkillEvaluationValue || value > constants.MaxSkillEvaluationValue {
++	if value < MinSkillEvaluationValue || value > MaxSkillEvaluationValue {
+ 		return 0, customerrors.NewUnprocessableEntityErrorf("NewSkillEvaluation SkillEvaluation is out of range value is : %d", value)
+ 	}
+ 
+diff --git a/src/core/domain/userdm/skill_year.go b/src/core/domain/userdm/skill_year.go
+index 1e08dfe..bce23f7 100644
+--- a/src/core/domain/userdm/skill_year.go
++++ b/src/core/domain/userdm/skill_year.go
+@@ -7,12 +7,12 @@ type SkillYear uint8
+ func NewSkillYear(yearsOfExperience uint8) (SkillYear, error) {
+ 	// 経験年数が0以下であればエラーを返す
+ 	if yearsOfExperience <= 0 {
+-		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear")
++		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear:  SkillYear cannot be zero or negative value")
+ 	}
+ 
+ 	// 100年以上の経験は非現実的なので、このような上限も設定することができます。
+ 	if yearsOfExperience > 100 {
+-		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear")
++		return 0, customerrors.NewUnprocessableEntityError("NewSkillYear: SkillYear should be less than or equal to 100")
+ 	}
+ 
+ 	skillsYearValueObject := SkillYear(yearsOfExperience)
+diff --git a/src/core/domain/userdm/user_email.go b/src/core/domain/userdm/user_email.go
+index 5f9969a..5abb1f0 100644
+--- a/src/core/domain/userdm/user_email.go
++++ b/src/core/domain/userdm/user_email.go
+@@ -4,10 +4,13 @@ import (
+ 	"regexp"
+ 	"unicode/utf8"
+ 
+-	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+ 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+ )
+ 
++const (
++	EmailMaxlength = 256
++)
++
+ type UserEmail string
+ 
+ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+@@ -16,7 +19,7 @@ func NewUserEmail(userEmail string) (UserEmail, error) {
+ 	count := utf8.RuneCountInString(userEmail)
+ 	if userEmail == "" {
+ 		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is empty")
+-	} else if constants.EmailMaxlength < count {
++	} else if EmailMaxlength < count {
+ 		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is too long")
+ 	}
+ 
+diff --git a/src/core/domain/userdm/user_password.go b/src/core/domain/userdm/user_password.go
+index bd68c09..1b27b30 100644
+--- a/src/core/domain/userdm/user_password.go
++++ b/src/core/domain/userdm/user_password.go
+@@ -3,19 +3,23 @@ package userdm
+ import (
+ 	"unicode/utf8"
+ 
+-	"github.com/FUJI0130/curriculum/src/core/domain/userdm/constants"
+ 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+ )
+ 
++const (
++	PasswordMinlength = 13
++	PasswordMaxlength = 256
++)
++
+ type UserPassword string
+ 
+ func NewUserPassword(userPassword string) (UserPassword, error) {
+ 	count := utf8.RuneCountInString(userPassword)
+ 	if userPassword == "" {
+ 		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is empty")
+-	} else if constants.PasswordMaxlength < count {
++	} else if PasswordMaxlength < count {
+ 		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is too long")
+-	} else if count < constants.PasswordMinlength {
++	} else if count < PasswordMinlength {
+ 		return "", customerrors.NewUnprocessableEntityError("NewUserPassword password is too short")
+ 	}
+ 
+diff --git a/src/core/domain/userdm/user_repository.go b/src/core/domain/userdm/user_repository.go
+index 40658a4..21b666b 100644
+--- a/src/core/domain/userdm/user_repository.go
++++ b/src/core/domain/userdm/user_repository.go
+@@ -6,10 +6,13 @@ package userdm
+ 
+ import (
+ 	"context"
++
++	"github.com/jmoiron/sqlx"
+ )
+ 
+ type UserRepository interface {
+ 	Store(ctx context.Context, userdomain *UserDomain) error
++	StoreWithTransaction(tx *sqlx.Tx, userdomain *UserDomain) error
+ 	FindByName(ctx context.Context, name string) (*User, error)
+ 	FindByNames(ctx context.Context, names []string) (map[string]*User, error)
+ }
+diff --git a/src/core/infra/controllers/controller.go b/src/core/infra/controllers/controller.go
+index 3a90f3a..d6f5829 100644
+--- a/src/core/infra/controllers/controller.go
++++ b/src/core/infra/controllers/controller.go
+@@ -7,10 +7,16 @@ import (
+ 
+ func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService) {
+ 	InitHealthController(r)
+-	InitCreateUserController(r, createUserService)
++	// InitCreateUserController(r, createUserService)
++	InitCreateUserControllerWithTransaction(r, createUserService)
+ }
+ 
+ func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
+ 	ctrl := NewCreateUserController(s)
+ 	r.POST("/users", ctrl.Create)
+ }
++
++func InitCreateUserControllerWithTransaction(r *gin.Engine, s *userapp.CreateUserAppService) {
++	ctrl := NewCreateUserController(s)
++	r.POST("/users", ctrl.CreateWithTransaction)
++}
+diff --git a/src/core/infra/controllers/create_user_controller.go b/src/core/infra/controllers/create_user_controller.go
+index ebd3af1..1f94873 100644
+--- a/src/core/infra/controllers/create_user_controller.go
++++ b/src/core/infra/controllers/create_user_controller.go
+@@ -7,6 +7,7 @@ import (
+ 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+ 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+ 	"github.com/gin-gonic/gin"
++	"github.com/jmoiron/sqlx"
+ )
+ 
+ type CreateUserController struct {
+@@ -30,8 +31,40 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
+ 		switch err.(type) {
+ 		case *customerrors.ConflictErrorType:
+ 			c.JSON(customerrors.ErrCodeConflict, gin.H{"error": err.Error()})
+-		case *customerrors.DatabaseErrorType:
+-			c.JSON(customerrors.ErrCodeDatabaseError, gin.H{"error": err.Error()})
++		case *customerrors.InternalServerErrorType:
++			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()})
++		case *customerrors.NotFoundErrorType:
++			c.JSON(customerrors.ErrCodeNotFound, gin.H{"error": err.Error()})
++		case *customerrors.UnprocessableEntityErrorType:
++			c.JSON(customerrors.ErrCodeUnprocessableEntity, gin.H{"error": err.Error()})
++		default:
++			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す
++		}
++		return
++	}
++
++	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
++}
++
++func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
++
++	var req userapp.CreateUserRequest
++	if err := c.BindJSON(&req); err != nil {
++		c.JSON(customerrors.ErrCodeUnprocessableEntity, gin.H{"error": err.Error()})
++		return
++	}
++
++	// コンテキストの取得
++	ctx := c.Request.Context()
++
++	// トランザクションの取得
++	tx, _ := c.MustGet("tx").(*sqlx.Tx)
++
++	// ExecWithTransactionにコンテキストとトランザクションを渡す
++	if err := ctrl.createUserService.ExecWithTransaction(ctx, tx, &req); err != nil {
++		switch err.(type) {
++		case *customerrors.ConflictErrorType:
++			c.JSON(customerrors.ErrCodeConflict, gin.H{"error": err.Error()})
+ 		case *customerrors.InternalServerErrorType:
+ 			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()})
+ 		case *customerrors.NotFoundErrorType:
+diff --git a/src/core/infra/middleware/Transaction_handling.go b/src/core/infra/middleware/Transaction_handling.go
+new file mode 100644
+index 0000000..688c831
+--- /dev/null
++++ b/src/core/infra/middleware/Transaction_handling.go
+@@ -0,0 +1,44 @@
++package middleware
++
++import (
++	"log"
++
++	"github.com/gin-gonic/gin"
++	"github.com/jmoiron/sqlx"
++)
++
++func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
++	return func(c *gin.Context) {
++
++		var tx *sqlx.Tx
++		var err error
++		log.Printf("TransactionHandler: %s", c.Request.Method)
++
++		// POST, PATCH, PUT, DELETE の場合トランザクションを開始
++		switch c.Request.Method {
++		case "POST", "PATCH", "PUT", "DELETE":
++			tx, err = db.Beginx()
++			if err != nil {
++				c.JSON(500, gin.H{"error": "Failed to start transaction"})
++				return
++			}
++
++			defer func() {
++				if r := recover(); r != nil {
++					tx.Rollback()
++					panic(r)
++				} else if c.Writer.Status() >= 400 {
++					tx.Rollback()
++				} else {
++					tx.Commit()
++				}
++			}()
++
++			log.Printf("TransactionHandler before c.Request")
++			// c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "tx", tx))
++			c.Set("tx", tx) // トランザクションをgin.Contextに設定
++		}
++
++		c.Next()
++	}
++}
+diff --git a/src/core/infra/middleware/error_handling.go b/src/core/infra/middleware/error_handling.go
+index 1283f50..fb5fa85 100644
+--- a/src/core/infra/middleware/error_handling.go
++++ b/src/core/infra/middleware/error_handling.go
+@@ -1,11 +1,13 @@
+ package middleware
+ 
+ import (
++	"fmt"
+ 	"log"
+ 	"net/http"
+ 
++	"github.com/FUJI0130/curriculum/src/core/support/base"
++	"github.com/cockroachdb/errors"
+ 	"github.com/gin-gonic/gin"
+-	"github.com/pkg/errors"
+ )
+ 
+ func ErrorHandler(c *gin.Context) {
+@@ -21,9 +23,20 @@ func ErrorHandler(c *gin.Context) {
+ 				err = errors.New("unknown panic")
+ 			}
+ 			log.Printf("recovered from panic: %+v", err) // %+v でstack traceもログに出力
+-			c.JSON(http.StatusInternalServerError, gin.H{
+-				"error": err.Error(),
+-			})
++
++			switch e := err.(type) {
++			case base.BaseErrorHandler:
++				log.Printf("ERROR: %+v", e.Trace())
++				c.JSON(e.StatusCode(), gin.H{
++					"message": fmt.Sprintf("%d: %s", e.StatusCode(), e.Error()),
++				})
++			default:
++				log.Printf("FATAL: %+v", e)
++				c.JSON(http.StatusInternalServerError, gin.H{
++					"message": "Fatal",
++				})
++			}
++
+ 			c.Abort()
+ 		}
+ 	}()
+diff --git a/src/core/infra/rdbimpl/tag_repository_impl.go b/src/core/infra/rdbimpl/tag_repository_impl.go
+index 6ec3c9d..406b950 100644
+--- a/src/core/infra/rdbimpl/tag_repository_impl.go
++++ b/src/core/infra/rdbimpl/tag_repository_impl.go
+@@ -4,7 +4,6 @@ import (
+ 	"context"
+ 	"database/sql"
+ 	"errors"
+-	"fmt"
+ 	"time"
+ 
+ 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+@@ -32,7 +31,17 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error
+ 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
+ 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
+ 	if err != nil {
+-		return customerrors.WrapDatabaseError(err, "Failed to store tag")
++		return customerrors.WrapInternalServerError(err, "Failed to store tag")
++	}
++
++	return nil
++}
++func (repo *tagRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, tag *tagdm.Tag) error {
++
++	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
++	_, err := tx.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
++	if err != nil {
++		return customerrors.WrapInternalServerError(err, "Failed to store tag")
+ 	}
+ 
+ 	return nil
+@@ -46,7 +55,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
+ 		if errors.Is(err, sql.ErrNoRows) {
+ 			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_impl FindByName")
+ 		}
+-		return nil, fmt.Errorf("tag_repository_impl FindByName database error: %v", err)
++		return nil, customerrors.WrapInternalServerError(err, "tag_repository_impl FindByName database error")
+ 	}
+ 
+ 	tagID := tagdm.TagID(tempTag.ID)
+@@ -64,12 +73,12 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string)
+ 	var tempTags []tagRequest
+ 	query, args, err := sqlx.In(query, names)
+ 	if err != nil {
+-		return nil, customerrors.WrapDatabaseError(err, "Error query construction error")
++		return nil, customerrors.WrapInternalServerError(err, "Error query construction error")
+ 	}
+ 
+ 	err = repo.Conn.Select(&tempTags, query, args...)
+ 	if err != nil {
+-		return nil, customerrors.WrapDatabaseError(err, "FindByNames Select tag_repository database error")
++		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select tag_repository database error")
+ 	}
+ 
+ 	var tags []*tagdm.Tag
+@@ -93,7 +102,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
+ 		if errors.Is(err, sql.ErrNoRows) {
+ 			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_imple  FindByID")
+ 		}
+-		return nil, customerrors.WrapDatabaseError(err, "tag_repository FindByID database error")
++		return nil, customerrors.WrapInternalServerError(err, "tag_repository FindByID database error")
+ 	}
+ 
+ 	tagID := tagdm.TagID(tempTag.ID)
+diff --git a/src/core/infra/rdbimpl/user_repository_impl.go b/src/core/infra/rdbimpl/user_repository_impl.go
+index 54db535..f6f7ce7 100644
+--- a/src/core/infra/rdbimpl/user_repository_impl.go
++++ b/src/core/infra/rdbimpl/user_repository_impl.go
+@@ -35,14 +35,14 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
+ 
+ 	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
+ 	if err != nil {
+-		return customerrors.WrapDatabaseError(err, "Failed to store user")
++		return customerrors.WrapInternalServerError(err, "Failed to store user")
+ 	}
+ 
+ 	for _, skill := range userdomain.Skills {
+ 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
+ 		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+ 		if err != nil {
+-			return customerrors.WrapDatabaseError(err, "Failed to store skill")
++			return customerrors.WrapInternalServerError(err, "Failed to store skill")
+ 		}
+ 	}
+ 
+@@ -50,7 +50,35 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
+ 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
+ 		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+ 		if err != nil {
+-			return customerrors.WrapDatabaseError(err, "Failed to store career")
++			return customerrors.WrapInternalServerError(err, "Failed to store career")
++		}
++	}
++
++	return nil
++}
++
++func (repo *userRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, userdomain *userdm.UserDomain) error {
++
++	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
++
++	_, err := tx.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
++	if err != nil {
++		return customerrors.WrapInternalServerError(err, "Failed to store user")
++	}
++
++	for _, skill := range userdomain.Skills {
++		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
++		_, err = tx.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
++		if err != nil {
++			return customerrors.WrapInternalServerError(err, "Failed to store skill")
++		}
++	}
++
++	for _, career := range userdomain.Careers {
++		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
++		_, err = tx.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
++		if err != nil {
++			return customerrors.WrapInternalServerError(err, "Failed to store career")
+ 		}
+ 	}
+ 
+@@ -66,7 +94,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
+ 		if errors.Is(err, sql.ErrNoRows) {
+ 			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName")
+ 		}
+-		return nil, customerrors.WrapDatabaseError(err, "user_repository FindByName database error")
++		return nil, customerrors.WrapInternalServerError(err, "User Repository FindByName database error")
+ 	}
+ 	user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+ 
+@@ -82,12 +110,12 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
+ 	var tempUsers []userRequest
+ 	query, args, err := sqlx.In(query, names)
+ 	if err != nil {
+-		return nil, customerrors.WrapDatabaseError(err, "Error query construction error")
++		return nil, customerrors.WrapInternalServerError(err, "Error query construction error")
+ 	}
+ 
+ 	err = repo.Conn.Select(&tempUsers, query, args...)
+ 	if err != nil {
+-		return nil, customerrors.WrapDatabaseError(err, "Select Error query construction error")
++		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
+ 	}
+ 
+ 	userMap := make(map[string]*userdm.User)
+diff --git a/src/core/infra/response/error_response.go b/src/core/infra/response/error_response.go
+index 743be96..eb46897 100644
+--- a/src/core/infra/response/error_response.go
++++ b/src/core/infra/response/error_response.go
+@@ -3,7 +3,7 @@ package response
+ import (
+ 	"net/http"
+ 
+-	"github.com/pkg/errors"
++	"github.com/cockroachdb/errors"
+ )
+ 
+ type ErrorResponse struct {
+diff --git a/src/core/mock/mockTag/tag_repository_mock.go b/src/core/mock/mockTag/tag_repository_mock.go
+index 8b051a9..39459e9 100644
+--- a/src/core/mock/mockTag/tag_repository_mock.go
++++ b/src/core/mock/mockTag/tag_repository_mock.go
+@@ -10,6 +10,7 @@ import (
+ 
+ 	tagdm "github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+ 	gomock "github.com/golang/mock/gomock"
++	sqlx "github.com/jmoiron/sqlx"
+ )
+ 
+ // MockTagRepository is a mock of TagRepository interface.
+@@ -93,3 +94,17 @@ func (mr *MockTagRepositoryMockRecorder) Store(ctx, tag interface{}) *gomock.Cal
+ 	mr.mock.ctrl.T.Helper()
+ 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockTagRepository)(nil).Store), ctx, tag)
+ }
++
++// StoreWithTransaction mocks base method.
++func (m *MockTagRepository) StoreWithTransaction(tx *sqlx.Tx, tag *tagdm.Tag) error {
++	m.ctrl.T.Helper()
++	ret := m.ctrl.Call(m, "StoreWithTransaction", tx, tag)
++	ret0, _ := ret[0].(error)
++	return ret0
++}
++
++// StoreWithTransaction indicates an expected call of StoreWithTransaction.
++func (mr *MockTagRepositoryMockRecorder) StoreWithTransaction(tx, tag interface{}) *gomock.Call {
++	mr.mock.ctrl.T.Helper()
++	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockTagRepository)(nil).StoreWithTransaction), tx, tag)
++}
+diff --git a/src/core/mock/mockUser/user_repository_mock.go b/src/core/mock/mockUser/user_repository_mock.go
+index 4ef0c7a..437fa2d 100644
+--- a/src/core/mock/mockUser/user_repository_mock.go
++++ b/src/core/mock/mockUser/user_repository_mock.go
+@@ -1,5 +1,5 @@
+ // Code generated by MockGen. DO NOT EDIT.
+-// Source: github.com/FUJI0130/curriculum/src/core/domain/userdm (interfaces: UserRepository)
++// Source: src/core/domain/userdm/user_repository.go
+ 
+ // Package mockUser is a generated GoMock package.
+ package mockUser
+@@ -10,6 +10,7 @@ import (
+ 
+ 	userdm "github.com/FUJI0130/curriculum/src/core/domain/userdm"
+ 	gomock "github.com/golang/mock/gomock"
++	sqlx "github.com/jmoiron/sqlx"
+ )
+ 
+ // MockUserRepository is a mock of UserRepository interface.
+@@ -36,45 +37,59 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
+ }
+ 
+ // FindByName mocks base method.
+-func (m *MockUserRepository) FindByName(arg0 context.Context, arg1 string) (*userdm.User, error) {
++func (m *MockUserRepository) FindByName(ctx context.Context, name string) (*userdm.User, error) {
+ 	m.ctrl.T.Helper()
+-	ret := m.ctrl.Call(m, "FindByName", arg0, arg1)
++	ret := m.ctrl.Call(m, "FindByName", ctx, name)
+ 	ret0, _ := ret[0].(*userdm.User)
+ 	ret1, _ := ret[1].(error)
+ 	return ret0, ret1
+ }
+ 
+ // FindByName indicates an expected call of FindByName.
+-func (mr *MockUserRepositoryMockRecorder) FindByName(arg0, arg1 interface{}) *gomock.Call {
++func (mr *MockUserRepositoryMockRecorder) FindByName(ctx, name interface{}) *gomock.Call {
+ 	mr.mock.ctrl.T.Helper()
+-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByName", reflect.TypeOf((*MockUserRepository)(nil).FindByName), arg0, arg1)
++	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByName", reflect.TypeOf((*MockUserRepository)(nil).FindByName), ctx, name)
+ }
+ 
+ // FindByNames mocks base method.
+-func (m *MockUserRepository) FindByNames(arg0 context.Context, arg1 []string) (map[string]*userdm.User, error) {
++func (m *MockUserRepository) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+ 	m.ctrl.T.Helper()
+-	ret := m.ctrl.Call(m, "FindByNames", arg0, arg1)
++	ret := m.ctrl.Call(m, "FindByNames", ctx, names)
+ 	ret0, _ := ret[0].(map[string]*userdm.User)
+ 	ret1, _ := ret[1].(error)
+ 	return ret0, ret1
+ }
+ 
+ // FindByNames indicates an expected call of FindByNames.
+-func (mr *MockUserRepositoryMockRecorder) FindByNames(arg0, arg1 interface{}) *gomock.Call {
++func (mr *MockUserRepositoryMockRecorder) FindByNames(ctx, names interface{}) *gomock.Call {
+ 	mr.mock.ctrl.T.Helper()
+-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByNames", reflect.TypeOf((*MockUserRepository)(nil).FindByNames), arg0, arg1)
++	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByNames", reflect.TypeOf((*MockUserRepository)(nil).FindByNames), ctx, names)
+ }
+ 
+ // Store mocks base method.
+-func (m *MockUserRepository) Store(arg0 context.Context, arg1 *userdm.UserDomain) error {
++func (m *MockUserRepository) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
+ 	m.ctrl.T.Helper()
+-	ret := m.ctrl.Call(m, "Store", arg0, arg1)
++	ret := m.ctrl.Call(m, "Store", ctx, userdomain)
+ 	ret0, _ := ret[0].(error)
+ 	return ret0
+ }
+ 
+ // Store indicates an expected call of Store.
+-func (mr *MockUserRepositoryMockRecorder) Store(arg0, arg1 interface{}) *gomock.Call {
++func (mr *MockUserRepositoryMockRecorder) Store(ctx, userdomain interface{}) *gomock.Call {
+ 	mr.mock.ctrl.T.Helper()
+-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockUserRepository)(nil).Store), arg0, arg1)
++	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockUserRepository)(nil).Store), ctx, userdomain)
++}
++
++// StoreWithTransaction mocks base method.
++func (m *MockUserRepository) StoreWithTransaction(tx *sqlx.Tx, userdomain *userdm.UserDomain) error {
++	m.ctrl.T.Helper()
++	ret := m.ctrl.Call(m, "StoreWithTransaction", tx, userdomain)
++	ret0, _ := ret[0].(error)
++	return ret0
++}
++
++// StoreWithTransaction indicates an expected call of StoreWithTransaction.
++func (mr *MockUserRepositoryMockRecorder) StoreWithTransaction(tx, userdomain interface{}) *gomock.Call {
++	mr.mock.ctrl.T.Helper()
++	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockUserRepository)(nil).StoreWithTransaction), tx, userdomain)
+ }
+diff --git a/src/core/support/base/error.go b/src/core/support/base/error.go
+index 88b414c..4ac21db 100644
+--- a/src/core/support/base/error.go
++++ b/src/core/support/base/error.go
+@@ -1,19 +1,33 @@
+ package base
+ 
+ type BaseError struct {
+-	Message    string
+-	StatusCode int
+-	Trace      error
++	Message       string
++	StatusCodeVal int
++	TraceVal      error
++}
++
++type BaseErrorHandler interface {
++	StatusCode() int
++	Trace() error
++	Error() string
+ }
+ 
+ func NewBaseError(message string, statusCode int, trace error) *BaseError {
+ 	return &BaseError{
+-		Message:    message,
+-		StatusCode: statusCode,
+-		Trace:      trace,
++		Message:       message,
++		StatusCodeVal: statusCode,
++		TraceVal:      trace,
+ 	}
+ }
+ 
+ func (be *BaseError) Error() string {
+ 	return be.Message
+ }
++
++func (be *BaseError) StatusCode() int {
++	return be.StatusCodeVal
++}
++
++func (be *BaseError) Trace() error {
++	return be.TraceVal
++}
+diff --git a/src/core/support/customerrors/conflictError.go b/src/core/support/customerrors/conflict_error.go
+similarity index 65%
+rename from src/core/support/customerrors/conflictError.go
+rename to src/core/support/customerrors/conflict_error.go
+index 30cb809..bc32d24 100644
+--- a/src/core/support/customerrors/conflictError.go
++++ b/src/core/support/customerrors/conflict_error.go
+@@ -15,9 +15,9 @@ type ConflictErrorType struct {
+ func NewConflictError(message string) *ConflictErrorType {
+ 	return &ConflictErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeConflict,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeConflict,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -26,9 +26,9 @@ func NewConflictErrorf(format string, args ...interface{}) *ConflictErrorType {
+ 	message := fmt.Sprintf(format, args...)
+ 	return &ConflictErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeConflict,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeConflict,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -36,9 +36,9 @@ func NewConflictErrorf(format string, args ...interface{}) *ConflictErrorType {
+ func WrapConflictError(err error, message string) *ConflictErrorType {
+ 	return &ConflictErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeConflict,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeConflict,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+@@ -47,9 +47,9 @@ func WrapConflictErrorf(err error, format string, args ...interface{}) *Conflict
+ 	message := fmt.Sprintf(format, args...)
+ 	return &ConflictErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeConflict,
+-			Trace:      errors.Wrapf(err, format, args...),
++			Message:       message,
++			StatusCodeVal: ErrCodeConflict,
++			TraceVal:      errors.Wrapf(err, format, args...),
+ 		},
+ 	}
+ }
+diff --git a/src/core/support/customerrors/databaseError.go b/src/core/support/customerrors/databaseError.go
+deleted file mode 100644
+index a6fd264..0000000
+--- a/src/core/support/customerrors/databaseError.go
++++ /dev/null
+@@ -1,60 +0,0 @@
+-package customerrors
+-
+-import (
+-	"fmt"
+-
+-	"github.com/FUJI0130/curriculum/src/core/support/base"
+-	"github.com/pkg/errors"
+-)
+-
+-// ... 既存のappErrと関連エラータイプの定義 ...
+-
+-type DatabaseErrorType struct {
+-	*base.BaseError
+-}
+-
+-func (e *DatabaseErrorType) Error() string {
+-	return e.Message
+-}
+-
+-func NewDatabaseError(message string) *DatabaseErrorType {
+-	return &DatabaseErrorType{
+-		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeDatabaseError,
+-			Trace:      errors.New(message),
+-		},
+-	}
+-}
+-
+-func NewDatabaseErrorf(format string, args ...interface{}) *DatabaseErrorType {
+-	message := fmt.Sprintf(format, args...)
+-	return &DatabaseErrorType{
+-		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeDatabaseError,
+-			Trace:      errors.Errorf(format, args...),
+-		},
+-	}
+-}
+-
+-func WrapDatabaseError(err error, format string, args ...interface{}) *DatabaseErrorType {
+-	message := fmt.Sprintf(format, args...)
+-	return &DatabaseErrorType{
+-		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeDatabaseError,
+-			Trace:      errors.Wrapf(err, format, args...),
+-		},
+-	}
+-}
+-func WrapDatabaseErrorf(err error, format string, args ...interface{}) *DatabaseErrorType {
+-	message := fmt.Sprintf(format, args...)
+-	return &DatabaseErrorType{
+-		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeDatabaseError,
+-			Trace:      errors.Wrapf(err, format, args...),
+-		},
+-	}
+-}
+diff --git a/src/core/support/customerrors/internalServerError.go b/src/core/support/customerrors/internal_server_error.go
+similarity index 66%
+rename from src/core/support/customerrors/internalServerError.go
+rename to src/core/support/customerrors/internal_server_error.go
+index c6424ac..ccc6f54 100644
+--- a/src/core/support/customerrors/internalServerError.go
++++ b/src/core/support/customerrors/internal_server_error.go
+@@ -15,9 +15,9 @@ type InternalServerErrorType struct {
+ func NewInternalServerError(message string) *InternalServerErrorType {
+ 	return &InternalServerErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeInternalServerError,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeInternalServerError,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -26,9 +26,9 @@ func NewInternalServerErrorf(format string, args ...interface{}) *InternalServer
+ 	message := fmt.Sprintf(format, args...)
+ 	return &InternalServerErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeInternalServerError,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeInternalServerError,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -36,9 +36,9 @@ func NewInternalServerErrorf(format string, args ...interface{}) *InternalServer
+ func WrapInternalServerError(err error, message string) *InternalServerErrorType {
+ 	return &InternalServerErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeInternalServerError,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeInternalServerError,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+@@ -46,9 +46,9 @@ func WrapInternalServerErrorf(err error, format string, args ...interface{}) *In
+ 	message := fmt.Sprintf(format, args...)
+ 	return &InternalServerErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeInternalServerError,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeInternalServerError,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+diff --git a/src/core/support/customerrors/notFoundError.go b/src/core/support/customerrors/notFound_error.go
+similarity index 66%
+rename from src/core/support/customerrors/notFoundError.go
+rename to src/core/support/customerrors/notFound_error.go
+index d55bfb6..55a520b 100644
+--- a/src/core/support/customerrors/notFoundError.go
++++ b/src/core/support/customerrors/notFound_error.go
+@@ -15,9 +15,9 @@ type NotFoundErrorType struct {
+ func NewNotFoundError(message string) *NotFoundErrorType {
+ 	return &NotFoundErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeNotFound,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeNotFound,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -26,9 +26,9 @@ func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
+ 	message := fmt.Sprintf(format, args...)
+ 	return &NotFoundErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeNotFound,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeNotFound,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -36,9 +36,9 @@ func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
+ func WrapNotFoundError(err error, message string) *NotFoundErrorType {
+ 	return &NotFoundErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeNotFound,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeNotFound,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+@@ -46,9 +46,9 @@ func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFound
+ 	message := fmt.Sprintf(format, args...)
+ 	return &NotFoundErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeNotFound,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeNotFound,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+diff --git a/src/core/support/customerrors/statuscodes.go b/src/core/support/customerrors/statuscodes.go
+index 83da929..cedcf15 100644
+--- a/src/core/support/customerrors/statuscodes.go
++++ b/src/core/support/customerrors/statuscodes.go
+@@ -2,7 +2,6 @@ package customerrors
+ 
+ const (
+ 	ErrCodeConflict            = 409
+-	ErrCodeDatabaseError       = 5600
+ 	ErrCodeInternalServerError = 500
+ 	ErrCodeNotFound            = 404
+ 	ErrCodeUnprocessableEntity = 400
+diff --git a/src/core/support/customerrors/UnprocessableEntitiError.go b/src/core/support/customerrors/unprocessable_entity_error.go
+similarity index 67%
+rename from src/core/support/customerrors/UnprocessableEntitiError.go
+rename to src/core/support/customerrors/unprocessable_entity_error.go
+index 7b313ab..7b01ed6 100644
+--- a/src/core/support/customerrors/UnprocessableEntitiError.go
++++ b/src/core/support/customerrors/unprocessable_entity_error.go
+@@ -15,9 +15,9 @@ type UnprocessableEntityErrorType struct {
+ func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
+ 	return &UnprocessableEntityErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeUnprocessableEntity,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeUnprocessableEntity,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -26,9 +26,9 @@ func NewUnprocessableEntityErrorf(format string, args ...interface{}) *Unprocess
+ 	message := fmt.Sprintf(format, args...)
+ 	return &UnprocessableEntityErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeUnprocessableEntity,
+-			Trace:      errors.New(message),
++			Message:       message,
++			StatusCodeVal: ErrCodeUnprocessableEntity,
++			TraceVal:      errors.New(message),
+ 		},
+ 	}
+ }
+@@ -36,9 +36,9 @@ func NewUnprocessableEntityErrorf(format string, args ...interface{}) *Unprocess
+ func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
+ 	return &UnprocessableEntityErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeUnprocessableEntity,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeUnprocessableEntity,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+@@ -46,9 +46,9 @@ func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}
+ 	message := fmt.Sprintf(format, args...)
+ 	return &UnprocessableEntityErrorType{
+ 		&base.BaseError{
+-			Message:    message,
+-			StatusCode: ErrCodeUnprocessableEntity,
+-			Trace:      errors.Wrap(err, message),
++			Message:       message,
++			StatusCodeVal: ErrCodeUnprocessableEntity,
++			TraceVal:      errors.Wrap(err, message),
+ 		},
+ 	}
+ }
+diff --git a/src/core/utils/reflection.go b/src/core/utils/reflection.go
+deleted file mode 100644
+index e058e16..0000000
+--- a/src/core/utils/reflection.go
++++ /dev/null
+@@ -1,58 +0,0 @@
+-package utils
+-
+-import (
+-	"reflect"
+-
+-	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+-)
+-
+-func StructToMap(req interface{}) (map[string]interface{}, error) {
+-	result := make(map[string]interface{})
+-	val := reflect.ValueOf(req)
+-	if val.Kind() != reflect.Ptr {
+-		return nil, customerrors.NewInternalServerError("StructToMap Expected a pointer but got " + val.Kind().String())
+-	}
+-	val = val.Elem() // Now it's safe to call Elem
+-	typ := val.Type()
+-
+-	// Iterate over struct fields
+-	for i := 0; i < val.NumField(); i++ {
+-		field := val.Field(i)
+-		fieldType := typ.Field(i)
+-
+-		// Ignore unexported fields
+-		if fieldType.PkgPath != "" {
+-			continue
+-		}
+-
+-		key := fieldType.Name
+-
+-		// Recursively process nested structures
+-		if field.Kind() == reflect.Struct {
+-			nestedMap, err := StructToMap(field.Addr().Interface())
+-			if err != nil {
+-				return nil, err
+-			}
+-			result[key] = nestedMap
+-		} else if field.Kind() == reflect.Slice {
+-			var sliceData []interface{}
+-			for si := 0; si < field.Len(); si++ {
+-				sliceElem := field.Index(si)
+-				if sliceElem.Kind() == reflect.Struct {
+-					nestedMap, err := StructToMap(sliceElem.Addr().Interface())
+-					if err != nil {
+-						return nil, err
+-					}
+-					sliceData = append(sliceData, nestedMap)
+-				} else {
+-					sliceData = append(sliceData, sliceElem.Interface())
+-				}
+-			}
+-			result[key] = sliceData
+-		} else {
+-			// Plain field, just set the value
+-			result[key] = field.Interface()
+-		}
+-	}
+-	return result, nil
+-}
+diff --git a/src/core/validator/validate_keys.go b/src/core/validator/validate_keys.go
+deleted file mode 100644
+index 36177ea..0000000
+--- a/src/core/validator/validate_keys.go
++++ /dev/null
+@@ -1,46 +0,0 @@
+-package validator
+-
+-import (
+-	"fmt"
+-	"reflect"
+-
+-	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+-)
+-
+-func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct interface{}) error {
+-	expectedKeys := make(map[string]bool)
+-
+-	val := reflect.ValueOf(referenceStruct).Elem()
+-	for i := 0; i < val.NumField(); i++ {
+-		expectedKeys[val.Type().Field(i).Name] = true
+-	}
+-
+-	for key, value := range rawReq {
+-		// Check if key is expected
+-		if _, exists := expectedKeys[key]; !exists {
+-			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("Unexpected key '%s' in the request", key))
+-		}
+-
+-		// Recursively check nested structures
+-		if nestedMap, ok := value.(map[string]interface{}); ok {
+-			field, _ := val.Type().FieldByName(key)
+-			if field.Type.Kind() == reflect.Struct {
+-				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
+-					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s': %v", key, err))
+-				}
+-			}
+-		} else if nestedSlice, ok := value.([]interface{}); ok {
+-			field, _ := val.Type().FieldByName(key)
+-			if field.Type.Elem().Kind() == reflect.Struct {
+-				for i, nestedElement := range nestedSlice {
+-					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
+-						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
+-							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s' index %d: %v", key, i, err))
+-						}
+-					}
+-				}
+-			}
+-		}
+-	}
+-	return nil
+-}

@@ -30,8 +30,6 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 		switch err.(type) {
 		case *customerrors.ConflictErrorType:
 			c.JSON(customerrors.ErrCodeConflict, gin.H{"error": err.Error()})
-		case *customerrors.DatabaseErrorType:
-			c.JSON(customerrors.ErrCodeDatabaseError, gin.H{"error": err.Error()})
 		case *customerrors.InternalServerErrorType:
 			c.JSON(customerrors.ErrCodeInternalServerError, gin.H{"error": err.Error()})
 		case *customerrors.NotFoundErrorType:
