@@ -21,12 +21,12 @@ type Skill struct {
 func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "NewSkill", evaluation)
+		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "[NewSkill] evaluation value: %d", evaluation)
 	}
 
 	y, err := NewSkillYear(years)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "NewSkill", years)
+		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "[NewSkill] years value: %d", years)
 	}
 
 	skillCreatedAt := sharedvo.NewCreatedAt()

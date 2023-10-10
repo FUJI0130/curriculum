@@ -16,10 +16,10 @@ const NameMaxLength = 15
 // GenWhenCreateTag creates a new tag with the given parameters.
 func GenWhenCreateTag(name string) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.NewUnprocessableEntityError("GenWhenCreateTag  name is empty")
+		return nil, customerrors.NewUnprocessableEntityError("[GenWhenCreateTag] Tag name is empty")
 	}
 	if utf8.RuneCountInString(name) > NameMaxLength {
-		return nil, customerrors.NewUnprocessableEntityError("GenWhenCreateTag Tag name is Too long")
+		return nil, customerrors.NewUnprocessableEntityError("[GenWhenCreateTag] Tag name is Too long")
 	}
 	tagID, err := NewTagID()
 	if err != nil {
@@ -39,10 +39,10 @@ func GenWhenCreateTag(name string) (*Tag, error) {
 // TestNewTag is a function for testing purposes and creates a tag with predefined values.
 func TestNewTag(id string, name string) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.NewUnprocessableEntityError("TestNewTag  name is empty")
+		return nil, customerrors.NewUnprocessableEntityError("[TestNewTag]  name is empty")
 	}
 	if utf8.RuneCountInString(name) > NameMaxLength {
-		return nil, customerrors.NewUnprocessableEntityError("TestNewTag Tag name is Too long")
+		return nil, customerrors.NewUnprocessableEntityError("[TestNewTag] Tag name is Too long")
 	}
 	tagID, err := NewTagIDFromString(id)
 	if err != nil {

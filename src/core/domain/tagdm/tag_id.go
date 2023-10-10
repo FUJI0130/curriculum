@@ -10,7 +10,7 @@ type TagID string
 func NewTagID() (TagID, error) {
 	tagID, err := uuid.NewRandom()
 	if err != nil {
-		return TagID(""), customerrors.WrapUnprocessableEntityError(err, "NewTagID") // カスタムエラーに差し替え
+		return TagID(""), customerrors.WrapUnprocessableEntityError(err, "[NewTagID] ID is error") // カスタムエラーに差し替え
 	}
 	return TagID(tagID.String()), nil
 }
@@ -18,7 +18,7 @@ func NewTagIDFromString(idStr string) (TagID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", customerrors.WrapUnprocessableEntityError(err, "NewTagIDFromString") // カスタムエラーに差し替え
+		return "", customerrors.WrapUnprocessableEntityError(err, "[NewTagIDFromString] ID is error") // カスタムエラーに差し替え
 	}
 	return TagID(idStr), nil
 }

@@ -2,7 +2,9 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
@@ -27,12 +29,15 @@ func NewCreateUserController(s *userapp.CreateUserAppService) *CreateUserControl
 // ここでcurlコマンドの内容をバインドしている
 func (ctrl *CreateUserController) Create(c *gin.Context) {
 
+	log.Printf("before bindJSON: %s", time.Now().String())
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
+		customErr := customerrors.WrapUnprocessableEntityError(err, "create_user_controller [Create] : JSON binding error")
+		c.JSON(customErr.StatusCode(), gin.H{"error": customErr.Message})
 		return
 	}
 
+	log.Printf("before create User Service Exec: %s", time.Now().String())
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		switch err.(type) {
 		case *customerrors.ConflictErrorType:

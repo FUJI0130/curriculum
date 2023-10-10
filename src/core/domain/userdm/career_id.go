@@ -11,7 +11,7 @@ func NewCareerID() (CareerID, error) {
 	careerID, err := uuid.NewRandom()
 	if err != nil {
 		// もしUUIDの生成が失敗した場合に新しいカスタムエラーを返す
-		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "NewCareerID")
+		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "[NewCareerID] ID is error")
 	}
 	return CareerID(careerID.String()), nil
 }

@@ -10,7 +10,7 @@ type SkillID string
 func NewSkillID() (SkillID, error) {
 	skillID, err := uuid.NewRandom()
 	if err != nil {
-		return SkillID(""), customerrors.WrapUnprocessableEntityError(err, "NewSkillID")
+		return SkillID(""), customerrors.WrapUnprocessableEntityError(err, "[NewSkillID] ID is error")
 	}
 	skillIDValueObject := SkillID(skillID.String())
 	return skillIDValueObject, nil
@@ -19,7 +19,7 @@ func NewSkillIDFromString(idStr string) (SkillID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", customerrors.WrapUnprocessableEntityError(err, "NewSkillIDFromString")
+		return "", customerrors.WrapUnprocessableEntityError(err, "[NewSkillIDFromString] ID is error")
 	}
 	return SkillID(idStr), nil
 }

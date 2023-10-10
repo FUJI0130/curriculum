@@ -35,21 +35,30 @@ func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 }
 
 func WrapNotFoundError(err error, message string) *NotFoundErrorType {
+	combinedMessage := fmt.Sprintf("%s: %s", message, err.Error())
 	return &NotFoundErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.Wrap(err, message),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
 }
-func WrapNotFoundErrorf(err error, format string, args ...any) *NotFoundErrorType {
-	message := fmt.Sprintf(format, args...)
+
+func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
+	extraMessage := fmt.Sprintf(format, args...)
+	combinedMessage := fmt.Sprintf("%s: %s", extraMessage, err.Error())
 	return &NotFoundErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.Wrap(err, message),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
+}
+
+// IsNotFoundError は与えられたエラーが NotFoundErrorType であるかを判定します。
+func IsNotFoundError(err error) bool {
+	_, ok := err.(*NotFoundErrorType)
+	return ok
 }

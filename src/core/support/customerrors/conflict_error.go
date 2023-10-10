@@ -35,22 +35,24 @@ func NewConflictErrorf(format string, args ...any) *ConflictErrorType {
 }
 
 func WrapConflictError(err error, message string) *ConflictErrorType {
+	combinedMessage := fmt.Sprintf("%s: %s", message, err.Error())
 	return &ConflictErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeConflict,
-			TraceVal:      errors.Wrap(err, message),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
 }
 
 func WrapConflictErrorf(err error, format string, args ...any) *ConflictErrorType {
-	message := fmt.Sprintf(format, args...)
+	extraMessage := fmt.Sprintf(format, args...)
+	combinedMessage := fmt.Sprintf("%s: %s", extraMessage, err.Error())
 	return &ConflictErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeConflict,
-			TraceVal:      errors.Wrapf(err, format, args...),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
 }

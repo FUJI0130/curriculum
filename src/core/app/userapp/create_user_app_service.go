@@ -3,6 +3,7 @@ package userapp
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -49,19 +50,21 @@ type CareersRequest struct {
 var test = ""
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
+
+	log.Printf("exec start: %s", time.Now().String())
 	// Validate request keys
 	reqMap, err := StructToMap(req)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to convert struct to map.")
+		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to convert struct to map.")
 	}
 	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
+		return customerrors.WrapUnprocessableEntityError(err, "Create_user_app_service Validation failed. ")
 	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
 	if err != nil {
-		return customerrors.WrapInternalServerErrorf(err, "Database error. Failed to check existence of user name: %s", req.Name)
+		return customerrors.WrapInternalServerErrorf(err, "Create_user_app_service Database error. Failed to check existence of user name: %s", req.Name)
 	}
 
 	if isExist {
@@ -77,7 +80,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
+		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to fetch tags. ")
 	}
 
 	tagsMap := make(map[string]*tagdm.Tag)
@@ -99,11 +102,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
+				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create tag. ")
 			}
 
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
+				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to store tag. ")
 			}
 
 			tagsMap[s.TagName] = tag
@@ -118,6 +121,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	}
 
+	log.Printf("before careersParams: %#v", req.Careers)
 	careersParams := make([]userdm.CareerParam, len(req.Careers))
 	for i, c := range req.Careers {
 		careersParams[i] = userdm.CareerParam{
@@ -129,7 +133,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to create user. ")
+		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create user. ")
 	}
 
 	return app.userRepo.Store(ctx, userdomain)
@@ -139,7 +143,7 @@ func StructToMap(req interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	val := reflect.ValueOf(req)
 	if val.Kind() != reflect.Ptr {
-		return nil, customerrors.NewInternalServerError("StructToMap Expected a pointer but got " + val.Kind().String())
+		return nil, customerrors.NewInternalServerError("[StructToMap] Expected a pointer but got " + val.Kind().String())
 	}
 	val = val.Elem() // Now it's safe to call Elem
 	typ := val.Type()
@@ -197,7 +201,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 	for key, value := range rawReq {
 		// Check if key is expected
 		if _, exists := expectedKeys[key]; !exists {
-			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("Unexpected key '%s' in the request", key))
+			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] Unexpected key '%s' in the request", key))
 		}
 
 		// Recursively check nested structures
@@ -205,7 +209,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 			field, _ := val.Type().FieldByName(key)
 			if field.Type.Kind() == reflect.Struct {
 				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
-					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s': %v", key, err))
+					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] key '%s': %v", key, err))
 				}
 			}
 		} else if nestedSlice, ok := value.([]interface{}); ok {
@@ -214,7 +218,7 @@ func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct in
 				for i, nestedElement := range nestedSlice {
 					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
 						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
-							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s' index %d: %v", key, i, err))
+							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] key '%s' index %d: %v", key, i, err))
 						}
 					}
 				}

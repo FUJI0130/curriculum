@@ -43,7 +43,7 @@ func TestReconstruct(t *testing.T) {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
-			_, err := Reconstruct(tt.id, tt.title, tt.email, tt.password, tt.profile, tt.createdAt)
+			_, err := ReconstructUser(tt.id, tt.title, tt.email, tt.password, tt.profile, tt.createdAt)
 
 			if tt.wantErr {
 				assert.Error(t, err)

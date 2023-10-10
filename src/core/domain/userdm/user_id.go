@@ -10,7 +10,7 @@ type UserID string
 func NewUserID() (UserID, error) {
 	userID, err := uuid.NewRandom()
 	if err != nil {
-		return UserID(""), customerrors.WrapUnprocessableEntityError(err, "NewUserID")
+		return UserID(""), customerrors.WrapUnprocessableEntityError(err, "[NewUserID] ID is error")
 	}
 	userIDValueObject := UserID(userID.String())
 	return userIDValueObject, nil
@@ -20,7 +20,7 @@ func NewUserIDFromString(idStr string) (UserID, error) {
 	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", customerrors.WrapUnprocessableEntityError(err, "NewUserIDFromString")
+		return "", customerrors.WrapUnprocessableEntityError(err, "[NewUserIDFromString] ID is error")
 	}
 	return UserID(idStr), nil
 }

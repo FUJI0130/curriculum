@@ -16,7 +16,7 @@ type Tag struct {
 
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
-		return nil, customerrors.NewUnprocessableEntityError("ReconstructTag")
+		return nil, customerrors.NewUnprocessableEntityError("[ReconstructTag] name is empty")
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {

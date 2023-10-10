@@ -35,21 +35,24 @@ func NewInternalServerErrorf(format string, args ...any) *InternalServerErrorTyp
 }
 
 func WrapInternalServerError(err error, message string) *InternalServerErrorType {
+	combinedMessage := fmt.Sprintf("%s: %s", message, err.Error())
 	return &InternalServerErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeInternalServerError,
-			TraceVal:      errors.Wrap(err, message),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
 }
+
 func WrapInternalServerErrorf(err error, format string, args ...any) *InternalServerErrorType {
-	message := fmt.Sprintf(format, args...)
+	extraMessage := fmt.Sprintf(format, args...)
+	combinedMessage := fmt.Sprintf("%s: %s", extraMessage, err.Error())
 	return &InternalServerErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       combinedMessage,
 			StatusCodeVal: errCodeInternalServerError,
-			TraceVal:      errors.Wrap(err, message),
+			TraceVal:      errors.Wrap(err, combinedMessage),
 		},
 	}
 }
