@@ -1,7 +1,6 @@
 package userdm
 
 import (
-	"log"
 	"time"
 	"unicode/utf8"
 
@@ -26,7 +25,7 @@ func NewUser(name string, email string, password string, profile string) (*User,
 
 	// 名前が空の場合のエラー処理
 	if name == "" {
-		log.Printf("test 231010 User name is empty")
+		// log.Printf("test 231010 User name is empty")
 		return nil, customerrors.NewUnprocessableEntityError("[NewUser] name is empty")
 	}
 

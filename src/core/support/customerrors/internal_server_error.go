@@ -18,7 +18,7 @@ func NewInternalServerError(message string) *InternalServerErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeInternalServerError,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
@@ -29,7 +29,7 @@ func NewInternalServerErrorf(format string, args ...any) *InternalServerErrorTyp
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeInternalServerError,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }

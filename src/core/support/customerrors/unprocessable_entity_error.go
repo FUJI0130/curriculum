@@ -18,7 +18,7 @@ func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
@@ -29,7 +29,7 @@ func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEnti
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }

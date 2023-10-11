@@ -18,7 +18,7 @@ func NewNotFoundError(message string) *NotFoundErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
@@ -29,7 +29,7 @@ func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.New(message),
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
