@@ -35,25 +35,19 @@ func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 }
 
 func WrapNotFoundError(err error, message string) *NotFoundErrorType {
-	combinedMessage := fmt.Sprintf("%s: %s", message, err.Error())
+	baseError := NewBaseError(message, errCodeNotFound, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &NotFoundErrorType{
-		&BaseErr{
-			Message:       combinedMessage,
-			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.Wrap(err, combinedMessage),
-		},
+		BaseErr: wrappedError,
 	}
 }
 
 func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
-	extraMessage := fmt.Sprintf(format, args...)
-	combinedMessage := fmt.Sprintf("%s: %s", extraMessage, err.Error())
+	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeNotFound, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &NotFoundErrorType{
-		&BaseErr{
-			Message:       combinedMessage,
-			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.Wrap(err, combinedMessage),
-		},
+		BaseErr: wrappedError,
 	}
 }
 

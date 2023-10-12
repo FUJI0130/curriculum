@@ -17,6 +17,9 @@ import (
 )
 
 func main() {
+
+	config.GlobalConfig.DebugMode = true
+
 	env := config.LoadEnv()
 
 	// DB接続の設定

@@ -2,6 +2,7 @@ package customerrors
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/cockroachdb/errors"
 )
@@ -14,11 +15,14 @@ type UnprocessableEntityErrorType struct {
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
+	_, file, line, _ := runtime.Caller(1) // Caller(1) to get the immediate caller
+	formattedMessage := fmt.Sprintf("[File: %s Line: %d] %s", file, line, message)
+
 	return &UnprocessableEntityErrorType{
 		&BaseErr{
-			Message:       message,
+			Message:       formattedMessage,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.WithStack(errors.New(formattedMessage)),
 		},
 	}
 }
@@ -35,24 +39,18 @@ func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEnti
 }
 
 func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
-	combinedMessage := fmt.Sprintf("%s: %s", message, err.Error())
+	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &UnprocessableEntityErrorType{
-		&BaseErr{
-			Message:       combinedMessage,
-			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.Wrap(err, combinedMessage),
-		},
+		BaseErr: wrappedError,
 	}
 }
 
-func WrapUnprocessableEntityErrorf(err error, format string, args ...any) *UnprocessableEntityErrorType {
-	extraMessage := fmt.Sprintf(format, args...)
-	combinedMessage := fmt.Sprintf("%s: %s", extraMessage, err.Error())
+func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}) *UnprocessableEntityErrorType {
+	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &UnprocessableEntityErrorType{
-		&BaseErr{
-			Message:       combinedMessage,
-			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.Wrap(err, combinedMessage),
-		},
+		BaseErr: wrappedError,
 	}
 }

@@ -3,9 +3,7 @@ package userapp
 import (
 	"context"
 	"fmt"
-	"log"
 	"reflect"
-	"runtime"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -50,14 +48,14 @@ type CareersRequest struct {
 
 var test = ""
 
-func logErrorWithLocation(err error, message string) {
-	_, file, line, ok := runtime.Caller(1)
-	if !ok {
-		log.Println("Failed to get runtime caller information")
-		return
-	}
-	log.Printf("[File: %s Line: %d] %s Error: %+v", file, line, message, err)
-}
+// func logErrorWithLocation(err error, message string) {
+// 	_, file, line, ok := runtime.Caller(1)
+// 	if !ok {
+// 		log.Println("Failed to get runtime caller information")
+// 		return
+// 	}
+// 	log.Printf("[File: %s Line: %d] %s Error: %+v", file, line, message, err)
+// }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 
@@ -66,12 +64,12 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	reqMap, err := StructToMap(req)
 	if err != nil {
 
-		logErrorWithLocation(err, "An error occurred StructToMap:")
+		// logErrorWithLocation(err, "An error occurred StructToMap:")
 		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to convert struct to map.")
 	}
 	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
 
-		logErrorWithLocation(err, "An error occurred ValidateKeysAgainstStruct:")
+		// logErrorWithLocation(err, "An error occurred ValidateKeysAgainstStruct:")
 		return customerrors.WrapUnprocessableEntityError(err, "Create_user_app_service Validation failed. ")
 	}
 
@@ -79,12 +77,12 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	if err != nil {
 
-		logErrorWithLocation(err, "An error occurred in existService while checking user existence:")
+		// logErrorWithLocation(err, "An error occurred in existService while checking user existence:")
 		return customerrors.WrapInternalServerErrorf(err, "Create_user_app_service Database error. Failed to check existence of user name: %s", req.Name)
 	}
 
 	if isExist {
-		logErrorWithLocation(fmt.Errorf("User name already exists: %s", req.Name), "User existence error:")
+		// logErrorWithLocation(fmt.Errorf("User name already exists: %s", req.Name), "User existence error:")
 		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 	}
 
@@ -98,7 +96,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 
-		logErrorWithLocation(err, "An error occurred during tag FindByNames:")
+		// logErrorWithLocation(err, "An error occurred during tag FindByNames:")
 
 		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to fetch tags. ")
 	}
@@ -115,7 +113,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 		if seenSkills[s.TagName] {
 
-			logErrorWithLocation(err, "An error occurred tagname")
+			// logErrorWithLocation(err, "An error occurred tagname")
 
 			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
 		}
@@ -126,14 +124,14 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
 
-				logErrorWithLocation(err, "An error occurred during tag creation:")
+				// logErrorWithLocation(err, "An error occurred during tag creation:")
 
 				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create tag. ")
 			}
 
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 
-				logErrorWithLocation(err, "An error occurred during tag storage:")
+				// logErrorWithLocation(err, "An error occurred during tag storage:")
 
 				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to store tag. ")
 			}
@@ -162,7 +160,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		logErrorWithLocation(err, "An error occurred during GenWhenCreate:")
+		// logErrorWithLocation(err, "An error occurred during GenWhenCreate:")
 
 		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create user. ")
 	}

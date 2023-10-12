@@ -30,7 +30,7 @@ func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool
 		if customerrors.IsNotFoundError(err) {
 			return false, nil
 		}
-		return false, err
+		return false, customerrors.WrapInternalServerError(err, "An error occurred in Exec when calling userRepo.FindByName")
 	}
 	return existingUser != nil, nil
 }
