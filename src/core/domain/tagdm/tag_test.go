@@ -27,9 +27,9 @@ func TestNewTag(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test // capture the range variable for parallel execution
+		test := test
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 			tag, err := tagdm.GenWhenCreateTag(test.tagName)
 
 			if test.expectError {
@@ -39,8 +39,8 @@ func TestNewTag(t *testing.T) {
 
 			require.NoError(t, err)
 			assert.Equal(t, test.tagName, tag.Name())
-			assert.False(t, tag.CreatedAt().DateTime().IsZero()) // CreatedAtが設定されていてゼロではないことを確認
-			assert.False(t, tag.UpdatedAt().DateTime().IsZero()) // UpdatedAtが設定されていてゼロではないことを確認
+			assert.False(t, tag.CreatedAt().DateTime().IsZero())
+			assert.False(t, tag.UpdatedAt().DateTime().IsZero())
 		})
 	}
 }

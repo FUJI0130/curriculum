@@ -2,53 +2,54 @@ package customerrors
 
 import (
 	"fmt"
+	"runtime"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
-// UnprocessableEntityError
+const errCodeUnprocessableEntity = 400
+
 type UnprocessableEntityErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
+	_, file, line, _ := runtime.Caller(1)
+	formattedMessage := fmt.Sprintf("[File: %s Line: %d] %s", file, line, message)
+
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
-			TraceVal:      errors.New(message),
+		&BaseErr{
+			Message:       formattedMessage,
+			StatusCodeVal: errCodeUnprocessableEntity,
+			TraceVal:      errors.WithStack(errors.New(formattedMessage)),
 		},
 	}
 }
 
-func NewUnprocessableEntityErrorf(format string, args ...interface{}) *UnprocessableEntityErrorType {
+func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEntityErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeUnprocessableEntity,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
 func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
+	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }
+
 func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}) *UnprocessableEntityErrorType {
 	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &UnprocessableEntityErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeUnprocessableEntity,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }

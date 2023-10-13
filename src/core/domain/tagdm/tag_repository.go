@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=../../mock/mockTag/tag_repository_mock.go -package=mockTag . TagRepository
+//go:generate mockgen -destination=../../mock/mock_tag/tag_repository_mock.go -package=mock_tagdm . TagRepository
 
 package tagdm
 

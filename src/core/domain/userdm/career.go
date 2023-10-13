@@ -19,23 +19,23 @@ type Career struct {
 
 func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
 
-	if detail == "" { // 例えば、detailが空の場合のエラーハンドリング
-		return nil, customerrors.NewUnprocessableEntityError("NewCareer  detail is empty")
+	if detail == "" {
+		return nil, customerrors.NewUnprocessableEntityError("[NewCareer]  detail is empty")
 	}
 
 	careerID, err := NewCareerID()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewCareer]  NewCareerID")
 	}
 
 	careerCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewCareer]  NewCreatedAt")
 	}
 
 	careerUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewCareer]  NewUpdatedAt")
 	}
 
 	return &Career{

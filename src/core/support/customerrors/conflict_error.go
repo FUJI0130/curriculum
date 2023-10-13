@@ -3,53 +3,49 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
-// ConflictError
 type ConflictErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
+
+const errCodeConflict = 409
 
 func NewConflictError(message string) *ConflictErrorType {
 	return &ConflictErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeConflict,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeConflict,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
-func NewConflictErrorf(format string, args ...interface{}) *ConflictErrorType {
+func NewConflictErrorf(format string, args ...any) *ConflictErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &ConflictErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeConflict,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeConflict,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
 func WrapConflictError(err error, message string) *ConflictErrorType {
+	baseError := NewBaseError(message, errCodeConflict, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &ConflictErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeConflict,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }
 
 func WrapConflictErrorf(err error, format string, args ...interface{}) *ConflictErrorType {
 	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeConflict, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &ConflictErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeConflict,
-			TraceVal:      errors.Wrapf(err, format, args...),
-		},
+		BaseErr: wrappedError,
 	}
 }

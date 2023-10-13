@@ -3,52 +3,54 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
-// NotFoundError
+const errCodeNotFound = 404
+
 type NotFoundErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewNotFoundError(message string) *NotFoundErrorType {
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeNotFound,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
-func NewNotFoundErrorf(format string, args ...interface{}) *NotFoundErrorType {
+func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &NotFoundErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeNotFound,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
 func WrapNotFoundError(err error, message string) *NotFoundErrorType {
+	baseError := NewBaseError(message, errCodeNotFound, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &NotFoundErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }
+
 func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeNotFound, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &NotFoundErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeNotFound,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
+}
+
+func IsNotFoundError(err error) bool {
+	_, ok := err.(*NotFoundErrorType)
+	return ok
 }

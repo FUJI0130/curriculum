@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 )
@@ -22,10 +22,10 @@ func ErrorHandler(c *gin.Context) {
 			default:
 				err = errors.New("unknown panic")
 			}
-			log.Printf("recovered from panic: %+v", err) // %+v でstack traceもログに出力
+			log.Printf("recovered from panic: %+v", err)
 
 			switch e := err.(type) {
-			case base.BaseErrorHandler:
+			case customerrors.BaseError:
 				log.Printf("ERROR: %+v", e.Trace())
 				c.JSON(e.StatusCode(), gin.H{
 					"message": fmt.Sprintf("%d: %s", e.StatusCode(), e.Error()),

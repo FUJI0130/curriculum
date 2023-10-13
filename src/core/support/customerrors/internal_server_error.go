@@ -3,52 +3,49 @@ package customerrors
 import (
 	"fmt"
 
-	"github.com/FUJI0130/curriculum/src/core/support/base"
 	"github.com/cockroachdb/errors"
 )
 
-// InternalServerError
+const errCodeInternalServerError = 500
+
 type InternalServerErrorType struct {
-	*base.BaseError
+	*BaseErr
 }
 
 func NewInternalServerError(message string) *InternalServerErrorType {
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeInternalServerError,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
-func NewInternalServerErrorf(format string, args ...interface{}) *InternalServerErrorType {
+func NewInternalServerErrorf(format string, args ...any) *InternalServerErrorType {
 	message := fmt.Sprintf(format, args...)
 	return &InternalServerErrorType{
-		&base.BaseError{
+		&BaseErr{
 			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
-			TraceVal:      errors.New(message),
+			StatusCodeVal: errCodeInternalServerError,
+			TraceVal:      errors.WithStack(errors.New(message)),
 		},
 	}
 }
 
 func WrapInternalServerError(err error, message string) *InternalServerErrorType {
+	baseError := NewBaseError(message, errCodeInternalServerError, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &InternalServerErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }
-func WrapInternalServerErrorf(err error, format string, args ...interface{}) *InternalServerErrorType {
+
+func WrapInternalServerErrorf(err error, format string, args ...any) *InternalServerErrorType {
 	message := fmt.Sprintf(format, args...)
+	baseError := NewBaseError(message, errCodeInternalServerError, nil)
+	wrappedError := baseError.WrapWithLocation(err, message)
 	return &InternalServerErrorType{
-		&base.BaseError{
-			Message:       message,
-			StatusCodeVal: ErrCodeInternalServerError,
-			TraceVal:      errors.Wrap(err, message),
-		},
+		BaseErr: wrappedError,
 	}
 }

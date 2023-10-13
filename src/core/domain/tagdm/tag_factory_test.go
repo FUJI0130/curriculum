@@ -28,7 +28,6 @@ func TestGenWhenCreateTag(t *testing.T) {
 			tagName: "ThisTagNameIsDefinitelyTooLongForTheSystemToHandleProperly",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {
@@ -71,7 +70,6 @@ func TestTestNewTag(t *testing.T) {
 			tagName: "ThisTagNameIsDefinitelyTooLongForTheSystemToHandleProperly",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {

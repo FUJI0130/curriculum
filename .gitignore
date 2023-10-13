@@ -21,3 +21,6 @@
 go.work
 # Temporary files and logs
 tmp/
+# VSCode directories
+.vscode/
+main

@@ -18,14 +18,13 @@ var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]
 func NewUserEmail(userEmail string) (UserEmail, error) {
 	count := utf8.RuneCountInString(userEmail)
 	if userEmail == "" {
-		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is empty")
+		return "", customerrors.NewUnprocessableEntityError("[NewUserEmail] email is empty")
 	} else if EmailMaxlength < count {
-		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is too long")
+		return "", customerrors.NewUnprocessableEntityError("[NewUserEmail] email is too long")
 	}
 
-	// メールアドレスの形式のチェック
 	if !emailRegex.MatchString(userEmail) {
-		return "", customerrors.NewUnprocessableEntityError("NewUserEmail email is invalid")
+		return "", customerrors.NewUnprocessableEntityError("[NewUserEmail] email is invalid")
 	}
 
 	return UserEmail(userEmail), nil
