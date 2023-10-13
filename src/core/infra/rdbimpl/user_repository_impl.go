@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -59,6 +60,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, userdomain *userdm.UserDomain) error {
 
+	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
 	_, err := tx.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
