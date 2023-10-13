@@ -29,7 +29,7 @@ func NewBaseError(message string, statusCode int, trace error) *BaseErr {
 }
 
 func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
-	_, file, line, ok := runtime.Caller(2) // Caller(2) で呼び出し元の情報を取得
+	_, file, line, ok := runtime.Caller(2)
 	if !ok {
 		message = fmt.Sprintf("Failed to get runtime caller information: %s", message)
 	} else {
@@ -42,7 +42,6 @@ func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
 		TraceVal:      errors.Wrap(err, message),
 	}
 
-	// DebugModeがONの場合、スタックトレースを表示
 	if config.GlobalConfig.DebugMode {
 		fmt.Println(wrappedError.TraceVal)
 	}

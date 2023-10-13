@@ -1,8 +1,5 @@
-// userdm/exist_by_name_domain_service.go
-//
 //go:generate mockgen -destination=../../mock/mockExistByNameDomainService/exist_by_name_domain_service_mock.go -package=mockExistByNameDomainService . ExistByNameDomainService
 
-// package interfaces
 package userdm
 
 import (
@@ -24,7 +21,6 @@ func NewExistByNameDomainService(userRepo UserRepository) *existByNameDomainServ
 
 func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool, error) {
 	existingUser, err := ds.userRepo.FindByName(ctx, name)
-	// log.Printf("existingUser: %#v, err: %v", existingUser, err)
 	if err != nil {
 
 		if customerrors.IsNotFoundError(err) {

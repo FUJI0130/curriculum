@@ -1,4 +1,3 @@
-// FWからのリクエストをユースケースに送り、レスポンスを返す
 package controllers
 
 import (
@@ -25,10 +24,8 @@ func NewCreateUserController(s *userapp.CreateUserAppService) *CreateUserControl
 	return &CreateUserController{createUserService: s}
 }
 
-// ここでcurlコマンドの内容をバインドしている
 func (ctrl *CreateUserController) Create(c *gin.Context) {
 
-	// log.Printf("before bindJSON: %s", time.Now().String())
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
 
@@ -38,7 +35,6 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 		return
 	}
 
-	// log.Printf("before create User Service Exec: %s", time.Now().String())
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		switch err.(type) {
 		case *customerrors.ConflictErrorType:
@@ -50,7 +46,7 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 		case *customerrors.UnprocessableEntityErrorType:
 			c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
 		default:
-			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()}) // 予期せぬエラーの場合、500を返す
+			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
 		}
 		return
 	}

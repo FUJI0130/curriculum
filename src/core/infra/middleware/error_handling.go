@@ -22,7 +22,7 @@ func ErrorHandler(c *gin.Context) {
 			default:
 				err = errors.New("unknown panic")
 			}
-			log.Printf("recovered from panic: %+v", err) // %+v でstack traceもログに出力
+			log.Printf("recovered from panic: %+v", err)
 
 			switch e := err.(type) {
 			case customerrors.BaseError:

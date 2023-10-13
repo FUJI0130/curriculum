@@ -20,11 +20,11 @@ func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.T
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[ReconstructTag] createdAt is invalid")
 	}
 	updatedAtByVal, err := sharedvo.NewUpdatedAtByVal(updatedAt)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[ReconstructTag] updatedAt is invalid")
 	}
 	return &Tag{
 		id:        id,

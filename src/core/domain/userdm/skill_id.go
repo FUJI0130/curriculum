@@ -16,7 +16,6 @@ func NewSkillID() (SkillID, error) {
 	return skillIDValueObject, nil
 }
 func NewSkillIDFromString(idStr string) (SkillID, error) {
-	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
 		return "", customerrors.WrapUnprocessableEntityError(err, "[NewSkillIDFromString] ID is error")

@@ -15,7 +15,6 @@ func NewTagID() (TagID, error) {
 	return TagID(tagID.String()), nil
 }
 func NewTagIDFromString(idStr string) (TagID, error) {
-	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
 		return "", customerrors.WrapUnprocessableEntityError(err, "[NewTagIDFromString] ID is error") // カスタムエラーに差し替え

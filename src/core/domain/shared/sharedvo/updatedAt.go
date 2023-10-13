@@ -8,7 +8,6 @@ import (
 
 type UpdatedAt time.Time
 
-// NewUpdatedAtByVal は指定した時刻での UpdatedAt を生成する
 func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
 		return UpdatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("[NewUpdatedAtByVal] updatedAt is empty")
@@ -17,7 +16,6 @@ func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	return UpdatedAt(updatedAt), nil
 }
 
-// NewUpdatedAt は現在の時刻での UpdatedAt を生成する
 func NewUpdatedAt() UpdatedAt {
 	return UpdatedAt(time.Now())
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/cockroachdb/errors"
 )
 
-// ConflictError
 type ConflictErrorType struct {
 	*BaseErr
 }

@@ -36,9 +36,9 @@ func TestNewCreatedAt(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 			_, err := NewCreatedAtByVal(tt.input)
 			if tt.expectErr {
 				assert.Error(t, err)
@@ -88,9 +88,9 @@ func TestCreatedAt_Equal(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 			assert.Equal(t, tt.result, tt.date1.Equal(tt.date2))
 		})
 	}

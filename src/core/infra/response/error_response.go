@@ -13,10 +13,10 @@ type ErrorResponse struct {
 }
 
 func NewErrorResponse(err error) *ErrorResponse {
-	rootErr := errors.Cause(err) // エラーの原因を取得
+	rootErr := errors.Cause(err)
 	return &ErrorResponse{
 		Code:    http.StatusInternalServerError,
 		Message: rootErr.Error(),
-		Details: err.Error(), // ラップされたエラーメッセージも提供する
+		Details: err.Error(),
 	}
 }

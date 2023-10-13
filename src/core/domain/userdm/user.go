@@ -23,25 +23,23 @@ type User struct {
 
 func NewUser(name string, email string, password string, profile string) (*User, error) {
 
-	// 名前が空の場合のエラー処理
 	if name == "" {
-		// log.Printf("test 231010 User name is empty")
 		return nil, customerrors.NewUnprocessableEntityError("[NewUser] name is empty")
 	}
 
 	userId, err := NewUserID()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewUser] NewUserID")
 	}
 
 	userEmail, err := NewUserEmail(email)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewUser] NewUserEmail")
 	}
 
 	userPassword, err := NewUserPassword(password)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewUser] NewUserPassword")
 	}
 	userProfile := profile
 	countProfile := utf8.RuneCountInString(profile)

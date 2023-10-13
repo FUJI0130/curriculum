@@ -8,7 +8,6 @@ import (
 
 const errCodeInternalServerError = 500
 
-// InternalServerError
 type InternalServerErrorType struct {
 	*BaseErr
 }

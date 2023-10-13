@@ -17,7 +17,6 @@ func NewUserID() (UserID, error) {
 }
 
 func NewUserIDFromString(idStr string) (UserID, error) {
-	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
 		return "", customerrors.WrapUnprocessableEntityError(err, "[NewUserIDFromString] ID is error")

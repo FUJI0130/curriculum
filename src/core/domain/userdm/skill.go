@@ -31,12 +31,12 @@ func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, c
 
 	skillCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewSkill] createdAt is invalid")
 	}
 
 	skillUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "[NewSkill] updatedAt is invalid")
 	}
 	return &Skill{
 		tagID:      tagID,

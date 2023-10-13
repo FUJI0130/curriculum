@@ -13,7 +13,6 @@ type TagParam struct {
 
 const NameMaxLength = 15
 
-// GenWhenCreateTag creates a new tag with the given parameters.
 func GenWhenCreateTag(name string) (*Tag, error) {
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("[GenWhenCreateTag] Tag name is empty")
@@ -36,7 +35,6 @@ func GenWhenCreateTag(name string) (*Tag, error) {
 	}, nil
 }
 
-// TestNewTag is a function for testing purposes and creates a tag with predefined values.
 func TestNewTag(id string, name string) (*Tag, error) {
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("[TestNewTag]  name is empty")

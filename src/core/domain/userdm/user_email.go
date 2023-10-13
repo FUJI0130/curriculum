@@ -23,7 +23,6 @@ func NewUserEmail(userEmail string) (UserEmail, error) {
 		return "", customerrors.NewUnprocessableEntityError("[NewUserEmail] email is too long")
 	}
 
-	// メールアドレスの形式のチェック
 	if !emailRegex.MatchString(userEmail) {
 		return "", customerrors.NewUnprocessableEntityError("[NewUserEmail] email is invalid")
 	}

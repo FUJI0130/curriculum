@@ -9,13 +9,12 @@ import (
 
 const errCodeUnprocessableEntity = 400
 
-// UnprocessableEntityError
 type UnprocessableEntityErrorType struct {
 	*BaseErr
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
-	_, file, line, _ := runtime.Caller(1) // Caller(1) to get the immediate caller
+	_, file, line, _ := runtime.Caller(1)
 	formattedMessage := fmt.Sprintf("[File: %s Line: %d] %s", file, line, message)
 
 	return &UnprocessableEntityErrorType{

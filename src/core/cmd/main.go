@@ -1,5 +1,3 @@
-// src/core/cmd/main.go
-
 package main
 
 import (
@@ -22,7 +20,6 @@ func main() {
 
 	env := config.LoadEnv()
 
-	// DB接続の設定
 	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", env.DbUser, env.DbPassword, env.DbHost, env.DbPort, env.DbName))
 	if err != nil {
 		panic(err)

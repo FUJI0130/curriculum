@@ -8,7 +8,6 @@ import (
 
 const errCodeNotFound = 404
 
-// NotFoundError
 type NotFoundErrorType struct {
 	*BaseErr
 }
@@ -51,7 +50,6 @@ func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFound
 	}
 }
 
-// IsNotFoundError は与えられたエラーが NotFoundErrorType であるかを判定します。
 func IsNotFoundError(err error) bool {
 	_, ok := err.(*NotFoundErrorType)
 	return ok

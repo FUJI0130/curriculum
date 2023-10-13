@@ -1,5 +1,3 @@
-// src/core/config/env.go
-
 package config
 
 import "os"
