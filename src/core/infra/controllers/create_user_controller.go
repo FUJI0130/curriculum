@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
@@ -28,26 +27,24 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-
-		log.Printf("An error occurred create_user_controller Create : %+v", err)
-		customErr := customerrors.WrapUnprocessableEntityError(err, "create_user_controller [Create] : JSON binding error")
-		c.JSON(customErr.StatusCode(), gin.H{"error": customErr.Message})
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "create_user_controller [Create] : JSON binding error"))
 		return
 	}
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
-		switch err.(type) {
-		case *customerrors.ConflictErrorType:
-			c.JSON(errCodeConflict, gin.H{"error": err.Error()})
-		case *customerrors.InternalServerErrorType:
-			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
-		case *customerrors.NotFoundErrorType:
-			c.JSON(errCodeNotFound, gin.H{"error": err.Error()})
-		case *customerrors.UnprocessableEntityErrorType:
-			c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
-		default:
-			c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
-		}
+		c.Error(err)
+		// switch err.(type) {
+		// case *customerrors.ConflictErrorType:
+		// 	c.JSON(errCodeConflict, gin.H{"error": err.Error()})
+		// case *customerrors.InternalServerErrorType:
+		// 	c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
+		// case *customerrors.NotFoundErrorType:
+		// 	c.JSON(errCodeNotFound, gin.H{"error": err.Error()})
+		// case *customerrors.UnprocessableEntityErrorType:
+		// 	c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
+		// default:
+		// 	c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
+		// }
 		return
 	}
 

@@ -136,7 +136,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	return app.userRepo.Store(ctx, userdomain)
 }
 
-func StructToMap(req interface{}) (map[string]interface{}, error) {
+func StructToMap(req interface{}) (map[string]any, error) {
 	result := make(map[string]interface{})
 	val := reflect.ValueOf(req)
 	if val.Kind() != reflect.Ptr {
@@ -184,7 +184,7 @@ func StructToMap(req interface{}) (map[string]interface{}, error) {
 	return result, nil
 }
 
-func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct interface{}) error {
+func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct any) error {
 	expectedKeys := make(map[string]bool)
 
 	val := reflect.ValueOf(referenceStruct).Elem()

@@ -124,7 +124,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
 			ctrl := gomock.NewController(t)
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)

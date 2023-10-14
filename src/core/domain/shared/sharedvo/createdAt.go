@@ -10,10 +10,10 @@ type CreatedAt time.Time
 
 func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("[NewCreatedAtByVal] createdAt is empty")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("CreatedAt cannot be zero value")
 	}
 	if createdAt.After(time.Now()) {
-		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("[NewCreatedAtByVal] createdAt is future")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("CreatedAt is future")
 	}
 	return CreatedAt(createdAt), nil
 }

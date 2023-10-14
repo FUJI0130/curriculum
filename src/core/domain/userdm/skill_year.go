@@ -6,11 +6,11 @@ type SkillYear uint8
 
 func NewSkillYear(yearsOfExperience uint8) (SkillYear, error) {
 	if yearsOfExperience <= 0 {
-		return 0, customerrors.NewUnprocessableEntityError("[NewSkillYear]:  SkillYear cannot be zero or negative value")
+		return 0, customerrors.NewUnprocessableEntityError("SkillYear cannot be zero or negative value")
 	}
 
 	if yearsOfExperience > 100 {
-		return 0, customerrors.NewUnprocessableEntityError("[NewSkillYear]: SkillYear should be less than or equal to 100")
+		return 0, customerrors.NewUnprocessableEntityError("SkillYear should be less than or equal to 100")
 	}
 
 	skillsYearValueObject := SkillYear(yearsOfExperience)

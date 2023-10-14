@@ -53,10 +53,14 @@ func (b *BaseErr) LogStackTrace() {
 		fmt.Println(b.TraceVal)
 	}
 }
+
 func (be *BaseErr) Error() string {
 	return be.Message
 }
 
+//	func (be *BaseErr) Error() string {
+//		return fmt.Sprintf("%s: %+v", be.Message, be.TraceVal)
+//	}
 func (be *BaseErr) StatusCode() int {
 	return be.StatusCodeVal
 }

@@ -10,7 +10,7 @@ type CareerID string
 func NewCareerID() (CareerID, error) {
 	careerID, err := uuid.NewRandom()
 	if err != nil {
-		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "[NewCareerID] ID is error")
+		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
 	return CareerID(careerID.String()), nil
 }
