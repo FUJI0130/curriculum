@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
@@ -12,51 +11,54 @@ import (
 func ErrorHandler(c *gin.Context) {
 	c.Next() // Execute the rest of middlewares & route handler, errors are collected into c.Errors.
 
-	// Handle error if c.Errors is non-nil (non-empty)
 	for _, err := range c.Errors {
 		handleError(c, err.Err)
 	}
 }
-
 func handleError(c *gin.Context, err error) {
-	// エラーメッセージの文字数を取得
-	// errorLength := len(fmt.Sprintf("%+v", err))
+	// custom errorの場合、そのエラーメッセージを使用してレスポンスを返す
+	if customErr, ok := err.(customerrors.BaseError); ok {
+		// フィルタリングしたスタックトレースの最初の行を取得
+		firstLineOfTrace := strings.SplitN(customErr.Error(), "\n", 2)[0]
 
-	// log.Printf("Error (length: %d): %+v", errorLength, err)
-
-	// エラーログの出力部分でStackTraceをフィルタリングする
-	stackTraceFilter := &StackTraceFilter{}
-	// log.Printf("Before Filtering: %+v", err)
-	filteredStackTrace := stackTraceFilter.FilterStackTrace(err)
-	// log.Printf("After Filtering: %v", filteredStackTrace)
-
-	// フィルタリング後のスタックトレースの文字数を取得
-	filteredLength := len(filteredStackTrace)
-
-	// log.Printf("Filtered Stack Trace (length: %d): %v", filteredLength, filteredStackTrace)
-	// log.Printf("Filtered Stack Trace (length: %d): ", filteredLength)
-
-	// スタックトレースから1行目だけ取得
-	firstLine := strings.Split(filteredStackTrace, "\n")[0]
-
-	// message := customerrors.ExtractMessageFromError(firstLine)
-	message, stackTrace := splitErrorAndStackTrace(firstLine)
-
-	log.Printf("Filtered Stack Trace (length: %d): %v", filteredLength, stackTrace)
-	// log.Printf("Non Filtered Stack Trace (length: %d): %v", filteredLength, err)
-
-	if e, ok := err.(customerrors.BaseError); ok {
-		c.JSON(e.StatusCode(), gin.H{
-			// "message": e.Error(),
-			// "message": firstLine,
+		// 最初の行からエラーメッセージとスタックトレースを分割
+		message, _ := splitErrorAndStackTrace(firstLineOfTrace)
+		c.JSON(customErr.StatusCode(), gin.H{
+			// "message": customErr.Error(),
 			"message": message,
 		})
 		return
 	}
+
+	// それ以外の場合、内部サーバーエラーとしてレスポンスを返す
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"message": "Internal Server Error",
 	})
 }
+
+// func handleError(c *gin.Context, err error) {
+// 	stackTraceFilter := &StackTraceFilter{}
+// 	// 最初の5行を取得
+// 	fullStackTrace := stackTraceFilter.ExtractNLinesFromStart(err, 5)
+// 	// 最初の行を取得
+// 	firstLineOfTrace := strings.SplitN(fullStackTrace, "\n", 2)[0]
+// 	// 最初の行からエラーメッセージとスタックトレースを分割
+// 	message, extractedTrace := splitErrorAndStackTrace(firstLineOfTrace)
+// 	log.Printf("Filtered Stack Trace (length: %d): %v", len(fullStackTrace), extractedTrace)
+// 	// custom errorの場合、そのエラーメッセージを使用してレスポンスを返す
+// 	if customErr, ok := err.(customerrors.BaseError); ok {
+// 		// log.Println(customErr.Trace())
+// 		c.JSON(customErr.StatusCode(), gin.H{
+// 			"message": message,
+// 		})
+// 		return
+// 	}
+// 	// それ以外の場合、内部サーバーエラーとしてレスポンスを返す
+// 	c.JSON(http.StatusInternalServerError, gin.H{
+// 		"message": "Internal Server Error",
+// 	})
+// }
+
 func splitErrorAndStackTrace(errStr string) (string, string) {
 	parts := strings.SplitN(errStr, " ### ", 2)
 	if len(parts) < 2 {

@@ -2,8 +2,10 @@ package customerrors
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/FUJI0130/curriculum/src/core/config"
+	"github.com/FUJI0130/curriculum/src/core/support"
 	"github.com/cockroachdb/errors"
 )
 
@@ -28,12 +30,6 @@ func NewBaseError(message string, statusCode int, trace error) *BaseErr {
 }
 
 func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
-	// _, file, line, ok := runtime.Caller(2)
-	// if !ok {
-	// 	message = fmt.Sprintf("Failed to get runtime caller information: %s", message)
-	// } else {
-	// 	message = fmt.Sprintf("at [File: %s Line: %d] %s", file, line, message)
-	// }
 
 	wrappedError := &BaseErr{
 		Message:       message,
@@ -42,28 +38,48 @@ func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
 	}
 
 	if config.GlobalConfig.DebugMode {
-		fmt.Println(wrappedError.TraceVal)
+		// fmt.Println(wrappedError.TraceVal)
 	}
 	return wrappedError
 }
 
-func (b *BaseErr) LogStackTrace() {
-	if config.GlobalConfig.DebugMode {
-		fmt.Println(b.TraceVal)
-	}
+//	func (be *BaseErr) Error() string {
+//		return fmt.Sprintf("%s ### %+v", be.Message, be.TraceVal)
+//	}
+
+func (be *BaseErr) Error() string {
+	stackTraceFilter := &support.StackTraceFilter{}
+
+	traceString := fmt.Sprintf("%+v", be.TraceVal)
+	// log.Println("traceString is : ", traceString)
+
+	// be.TraceValを直接フィルタリングします。
+	// filteredTrace := stackTraceFilter.ExtractNLinesFromStart(traceString, 5)
+	filteredTrace := stackTraceFilter.RemoveLinesFromKeywords(traceString)
+
+	// フィルタリングしたスタックトレースの最初の行を取得
+	firstLineOfTrace := strings.SplitN(filteredTrace, "\n", 2)[0]
+
+	// 最初の行からエラーメッセージとスタックトレースを分割
+	message, _ := splitErrorAndStackTrace(firstLineOfTrace)
+
+	// このmessageを使用してエラーメッセージを構築
+	// return fmt.Sprintf("%s ### %s", be.Message, message)
+	return fmt.Sprintf("%s ### %s", message, filteredTrace)
 }
 
-// func (be *BaseErr) Error() string {
-// 	return be.Message
-// }
+func splitErrorAndStackTrace(errStr string) (string, string) {
+	parts := strings.SplitN(errStr, " ### ", 2)
+	if len(parts) < 2 {
+		return errStr, ""
+	}
 
-// スタックトレース出すのに必要
-//
-//	func (be *BaseErr) Error() string {
-//		return fmt.Sprintf("%s: %+v", be.Message, be.TraceVal)
-//	}
-func (be *BaseErr) Error() string {
-	return fmt.Sprintf("This is Error()  %s ### %+v", be.Message, be.TraceVal)
+	message := parts[0]
+
+	// スタックトレースの全体を取得するため、" ### " の後のすべての文字列を取得します。
+	stackTrace := parts[1]
+
+	return message, stackTrace
 }
 
 func (be *BaseErr) StatusCode() int {
