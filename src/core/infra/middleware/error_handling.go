@@ -26,9 +26,9 @@ func handleError(c *gin.Context, err error) {
 
 	// エラーログの出力部分でStackTraceをフィルタリングする
 	stackTraceFilter := &StackTraceFilter{}
-	log.Printf("Before Filtering: %+v", err)
+	// log.Printf("Before Filtering: %+v", err)
 	filteredStackTrace := stackTraceFilter.FilterStackTrace(err)
-	log.Printf("After Filtering: %v", filteredStackTrace)
+	// log.Printf("After Filtering: %v", filteredStackTrace)
 
 	// フィルタリング後のスタックトレースの文字数を取得
 	filteredLength := len(filteredStackTrace)

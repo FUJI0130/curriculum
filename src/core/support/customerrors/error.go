@@ -63,7 +63,7 @@ func (b *BaseErr) LogStackTrace() {
 //		return fmt.Sprintf("%s: %+v", be.Message, be.TraceVal)
 //	}
 func (be *BaseErr) Error() string {
-	return fmt.Sprintf("%s ### %v", be.Message, be.TraceVal)
+	return fmt.Sprintf("This is Error()  %s ### %+v", be.Message, be.TraceVal)
 }
 
 func (be *BaseErr) StatusCode() int {

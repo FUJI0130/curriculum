@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/FUJI0130/curriculum/src/core/config" // your_project_pathを適切なものに変更してください
@@ -14,7 +13,7 @@ func (f *StackTraceFilter) FilterStackTrace(err error) string {
 	// エラーからスタックトレースを文字列として取得
 	fullTrace := fmt.Sprintf("%+v", err)
 
-	log.Printf("Full Stack Trace: %s", fullTrace)
+	// log.Printf("Full Stack Trace: %s", fullTrace)
 
 	// 行ごとに分割
 	lines := strings.Split(fullTrace, "\n")
