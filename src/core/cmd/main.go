@@ -41,11 +41,11 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
+	r.Use(middleware.TransactionHandler(db))
 
 	r.GET("/panic", myHandler)
 	r.GET("/base-error-panic", myBaseErrorHandler)
 
-	r.Use(middleware.TransactionHandler(db))
 	controllers.InitControllers(r, createUserService)
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)

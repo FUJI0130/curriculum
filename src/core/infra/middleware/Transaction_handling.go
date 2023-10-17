@@ -27,12 +27,12 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 				if r := recover(); r != nil {
 					log.Printf("TransactionHandler: panic")
 					tx.Rollback()
-					log.Printf("TransactionHandler: rollback")
+					log.Printf("TransactionHandler: rollback1")
 					panic(r)
 				} else if c.Writer.Status() >= 400 {
 					log.Printf("TransactionHandler: status >= 400")
 					tx.Rollback()
-					log.Printf("TransactionHandler: rollback")
+					log.Printf("TransactionHandler: rollback2")
 				} else {
 					tx.Commit()
 					log.Printf("TransactionHandler: commit")

@@ -138,20 +138,24 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	// Validate request keys
 	reqMap, err := StructToMap(req)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to convert struct to map. ")
+		// return customerrors.WrapInternalServerError(err, "Failed to convert struct to map. ")
+		return err
 	}
 	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
+		// return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
+		return err
 	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
 	if err != nil {
-		return customerrors.WrapInternalServerErrorf(err, "Database error.  Failed to check existence of user name: %s", req.Name)
+		// return customerrors.WrapInternalServerErrorf(err, "Database error.  Failed to check existence of user name: %s", req.Name)
+		return err
 	}
 
 	if isExist {
-		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
+		// return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
+		return err
 	}
 
 	// 全てのタグ名を一度に取得するためのスライスの作成
@@ -163,7 +167,8 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
+		// return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
+		return err
 	}
 
 	tagsMap := make(map[string]*tagdm.Tag)
@@ -177,7 +182,8 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
+			// return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
+			return err
 		}
 		seenSkills[s.TagName] = true
 
@@ -185,11 +191,13 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
+				// return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
+				return err
 			}
 
 			if err = app.tagRepo.StoreWithTransaction(tx, tag); err != nil {
-				return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
+				// return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
+				return err
 			}
 
 			tagsMap[s.TagName] = tag
@@ -215,7 +223,8 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to create user. ")
+		// return customerrors.WrapInternalServerError(err, "Failed to create user. ")
+		return err
 	}
 
 	return app.userRepo.StoreWithTransaction(tx, userdomain)
