@@ -33,18 +33,6 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		c.Error(err)
-		// switch err.(type) {
-		// case *customerrors.ConflictErrorType:
-		// 	c.JSON(errCodeConflict, gin.H{"error": err.Error()})
-		// case *customerrors.InternalServerErrorType:
-		// 	c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
-		// case *customerrors.NotFoundErrorType:
-		// 	c.JSON(errCodeNotFound, gin.H{"error": err.Error()})
-		// case *customerrors.UnprocessableEntityErrorType:
-		// 	c.JSON(errCodeUnprocessableEntity, gin.H{"error": err.Error()})
-		// default:
-		// 	c.JSON(errCodeInternalServerError, gin.H{"error": err.Error()})
-		// }
 		return
 	}
 

@@ -24,22 +24,25 @@ type User struct {
 func NewUser(name string, email string, password string, profile string) (*User, error) {
 
 	if name == "" {
-		return nil, customerrors.NewUnprocessableEntityError("name is empty")
+		return nil, customerrors.NewUnprocessableEntityError("Username is empty")
 	}
 
 	userId, err := NewUserID()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserID")
+		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserID")
+		return nil, err
 	}
 
 	userEmail, err := NewUserEmail(email)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserEmail")
+		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserEmail")
+		return nil, err
 	}
 
 	userPassword, err := NewUserPassword(password)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserPassword")
+		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserPassword")
+		return nil, err
 	}
 	userProfile := profile
 	countProfile := utf8.RuneCountInString(profile)

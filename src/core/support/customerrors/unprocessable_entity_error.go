@@ -23,6 +23,9 @@ func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
 			StatusCodeVal: errCodeUnprocessableEntity,
 			// TraceVal:      errors.WithStack(errors.New(formattedMessage)),
 			TraceVal: errors.WithStack(errors.New(message)),
+			// TraceVal: errors.WithStack(fmt.Errorf("%s", message)),
+			// TraceVal: errors.WithStackDepth(errors.New(message), 0),
+			// TraceVal: errors.New(message),
 		},
 	}
 }

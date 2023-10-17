@@ -28,9 +28,7 @@ func main() {
 
 	config.GlobalConfig.DebugMode = true
 
-	env := config.LoadEnv()
-
-	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", env.DbUser, env.DbPassword, env.DbHost, env.DbPort, env.DbName))
+	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", config.Env.DbUser, config.Env.DbPassword, config.Env.DbHost, config.Env.DbPort, config.Env.DbName))
 	if err != nil {
 		panic(err)
 	}
@@ -48,6 +46,6 @@ func main() {
 	r.GET("/base-error-panic", myBaseErrorHandler)
 
 	controllers.InitControllers(r, createUserService)
-	log.Println("Starting server on port:", env.AppPort)
-	r.Run(":" + env.AppPort)
+	log.Println("Starting server on port:", config.Env.AppPort)
+	r.Run(":" + config.Env.AppPort)
 }

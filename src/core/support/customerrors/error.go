@@ -57,9 +57,15 @@ func (b *BaseErr) LogStackTrace() {
 // 	return be.Message
 // }
 
+// スタックトレース出すのに必要
+//
+//	func (be *BaseErr) Error() string {
+//		return fmt.Sprintf("%s: %+v", be.Message, be.TraceVal)
+//	}
 func (be *BaseErr) Error() string {
-	return fmt.Sprintf("%s: %+v", be.Message, be.TraceVal)
+	return fmt.Sprintf("%s ### %v", be.Message, be.TraceVal)
 }
+
 func (be *BaseErr) StatusCode() int {
 	return be.StatusCodeVal
 }

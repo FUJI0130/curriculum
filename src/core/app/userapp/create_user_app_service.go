@@ -3,6 +3,7 @@ package userapp
 import (
 	"context"
 	"fmt"
+	"log"
 	"reflect"
 	"time"
 
@@ -53,18 +54,21 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	reqMap, err := StructToMap(req)
 	if err != nil {
 
-		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to convert struct to map.")
+		// return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to convert struct to map.")
+		return err
 	}
 	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
 
-		return customerrors.WrapUnprocessableEntityError(err, "Create_user_app_service Validation failed. ")
+		// return customerrors.WrapUnprocessableEntityError(err, "Create_user_app_service Validation failed. ")
+		return err
 	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
 	if err != nil {
 
-		return customerrors.WrapInternalServerErrorf(err, "Create_user_app_service Database error. Failed to check existence of user name: %s", req.Name)
+		// return customerrors.WrapInternalServerErrorf(err, "Create_user_app_service Database error. Failed to check existence of user name: %s", req.Name)
+		return err
 	}
 
 	if isExist {
@@ -79,7 +83,8 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 
-		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to fetch tags. ")
+		// return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to fetch tags. ")
+		return err
 	}
 
 	tagsMap := make(map[string]*tagdm.Tag)
@@ -101,11 +106,13 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create tag. ")
+				// return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create tag. ")
+				return err
 			}
 
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to store tag. ")
+				// return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to store tag. ")
+				return err
 			}
 
 			tagsMap[s.TagName] = tag
@@ -128,9 +135,11 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 	}
 
+	log.Printf("Create_user_app_service  Exec  name is : %s", req.Name)
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create user. ")
+		return err
+		// return customerrors.WrapInternalServerError(err, "Create_user_app_service Failed to create user. ")
 	}
 
 	return app.userRepo.Store(ctx, userdomain)
