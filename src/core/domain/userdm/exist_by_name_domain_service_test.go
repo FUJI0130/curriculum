@@ -55,10 +55,8 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			mockService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
 
-			// モックの定義を行う
 			tt.mockFunc(mockService)
 
-			// テストを実行する
 			result, err := mockService.Exec(ctx, tt.inputName)
 			assert.Equal(t, tt.wantResult, result)
 			if tt.wantErr != nil {

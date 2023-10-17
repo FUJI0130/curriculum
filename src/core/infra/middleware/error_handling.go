@@ -1,44 +1,30 @@
 package middleware
 
 import (
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
-	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 )
 
 func ErrorHandler(c *gin.Context) {
-	defer func() {
-		if rec := recover(); rec != nil {
-			var err error
-			switch t := rec.(type) {
-			case string:
-				err = errors.New(t)
-			case error:
-				err = t
-			default:
-				err = errors.New("unknown panic")
-			}
-			log.Printf("recovered from panic: %+v", err)
-
-			switch e := err.(type) {
-			case customerrors.BaseError:
-				log.Printf("ERROR: %+v", e.Trace())
-				c.JSON(e.StatusCode(), gin.H{
-					"message": fmt.Sprintf("%d: %s", e.StatusCode(), e.Error()),
-				})
-			default:
-				log.Printf("FATAL: %+v", e)
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"message": "Fatal",
-				})
-			}
-
-			c.Abort()
-		}
-	}()
 	c.Next()
+
+	if len(c.Errors) > 0 {
+		handleError(c, c.Errors.Last().Err)
+		return
+	}
+}
+
+func handleError(c *gin.Context, err error) {
+	if customErr, ok := err.(customerrors.BaseError); ok {
+		message, _ := customerrors.SplitMessageAndTrace(customErr.Error())
+		c.JSON(customErr.StatusCode(), gin.H{
+			"message": message,
+		})
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+		"message": "Internal Server Error",
+	})
 }

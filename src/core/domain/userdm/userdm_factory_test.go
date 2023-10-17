@@ -36,7 +36,6 @@ func TestReconstruct(t *testing.T) {
 			email:   "invalidEmail",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {
@@ -76,7 +75,6 @@ func TestGenWhenCreate(t *testing.T) {
 			profile: "",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {
@@ -114,7 +112,6 @@ func TestTestNewUser(t *testing.T) {
 			email:   "invalidEmail",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {

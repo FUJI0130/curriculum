@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
@@ -9,18 +10,25 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
+func myHandler(c *gin.Context) {
+	panic("this is a test panic")
+}
+
+func myBaseErrorHandler(c *gin.Context) {
+	panic(customerrors.NewBaseError("This is a BaseError panic", 404, nil))
+}
+
 func main() {
 
 	config.GlobalConfig.DebugMode = true
 
-	env := config.LoadEnv()
-
-	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", env.DbUser, env.DbPassword, env.DbHost, env.DbPort, env.DbName))
+	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", config.Env.DbUser, config.Env.DbPassword, config.Env.DbHost, config.Env.DbPort, config.Env.DbName))
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +41,12 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
+
+	r.GET("/panic", myHandler)
+	r.GET("/base-error-panic", myBaseErrorHandler)
+
 	r.Use(middleware.TransactionHandler(db))
 	controllers.InitControllers(r, createUserService)
-	r.Run(":" + env.AppPort)
+	log.Println("Starting server on port:", config.Env.AppPort)
+	r.Run(":" + config.Env.AppPort)
 }

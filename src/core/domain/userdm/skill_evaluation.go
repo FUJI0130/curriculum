@@ -1,5 +1,3 @@
-// skills_evaluation.go
-
 package userdm
 
 import (
@@ -15,7 +13,7 @@ type SkillEvaluation uint8
 
 func NewSkillEvaluation(value uint8) (SkillEvaluation, error) {
 	if value < MinSkillEvaluationValue || value > MaxSkillEvaluationValue {
-		return 0, customerrors.NewUnprocessableEntityErrorf("[NewSkillEvaluation] SkillEvaluation is out of range value is : %d", int(value))
+		return 0, customerrors.NewUnprocessableEntityErrorf("SkillEvaluation is out of range value is : %d", int(value))
 	}
 	return SkillEvaluation(value), nil
 }

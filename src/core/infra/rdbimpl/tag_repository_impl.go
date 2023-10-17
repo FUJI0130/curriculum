@@ -31,7 +31,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
-		return customerrors.WrapInternalServerError(err, "Failed to store tag")
+		return err
 	}
 
 	return nil
@@ -55,14 +55,14 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_impl FindByName")
 		}
-		return nil, customerrors.WrapInternalServerError(err, "tag_repository_impl FindByName database error")
+		return nil, err
 	}
 
 	tagID := tagdm.TagID(tempTag.ID)
 	tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 
 	if err != nil {
-		return nil, customerrors.WrapInternalServerError(err, "FindByName error reconstructing tag from tagRequest")
+		return nil, err
 	}
 
 	return tag, nil
@@ -73,7 +73,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 	var tempTags []tagRequest
 	query, args, err := sqlx.In(query, names)
 	if err != nil {
-		return nil, customerrors.WrapInternalServerError(err, "Error query construction error")
+		return nil, err
 	}
 
 	err = repo.Conn.Select(&tempTags, query, args...)
@@ -102,7 +102,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_imple  FindByID")
 		}
-		return nil, customerrors.WrapInternalServerError(err, "tag_repository FindByID database error")
+		return nil, err
 	}
 
 	tagID := tagdm.TagID(tempTag.ID)

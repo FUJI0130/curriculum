@@ -2,7 +2,6 @@ package customerrors
 
 import (
 	"fmt"
-	"runtime"
 
 	"github.com/cockroachdb/errors"
 )
@@ -14,14 +13,11 @@ type UnprocessableEntityErrorType struct {
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
-	_, file, line, _ := runtime.Caller(1)
-	formattedMessage := fmt.Sprintf("[File: %s Line: %d] %s", file, line, message)
-
 	return &UnprocessableEntityErrorType{
 		&BaseErr{
-			Message:       formattedMessage,
+			Message:       message,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.WithStack(errors.New(formattedMessage)),
+			TraceVal:      errors.WithStack(errors.New("")),
 		},
 	}
 }

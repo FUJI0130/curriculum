@@ -16,11 +16,11 @@ type UserPassword string
 func NewUserPassword(userPassword string) (UserPassword, error) {
 	count := utf8.RuneCountInString(userPassword)
 	if userPassword == "" {
-		return "", customerrors.NewUnprocessableEntityError("[NewUserPassword] password is empty")
+		return "", customerrors.NewUnprocessableEntityError("password is empty")
 	} else if PasswordMaxlength < count {
-		return "", customerrors.NewUnprocessableEntityError("[NewUserPassword] password is too long")
+		return "", customerrors.NewUnprocessableEntityError("password is too long")
 	} else if count < PasswordMinlength {
-		return "", customerrors.NewUnprocessableEntityError("[NewUserPassword] password is too short")
+		return "", customerrors.NewUnprocessableEntityError("password is too short")
 	}
 
 	return UserPassword(userPassword), nil

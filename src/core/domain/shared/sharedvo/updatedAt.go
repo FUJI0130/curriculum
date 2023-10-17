@@ -10,9 +10,8 @@ type UpdatedAt time.Time
 
 func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
-		return UpdatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("[NewUpdatedAtByVal] updatedAt is empty")
+		return UpdatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("UpdatedAt is empty")
 	}
-
 	return UpdatedAt(updatedAt), nil
 }
 

@@ -7,7 +7,6 @@ import (
 )
 
 func TestNewUserID_check(t *testing.T) {
-	// テストケースを定義
 	tests := []struct {
 		title string
 		id1   UserID
@@ -29,7 +28,7 @@ func TestNewUserID_check(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
 
@@ -43,7 +42,6 @@ func TestNewUserID_check(t *testing.T) {
 				t.Fatalf("Failed to create userID2: %v", err)
 			}
 
-			// テストケース名に応じて、比較するUserIDを決定
 			var compare1, compare2 UserID
 			switch tt.title {
 			case "testUserID1 と testUserID2 は等しくない事を確認するテスト":

@@ -117,7 +117,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName, mockTagName}).Return([]*tagdm.Tag{existingTag, existingTag}, nil).Times(1)
 
 			},
-			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", mockTagName), // 期待されるエラーメッセージ
+			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", mockTagName),
 		},
 	}
 

@@ -1,30 +1,25 @@
 package config
 
-import "os"
+import (
+	"log"
+
+	"github.com/kelseyhightower/envconfig"
+)
 
 type EnvConfig struct {
-	DbUser     string
-	DbPassword string
-	DbHost     string
-	DbPort     string
-	DbName     string
-	AppPort    string
+	DbUser     string `envconfig:"DB_USER"`
+	DbPassword string `envconfig:"DB_PASSWORD"`
+	DbHost     string `envconfig:"DB_HOST"`
+	DbPort     string `envconfig:"DB_PORT"`
+	DbName     string `envconfig:"DB_NAME"`
+	AppPort    string `envconfig:"APP_PORT"`
 }
 
-func LoadEnv() *EnvConfig {
-	return &EnvConfig{
-		DbUser:     getEnv("DB_USER", "user"),
-		DbPassword: getEnv("DB_PASSWORD", "password"),
-		DbHost:     getEnv("DB_HOST", "mysql"),
-		DbPort:     getEnv("DB_PORT", "3306"),
-		DbName:     getEnv("DB_NAME", "sql"),
-		AppPort:    getEnv("APP_PORT", "8080"),
-	}
-}
+var Env EnvConfig
 
-func getEnv(key string, fallback string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+func init() {
+	err := envconfig.Process("", &Env)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-	return fallback
 }
