@@ -138,36 +138,29 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	// Validate request keys
 	reqMap, err := StructToMap(req)
 	if err != nil {
-		// return customerrors.WrapInternalServerError(err, "Failed to convert struct to map. ")
 		return err
 	}
 	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		// return customerrors.WrapUnprocessableEntityError(err, "Validation failed. ")
 		return err
 	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
 	if err != nil {
-		// return customerrors.WrapInternalServerErrorf(err, "Database error.  Failed to check existence of user name: %s", req.Name)
 		return err
 	}
 
 	if isExist {
-		// return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 		return err
 	}
 
-	// 全てのタグ名を一度に取得するためのスライスの作成
 	tagNames := make([]string, len(req.Skills))
 	for i, s := range req.Skills {
 		tagNames[i] = s.TagName
 	}
 
-	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
-		// return customerrors.WrapInternalServerError(err, "Failed to fetch tags. ")
 		return err
 	}
 
@@ -182,21 +175,17 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			// return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
 			return err
 		}
 		seenSkills[s.TagName] = true
 
-		// タグが存在しない場合は新しく作成
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
-				// return customerrors.WrapInternalServerError(err, "Failed to create tag. ")
 				return err
 			}
 
 			if err = app.tagRepo.StoreWithTransaction(tx, tag); err != nil {
-				// return customerrors.WrapInternalServerError(err, "Failed to store tag. ")
 				return err
 			}
 
@@ -223,7 +212,6 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
-		// return customerrors.WrapInternalServerError(err, "Failed to create user. ")
 		return err
 	}
 

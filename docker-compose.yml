@@ -2,6 +2,7 @@ version: "3.8"
 
 volumes:
   sql:
+  sql_test:
 
 services:
   app:
@@ -37,4 +38,20 @@ services:
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=password
+      - TZ=Asia/Tokyo
+  mysql_test:
+    build: 
+      context: .
+      dockerfile: .docker/mysql.Dockerfile
+    restart: always    
+    ports:
+      - "9998:3306"
+    volumes:
+      - sql_test:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_DATABASE=sql_test
+      - MYSQL_USER=user_test
+      - MYSQL_PASSWORD=password_test
+      - MYSQL_ROOT_PASSWORD=password_test
       - TZ=Asia/Tokyo
