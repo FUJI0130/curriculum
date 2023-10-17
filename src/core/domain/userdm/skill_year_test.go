@@ -31,12 +31,11 @@ func TestNewSkillYear(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 			_, err := userdm.NewSkillYear(tt.years)
 
-			// Check if the error is nil or not
 			assert.Equal(t, tt.wantErr, err != nil)
 
 			if tt.wantErr {

@@ -37,9 +37,9 @@ func TestNewSkill(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 
 			dummyTagID, err := tagdm.NewTagID()
 			assert.NoError(t, err)

@@ -1,5 +1,3 @@
-// skills_evaluation.go
-
 package userdm
 
 import (

@@ -29,27 +29,24 @@ func NewUser(name string, email string, password string, profile string) (*User,
 
 	userId, err := NewUserID()
 	if err != nil {
-		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserID")
 		return nil, err
 	}
 
 	userEmail, err := NewUserEmail(email)
 	if err != nil {
-		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserEmail")
 		return nil, err
 	}
 
 	userPassword, err := NewUserPassword(password)
 	if err != nil {
-		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUserPassword")
 		return nil, err
 	}
 	userProfile := profile
 	countProfile := utf8.RuneCountInString(profile)
 	if userProfile == "" {
-		return nil, customerrors.NewUnprocessableEntityError("profile is empty")
+		return nil, customerrors.NewUnprocessableEntityError("UserProfile is empty")
 	} else if profileMaxlength < countProfile {
-		return nil, customerrors.NewUnprocessableEntityError("profile is too long")
+		return nil, customerrors.NewUnprocessableEntityError("UserProfile is too long")
 	}
 
 	userCreatedAt := sharedvo.NewCreatedAt()
@@ -72,7 +69,7 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 		return nil, err
 	}
 
-	userEmail, err := NewUserEmail(email) // ここでバリデーションを省略しています。必要に応じて調整してください。
+	userEmail, err := NewUserEmail(email)
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +135,6 @@ func ReconstructUser(id string, name string, email string, password string, prof
 		updatedAt: userUpdatedAt,
 	}, nil
 }
-
-// var ErrUserNotFound = errors.New("user not found")
 
 func (u *User) ID() UserID {
 	return u.id

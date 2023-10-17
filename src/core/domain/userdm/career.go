@@ -20,22 +20,22 @@ type Career struct {
 func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
 
 	if detail == "" {
-		return nil, customerrors.NewUnprocessableEntityError("detail is empty")
+		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
 	}
 
 	careerID, err := NewCareerID()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewCareerID")
+		return nil, err
 	}
 
 	careerCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewCreatedAt")
+		return nil, err
 	}
 
 	careerUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "NewUpdatedAt")
+		return nil, err
 	}
 
 	return &Career{
@@ -49,7 +49,6 @@ func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID Use
 	}, nil
 }
 
-// 以下のゲッターはそのままです。
 func (c *Career) ID() CareerID {
 	return c.id
 }

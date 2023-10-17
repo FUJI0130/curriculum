@@ -23,7 +23,6 @@ func GenWhenCreate(name string, email string, password string, profile string, s
 	user, err := NewUser(name, email, password, profile)
 	if err != nil {
 		return nil, err
-		// return nil, customerrors.WrapUnprocessableEntityError(err, "NewUser")
 	}
 
 	skills := make([]*Skill, 0, len(skillParams))

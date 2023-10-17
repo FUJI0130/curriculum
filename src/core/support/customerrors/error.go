@@ -37,38 +37,31 @@ func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
 		TraceVal:      errors.Wrap(err, message),
 	}
 
-	if config.GlobalConfig.DebugMode {
-		// fmt.Println(wrappedError.TraceVal)
-	}
 	return wrappedError
 }
-
-//	func (be *BaseErr) Error() string {
-//		return fmt.Sprintf("%s ### %+v", be.Message, be.TraceVal)
-//	}
 
 func (be *BaseErr) Error() string {
 	stackTraceFilter := &support.StackTraceFilter{}
 
 	traceString := fmt.Sprintf("%+v", be.TraceVal)
-	// log.Println("traceString is : ", traceString)
 
-	// be.TraceValを直接フィルタリングします。
-	// filteredTrace := stackTraceFilter.ExtractNLinesFromStart(traceString, 5)
-	filteredTrace := stackTraceFilter.RemoveLinesFromKeywords(traceString)
+	var resultStackTrace = ""
+	if config.GlobalConfig.DebugMode {
+		resultStackTrace = stackTraceFilter.RemoveLinesFromKeywords(traceString)
+	} else {
+		resultStackTrace = traceString
+	}
 
-	// フィルタリングしたスタックトレースの最初の行を取得
-	firstLineOfTrace := strings.SplitN(filteredTrace, "\n", 2)[0]
+	lines := strings.SplitN(resultStackTrace, "\n", 2)
 
-	// 最初の行からエラーメッセージとスタックトレースを分割
-	message, _ := splitErrorAndStackTrace(firstLineOfTrace)
+	if len(lines) > 1 {
+		resultStackTrace = lines[1]
+	}
 
-	// このmessageを使用してエラーメッセージを構築
-	// return fmt.Sprintf("%s ### %s", be.Message, message)
-	return fmt.Sprintf("%s ### %s", message, filteredTrace)
+	return fmt.Sprintf("%s ### \n%s", be.Message, resultStackTrace)
 }
 
-func splitErrorAndStackTrace(errStr string) (string, string) {
+func SplitMessageAndTrace(errStr string) (string, string) {
 	parts := strings.SplitN(errStr, " ### ", 2)
 	if len(parts) < 2 {
 		return errStr, ""
@@ -76,7 +69,6 @@ func splitErrorAndStackTrace(errStr string) (string, string) {
 
 	message := parts[0]
 
-	// スタックトレースの全体を取得するため、" ### " の後のすべての文字列を取得します。
 	stackTrace := parts[1]
 
 	return message, stackTrace

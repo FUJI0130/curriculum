@@ -5,7 +5,6 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
-	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type Skill struct {
@@ -21,22 +20,22 @@ type Skill struct {
 func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "evaluation value: %d", evaluation)
+		return nil, err
 	}
 
 	y, err := NewSkillYear(years)
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityErrorf(err, "years value: %d", years)
+		return nil, err
 	}
 
 	skillCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "createdAt is invalid")
+		return nil, err
 	}
 
 	skillUpdatedAt := sharedvo.NewUpdatedAt()
 	if err != nil {
-		return nil, customerrors.WrapUnprocessableEntityError(err, "updatedAt is invalid")
+		return nil, err
 	}
 	return &Skill{
 		tagID:      tagID,

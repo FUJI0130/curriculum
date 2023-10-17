@@ -13,14 +13,11 @@ type UnprocessableEntityErrorType struct {
 }
 
 func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
-	// _, file, line, _ := runtime.Caller(1)
-	// formattedMessage := fmt.Sprintf("[File: %s Line: %d] %s", file, line, message)
-
 	return &UnprocessableEntityErrorType{
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.WithStack(errors.New("")),
 		},
 	}
 }
