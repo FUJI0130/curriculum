@@ -18,3 +18,5 @@ tmp/
 
 # VSCode directories
 .vscode/
+
+*.bak
