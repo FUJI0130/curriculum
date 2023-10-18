@@ -26,8 +26,6 @@ func myBaseErrorHandler(c *gin.Context) {
 
 func main() {
 
-	config.GlobalConfig.DebugMode = false
-
 	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local", config.Env.DbUser, config.Env.DbPassword, config.Env.DbHost, config.Env.DbPort, config.Env.DbName))
 	if err != nil {
 		panic(err)
