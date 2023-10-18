@@ -44,8 +44,6 @@ type CareersRequest struct {
 	AdTo   time.Time
 }
 
-var test = ""
-
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
