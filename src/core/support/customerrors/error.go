@@ -38,22 +38,6 @@ func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
 	return wrappedError
 }
 
-// func (be *BaseErr) Error() string {
-// 	stackTraceFilter := &support.StackTraceFilter{}
-// 	traceString := fmt.Sprintf("%+v", be.TraceVal)
-// 	var resultStackTrace = ""
-// 	if config.GlobalConfig.DebugMode {
-// 		resultStackTrace = stackTraceFilter.RemoveLinesFromKeywords(traceString)
-// 	} else {
-// 		resultStackTrace = traceString
-// 	}
-// 	lines := strings.SplitN(resultStackTrace, "\n", 2)
-// 	if len(lines) > 1 {
-// 		resultStackTrace = lines[1]
-// 	}
-// 	return fmt.Sprintf("%s ### \n%s", be.Message, resultStackTrace)
-// }
-
 func (be *BaseErr) Error() string {
 	traceString := fmt.Sprintf("%+v", be.TraceVal)
 	return fmt.Sprintf("%s ### \n%s", be.Message, traceString)

@@ -2,8 +2,6 @@ package userapp
 
 import (
 	"context"
-	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -49,14 +47,6 @@ type CareersRequest struct {
 var test = ""
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-
-	reqMap, err := StructToMap(req)
-	if err != nil {
-		return err
-	}
-	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		return err
-	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
@@ -130,88 +120,4 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	}
 
 	return app.userRepo.Store(ctx, userdomain)
-}
-
-func StructToMap(req interface{}) (map[string]any, error) {
-	result := make(map[string]interface{})
-	val := reflect.ValueOf(req)
-	if val.Kind() != reflect.Ptr {
-
-		return nil, customerrors.NewInternalServerError("[StructToMap] Expected a pointer but got " + val.Kind().String())
-	}
-	val = val.Elem()
-	typ := val.Type()
-
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		fieldType := typ.Field(i)
-
-		if fieldType.PkgPath != "" {
-			continue
-		}
-
-		key := fieldType.Name
-
-		if field.Kind() == reflect.Struct {
-			nestedMap, err := StructToMap(field.Addr().Interface())
-			if err != nil {
-				return nil, err
-			}
-			result[key] = nestedMap
-		} else if field.Kind() == reflect.Slice {
-			var sliceData []interface{}
-			for si := 0; si < field.Len(); si++ {
-				sliceElem := field.Index(si)
-				if sliceElem.Kind() == reflect.Struct {
-					nestedMap, err := StructToMap(sliceElem.Addr().Interface())
-					if err != nil {
-						return nil, err
-					}
-					sliceData = append(sliceData, nestedMap)
-				} else {
-					sliceData = append(sliceData, sliceElem.Interface())
-				}
-			}
-			result[key] = sliceData
-		} else {
-			result[key] = field.Interface()
-		}
-	}
-	return result, nil
-}
-
-func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct any) error {
-	expectedKeys := make(map[string]bool)
-
-	val := reflect.ValueOf(referenceStruct).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		expectedKeys[val.Type().Field(i).Name] = true
-	}
-
-	for key, value := range rawReq {
-		if _, exists := expectedKeys[key]; !exists {
-			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] Unexpected key '%s' in the request", key))
-		}
-
-		if nestedMap, ok := value.(map[string]interface{}); ok {
-			field, _ := val.Type().FieldByName(key)
-			if field.Type.Kind() == reflect.Struct {
-				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
-					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] key '%s': %v", key, err))
-				}
-			}
-		} else if nestedSlice, ok := value.([]interface{}); ok {
-			field, _ := val.Type().FieldByName(key)
-			if field.Type.Elem().Kind() == reflect.Struct {
-				for i, nestedElement := range nestedSlice {
-					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
-						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
-							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("[ValidateKeysAgainstStruct] key '%s' index %d: %v", key, i, err))
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
 }
