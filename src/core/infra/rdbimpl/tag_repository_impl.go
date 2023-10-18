@@ -12,7 +12,8 @@ import (
 )
 
 type tagRepositoryImpl struct {
-	Conn *sqlx.DB
+	// Conn *sqlx.DB
+	Conn Queryer
 }
 
 type tagRequest struct {
@@ -22,10 +23,13 @@ type tagRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func NewTagRepository(conn *sqlx.DB) tagdm.TagRepository {
+// func NewTagRepository(conn *sqlx.DB) tagdm.TagRepository {
+// 	return &tagRepositoryImpl{Conn: conn}
+// }
+
+func NewTagRepository(conn Queryer) tagdm.TagRepository {
 	return &tagRepositoryImpl{Conn: conn}
 }
-
 func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error {
 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"

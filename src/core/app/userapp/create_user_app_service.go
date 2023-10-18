@@ -135,15 +135,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sqlx.Tx, req *CreateUserRequest) error {
 
-	// Validate request keys
-	reqMap, err := StructToMap(req)
-	if err != nil {
-		return err
-	}
-	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		return err
-	}
-
 	isExist, err := app.existService.Exec(ctx, req.Name)
 
 	if err != nil {

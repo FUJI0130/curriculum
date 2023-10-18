@@ -10,6 +10,12 @@ import (
 func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		existingTx, _ := c.Get("tx")
+		if existingTx != nil {
+			c.Next()
+			return
+		}
+
 		var tx *sqlx.Tx
 		var err error
 		log.Printf("TransactionHandler: %s", c.Request.Method)
