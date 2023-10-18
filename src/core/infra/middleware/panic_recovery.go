@@ -23,7 +23,7 @@ func PanicRecovery(c *gin.Context) {
 func handlePanic(c *gin.Context, err error) {
 	log.Printf("Recovered from panic: %+v", err)
 
-	if isDebugMode() {
+	if config.GlobalConfig.DebugMode {
 		err = errors.WithStack(err)
 		log.Printf("Debug Mode - Stack Trace: %+v", err)
 	}
@@ -37,8 +37,4 @@ func convertToError(r interface{}) error {
 		return err
 	}
 	return errors.New(fmt.Sprint(r))
-}
-
-func isDebugMode() bool {
-	return config.GlobalConfig.DebugMode
 }

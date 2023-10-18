@@ -4,21 +4,19 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/FUJI0130/curriculum/src/core/config"
-	"github.com/FUJI0130/curriculum/src/core/support"
 	"github.com/cockroachdb/errors"
 )
-
-type BaseError interface {
-	Error() string
-	StatusCode() int
-	Trace() error
-}
 
 type BaseErr struct {
 	Message       string
 	StatusCodeVal int
 	TraceVal      error
+}
+
+type BaseError interface {
+	Error() string
+	StatusCode() int
+	Trace() error
 }
 
 func NewBaseError(message string, statusCode int, trace error) *BaseErr {
@@ -40,25 +38,25 @@ func (b *BaseErr) WrapWithLocation(err error, message string) *BaseErr {
 	return wrappedError
 }
 
+// func (be *BaseErr) Error() string {
+// 	stackTraceFilter := &support.StackTraceFilter{}
+// 	traceString := fmt.Sprintf("%+v", be.TraceVal)
+// 	var resultStackTrace = ""
+// 	if config.GlobalConfig.DebugMode {
+// 		resultStackTrace = stackTraceFilter.RemoveLinesFromKeywords(traceString)
+// 	} else {
+// 		resultStackTrace = traceString
+// 	}
+// 	lines := strings.SplitN(resultStackTrace, "\n", 2)
+// 	if len(lines) > 1 {
+// 		resultStackTrace = lines[1]
+// 	}
+// 	return fmt.Sprintf("%s ### \n%s", be.Message, resultStackTrace)
+// }
+
 func (be *BaseErr) Error() string {
-	stackTraceFilter := &support.StackTraceFilter{}
-
 	traceString := fmt.Sprintf("%+v", be.TraceVal)
-
-	var resultStackTrace = ""
-	if config.GlobalConfig.DebugMode {
-		resultStackTrace = stackTraceFilter.RemoveLinesFromKeywords(traceString)
-	} else {
-		resultStackTrace = traceString
-	}
-
-	lines := strings.SplitN(resultStackTrace, "\n", 2)
-
-	if len(lines) > 1 {
-		resultStackTrace = lines[1]
-	}
-
-	return fmt.Sprintf("%s ### \n%s", be.Message, resultStackTrace)
+	return fmt.Sprintf("%s ### \n%s", be.Message, traceString)
 }
 
 func SplitMessageAndTrace(errStr string) (string, string) {

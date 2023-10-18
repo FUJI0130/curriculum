@@ -12,17 +12,19 @@ type UnprocessableEntityErrorType struct {
 	*BaseErr
 }
 
-func NewUnprocessableEntityError(message string) *UnprocessableEntityErrorType {
+func NewUnprocessableEntityError(message string) error {
 	return &UnprocessableEntityErrorType{
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeUnprocessableEntity,
-			TraceVal:      errors.WithStack(errors.New("")),
+			// TraceVal:      errors.WithStack(errors.New("")),
+			// TraceVal: errors.Wrap(errors.New(""), message),
+			TraceVal: errors.Errorf("%+v", errors.New(message)),
 		},
 	}
 }
 
-func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEntityErrorType {
+func NewUnprocessableEntityErrorf(format string, args ...any) error {
 	message := fmt.Sprintf(format, args...)
 	return &UnprocessableEntityErrorType{
 		&BaseErr{
@@ -33,7 +35,7 @@ func NewUnprocessableEntityErrorf(format string, args ...any) *UnprocessableEnti
 	}
 }
 
-func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntityErrorType {
+func WrapUnprocessableEntityError(err error, message string) error {
 	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
 	wrappedError := baseError.WrapWithLocation(err, message)
 	return &UnprocessableEntityErrorType{
@@ -41,7 +43,7 @@ func WrapUnprocessableEntityError(err error, message string) *UnprocessableEntit
 	}
 }
 
-func WrapUnprocessableEntityErrorf(err error, format string, args ...interface{}) *UnprocessableEntityErrorType {
+func WrapUnprocessableEntityErrorf(err error, format string, args ...any) error {
 	message := fmt.Sprintf(format, args...)
 	baseError := NewBaseError(message, errCodeUnprocessableEntity, nil)
 	wrappedError := baseError.WrapWithLocation(err, message)
