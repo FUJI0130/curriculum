@@ -44,6 +44,7 @@ func initializeDB(db *sqlx.DB) error {
 }
 
 func TestTransactionHandling(t *testing.T) {
+	fmt.Println("config.Env is : ", config.Env)
 	selectedTestCase := os.Getenv("SELECTED_TEST_CASE")
 	// DBの接続情報を設定ファイルから取得
 	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local",
