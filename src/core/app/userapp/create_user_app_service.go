@@ -121,21 +121,25 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	return app.userRepo.Store(ctx, userdomain)
 }
 
-func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sqlx.Tx, req *CreateUserRequest) error {
+func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sqlx.Tx, req *CreateUserRequest) (err error) {
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
-
 	if err != nil {
 		return err
 	}
 
 	if isExist {
-		return err
+		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 	}
 
-	tagNames := make([]string, len(req.Skills))
-	for i, s := range req.Skills {
-		tagNames[i] = s.TagName
+	tagNames := make([]string, 0, len(req.Skills))
+	seenSkills := make(map[string]bool)
+	for _, s := range req.Skills {
+		if seenSkills[s.TagName] {
+			return customerrors.NewUnprocessableEntityErrorf("Skill with tag name %s is duplicated", s.TagName)
+		}
+		seenSkills[s.TagName] = true
+		tagNames = append(tagNames, s.TagName)
 	}
 
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
@@ -148,36 +152,27 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 		tagsMap[tag.Name()] = tag
 	}
 
-	seenSkills := make(map[string]bool)
-	skillsParams := make([]userdm.SkillParam, len(req.Skills))
-
-	for i, s := range req.Skills {
-
-		if seenSkills[s.TagName] {
-			return err
-		}
-		seenSkills[s.TagName] = true
-
-		if _, ok := tagsMap[s.TagName]; !ok {
-			tag, err := tagdm.GenWhenCreateTag(s.TagName)
+	for _, tagName := range tagNames {
+		if _, exists := tagsMap[tagName]; !exists {
+			tag, err := tagdm.GenWhenCreateTag(tagName)
 			if err != nil {
 				return err
 			}
-
 			if err = app.tagRepo.StoreWithTransaction(tx, tag); err != nil {
 				return err
 			}
-
-			tagsMap[s.TagName] = tag
+			tagsMap[tagName] = tag
 		}
+	}
 
+	skillsParams := make([]userdm.SkillParam, len(req.Skills))
+	for i, s := range req.Skills {
 		skillsParams[i] = userdm.SkillParam{
 			TagID:      tagsMap[s.TagName].ID(),
 			TagName:    s.TagName,
 			Evaluation: s.Evaluation,
 			Years:      s.Years,
 		}
-
 	}
 
 	careersParams := make([]userdm.CareerParam, len(req.Careers))
@@ -194,5 +189,7 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 		return err
 	}
 
-	return app.userRepo.StoreWithTransaction(tx, userdomain)
+	err = app.userRepo.StoreWithTransaction(tx, userdomain)
+
+	return err
 }

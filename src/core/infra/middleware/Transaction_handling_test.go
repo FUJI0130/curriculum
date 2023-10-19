@@ -1,9 +1,14 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,15 +19,15 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	//... [snip]
 )
 
 func initializeDB(db *sqlx.DB) error {
 	// テスト開始前のDBの状態を初期化（例：特定のテーブルのテストデータを削除）
 	tables := []string{
+		"careers",
+		"skills",
 		"users",
 		"tags",
-		"careers",
 		"proposals",
 		"plans",
 		"categories",
@@ -31,7 +36,6 @@ func initializeDB(db *sqlx.DB) error {
 		"mentor_recruitments_tags",
 		"contract_requests",
 		"contracts",
-		"skills",
 	}
 
 	for _, table := range tables {
@@ -132,7 +136,7 @@ func TestTransactionHandling(t *testing.T) {
 					},
 				},
 			},
-			wantError: false,
+			wantError: true,
 		},
 		{
 			name: "既に存在するEメールアドレス",
@@ -200,22 +204,22 @@ func TestTransactionHandling(t *testing.T) {
 					},
 				},
 			},
-			wantError: false,
+			wantError: true,
 		},
 		{
-			name: "スキルが重複",
+			name: "DBに存在していないスキルが重複",
 			input: &userapp.CreateUserRequest{
-				Name:     "DuplicatedSkillUser",
-				Email:    "duplicatedSkill@gmail.com",
+				Name:     "NonExistentDuplicateSkillUser",
+				Email:    "nonExistentDuplicate@gmail.com",
 				Password: "password12345",
 				Skills: []userapp.SkillRequest{
 					{
-						TagName:    "RDBMS",
+						TagName:    "NewSkill1",
 						Evaluation: 2,
 						Years:      26,
 					},
 					{
-						TagName:    "RDBMS", // 同じスキル名
+						TagName:    "NewSkill1", // 同じスキル名
 						Evaluation: 4,
 						Years:      26,
 					},
@@ -229,51 +233,125 @@ func TestTransactionHandling(t *testing.T) {
 					},
 				},
 			},
-			wantError: false,
+			wantError: true,
+		},
+		{
+			name: "DBに存在しているスキルが重複",
+			input: &userapp.CreateUserRequest{
+				Name:     "ExistentDuplicateSkillUser",
+				Email:    "existentDuplicate@gmail.com",
+				Password: "password12345",
+				Skills: []userapp.SkillRequest{
+					{
+						TagName:    "RDBMS",
+						Evaluation: 2,
+						Years:      26,
+					},
+					{
+						TagName:    "RDBMS", // 既存のスキル名
+						Evaluation: 4,
+						Years:      26,
+					},
+				},
+				Profile: "Software Developer",
+				Careers: []userapp.CareersRequest{
+					{
+						Detail: "Worked at XYZ Corp",
+						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+						AdTo:   time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC),
+					},
+				},
+			},
+			wantError: true,
+		},
+		{
+			name: "careerに不正な値が入った時にロールバックされるか確認",
+			input: &userapp.CreateUserRequest{
+				Name:     "TestNameUser2",
+				Email:    "validEmail2@gmail.com",
+				Password: "password12345",
+				Skills: []userapp.SkillRequest{
+					{
+						TagName:    "RDBMS",
+						Evaluation: 2,
+						Years:      26,
+					},
+					{
+						TagName:    "AWS",
+						Evaluation: 4,
+						Years:      26,
+					},
+					{
+						TagName:    "docker",
+						Evaluation: 5,
+						Years:      26,
+					},
+				},
+				Profile: "Software Developer",
+				Careers: []userapp.CareersRequest{
+					{
+						Detail: strings.Repeat("a", 1001), // 1000文字以上（あるいはデータベースの制限を超える文字数）でエラーを起こす仮定
+						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
+						AdTo:   time.Date(2023, 12, 31, 0, 0, 0, 0, time.UTC),
+					},
+				},
+			},
+			wantError: true, // エラーを期待
 		},
 	}
 
-	for _, tt := range tests {
+	// これはテスト関数の外部、最初に一度だけ実行します。
+	r := gin.Default()
+	r.Use(TransactionHandler(db))
 
-		if selectedTestCase != "" && tt.name != selectedTestCase { // 環境変数が設定されていて、名前が一致しない場合はスキップ
+	r.POST("/test-endpoint", func(c *gin.Context) {
+		tx, _ := c.Get("tx")
+		ctx := context.WithValue(context.Background(), "tx", tx.(*sqlx.Tx))
+
+		var input userapp.CreateUserRequest
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
+
+		userRepo := rdbimpl.NewUserRepository(tx.(*sqlx.Tx))
+		tagRepo := rdbimpl.NewTagRepository(tx.(*sqlx.Tx))
+		existService := userdm.NewExistByNameDomainService(userRepo)
+		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
+
+		err := service.ExecWithTransaction(ctx, tx.(*sqlx.Tx), &input)
+		if err != nil {
+			c.JSON(500, err.Error())
+			return
+		}
+		c.JSON(200, "success")
+	})
+
+	for _, tt := range tests {
+		if selectedTestCase != "" && tt.name != selectedTestCase {
 			continue
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
-			if err := initializeDB(db); err != nil {
-				t.Fatalf("Failed to initialize the database: %v", err)
-			}
-
-			tx, err := db.Beginx()
-			if err != nil {
-				t.Fatalf("Failed to begin transaction: %v", err)
-			}
-
-			c := &gin.Context{} // テスト用のGinコンテキストを作成
-			c.Set("tx", tx)     // コンテキストにトランザクションを設定
-
-			defer func() {
-				if p := recover(); p != nil {
-					tx.Rollback()
-					t.Fatalf("Test panicked: %v", p)
-				} else if t.Failed() {
-					tx.Rollback()
-				} else {
-					tx.Commit()
+			if tt.name == "正常なリクエスト" {
+				if err := initializeDB(db); err != nil {
+					t.Fatalf("Failed to initialize the database: %v", err)
 				}
-			}()
-
-			// リポジトリとドメインサービスのセットアップ
-			userRepo := rdbimpl.NewUserRepository(tx) // トランザクションを考慮してtxを使用
-			tagRepo := rdbimpl.NewTagRepository(tx)   // 同上
-			existService := userdm.NewExistByNameDomainService(userRepo)
-			service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
-
-			err = service.ExecWithTransaction(context.Background(), tx, tt.input) // トランザクションを含むExecメソッドの呼び出し
-			if (err != nil) != tt.wantError {
-				t.Errorf("Error = %v, wantError %v", err, tt.wantError)
 			}
+			jsonData, err := json.Marshal(tt.input)
+			if err != nil {
+				t.Fatalf("Failed to marshal input: %v", err)
+			}
+			body := bytes.NewBuffer(jsonData)
+			// ダミーエンドポイントを呼び出します。
+			resp := httptest.NewRecorder()
+			req, _ := http.NewRequest("POST", "/test-endpoint", body)
+			r.ServeHTTP(resp, req)
 
+			if (resp.Code != 200) != tt.wantError {
+				t.Errorf("Request failed with code: %d, message: %s", resp.Code, resp.Body.String())
+			}
 		})
 	}
+
 }
