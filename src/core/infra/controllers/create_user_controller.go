@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
@@ -50,7 +51,16 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 	tx, _ := c.MustGet("tx").(*sqlx.Tx)
 
 	if err := ctrl.createUserService.ExecWithTransaction(ctx, tx, &req); err != nil {
-		c.Error(err)
+		if customErr, ok := err.(customerrors.BaseError); ok {
+			log.Println("Error is of type customerrors.BaseError")
+			c.Error(customErr)
+			c.Status(customErr.StatusCode())
+			// c.JSON(customErr.StatusCode(), gin.H{"message": customErr.Error()})
+		} else {
+			log.Println("Error is NOT of type customerrors.BaseError")
+			c.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		}
 		return
 	}
 
