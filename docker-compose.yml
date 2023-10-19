@@ -2,7 +2,6 @@ version: "3.8"
 
 volumes:
   sql:
-  sql_test:
 
 services:
   app:
@@ -52,7 +51,6 @@ services:
     ports:
       - "9998:3306"
     volumes:
-      - sql_test:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_DATABASE=sql_test

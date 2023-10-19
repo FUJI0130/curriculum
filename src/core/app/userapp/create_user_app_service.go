@@ -2,8 +2,6 @@ package userapp
 
 import (
 	"context"
-	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -197,93 +195,4 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 	}
 
 	return app.userRepo.StoreWithTransaction(tx, userdomain)
-}
-
-func StructToMap(req interface{}) (map[string]any, error) {
-	result := make(map[string]interface{})
-	val := reflect.ValueOf(req)
-	if val.Kind() != reflect.Ptr {
-		return nil, customerrors.NewInternalServerError("StructToMap Expected a pointer but got " + val.Kind().String())
-	}
-	val = val.Elem() // Now it's safe to call Elem
-	typ := val.Type()
-
-	// Iterate over struct fields
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		fieldType := typ.Field(i)
-
-		// Ignore unexported fields
-		if fieldType.PkgPath != "" {
-			continue
-		}
-
-		key := fieldType.Name
-
-		// Recursively process nested structures
-		if field.Kind() == reflect.Struct {
-			nestedMap, err := StructToMap(field.Addr().Interface())
-			if err != nil {
-				return nil, err
-			}
-			result[key] = nestedMap
-		} else if field.Kind() == reflect.Slice {
-			var sliceData []interface{}
-			for si := 0; si < field.Len(); si++ {
-				sliceElem := field.Index(si)
-				if sliceElem.Kind() == reflect.Struct {
-					nestedMap, err := StructToMap(sliceElem.Addr().Interface())
-					if err != nil {
-						return nil, err
-					}
-					sliceData = append(sliceData, nestedMap)
-				} else {
-					sliceData = append(sliceData, sliceElem.Interface())
-				}
-			}
-			result[key] = sliceData
-		} else {
-			// Plain field, just set the value
-			result[key] = field.Interface()
-		}
-	}
-	return result, nil
-}
-
-func ValidateKeysAgainstStruct(rawReq map[string]interface{}, referenceStruct any) error {
-	expectedKeys := make(map[string]bool)
-
-	val := reflect.ValueOf(referenceStruct).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		expectedKeys[val.Type().Field(i).Name] = true
-	}
-
-	for key, value := range rawReq {
-		// Check if key is expected
-		if _, exists := expectedKeys[key]; !exists {
-			return customerrors.NewUnprocessableEntityError(fmt.Sprintf("Unexpected key '%s' in the request", key))
-		}
-
-		// Recursively check nested structures
-		if nestedMap, ok := value.(map[string]interface{}); ok {
-			field, _ := val.Type().FieldByName(key)
-			if field.Type.Kind() == reflect.Struct {
-				if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type).Interface()); err != nil {
-					return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s': %v", key, err))
-				}
-			}
-		} else if nestedSlice, ok := value.([]interface{}); ok {
-			field, _ := val.Type().FieldByName(key)
-			if field.Type.Elem().Kind() == reflect.Struct {
-				for i, nestedElement := range nestedSlice {
-					if nestedMap, ok := nestedElement.(map[string]interface{}); ok {
-						if err := ValidateKeysAgainstStruct(nestedMap, reflect.New(field.Type.Elem()).Interface()); err != nil {
-							return customerrors.NewUnprocessableEntityError(fmt.Sprintf("key '%s' index %d: %v", key, i, err))
-						}
-					}
-				}
-			}
-		}
-	}
-	return nil
 }

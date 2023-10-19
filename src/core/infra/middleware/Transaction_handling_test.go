@@ -269,7 +269,7 @@ func TestTransactionHandling(t *testing.T) {
 			existService := userdm.NewExistByNameDomainService(userRepo)
 			service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 
-			err = service.Exec(context.Background(), tt.input) // トランザクションを含むExecメソッドの呼び出し
+			err = service.ExecWithTransaction(context.Background(), tx, tt.input) // トランザクションを含むExecメソッドの呼び出し
 			if (err != nil) != tt.wantError {
 				t.Errorf("Error = %v, wantError %v", err, tt.wantError)
 			}

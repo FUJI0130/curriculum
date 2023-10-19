@@ -18,6 +18,10 @@ type Skill struct {
 }
 
 func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
+	skillId, err := NewSkillID()
+	if err != nil {
+		return nil, err
+	}
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
 		return nil, err
@@ -38,6 +42,7 @@ func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, c
 		return nil, err
 	}
 	return &Skill{
+		id:         skillId,
 		tagID:      tagID,
 		userID:     userID,
 		evaluation: eval,
