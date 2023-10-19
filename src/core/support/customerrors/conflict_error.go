@@ -17,7 +17,7 @@ func NewConflictError(message string) *ConflictErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeConflict,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.Errorf("%+v", errors.New(message)),
 		},
 	}
 }
@@ -28,7 +28,7 @@ func NewConflictErrorf(format string, args ...any) *ConflictErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeConflict,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.Errorf("%+v", errors.New(message)),
 		},
 	}
 }
@@ -41,7 +41,7 @@ func WrapConflictError(err error, message string) *ConflictErrorType {
 	}
 }
 
-func WrapConflictErrorf(err error, format string, args ...interface{}) *ConflictErrorType {
+func WrapConflictErrorf(err error, format string, args ...any) *ConflictErrorType {
 	message := fmt.Sprintf(format, args...)
 	baseError := NewBaseError(message, errCodeConflict, nil)
 	wrappedError := baseError.WrapWithLocation(err, message)

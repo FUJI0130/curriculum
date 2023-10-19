@@ -47,17 +47,7 @@ type CareersRequest struct {
 	AdTo   time.Time
 }
 
-var test = ""
-
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-
-	reqMap, err := StructToMap(req)
-	if err != nil {
-		return err
-	}
-	if err := ValidateKeysAgainstStruct(reqMap, &CreateUserRequest{}); err != nil {
-		return err
-	}
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 

@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/FUJI0130/curriculum/src/core/config"
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 )
@@ -23,10 +22,8 @@ func PanicRecovery(c *gin.Context) {
 func handlePanic(c *gin.Context, err error) {
 	log.Printf("Recovered from panic: %+v", err)
 
-	if isDebugMode() {
-		err = errors.WithStack(err)
-		log.Printf("Debug Mode - Stack Trace: %+v", err)
-	}
+	err = errors.WithStack(err)
+	log.Printf("Stack Trace: %+v", err)
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"message": "Internal Server Error",
 	})
@@ -37,8 +34,4 @@ func convertToError(r interface{}) error {
 		return err
 	}
 	return errors.New(fmt.Sprint(r))
-}
-
-func isDebugMode() bool {
-	return config.GlobalConfig.DebugMode
 }

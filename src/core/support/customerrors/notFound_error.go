@@ -17,7 +17,7 @@ func NewNotFoundError(message string) *NotFoundErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.Errorf("%+v", errors.New(message)),
 		},
 	}
 }
@@ -28,7 +28,7 @@ func NewNotFoundErrorf(format string, args ...any) *NotFoundErrorType {
 		&BaseErr{
 			Message:       message,
 			StatusCodeVal: errCodeNotFound,
-			TraceVal:      errors.WithStack(errors.New(message)),
+			TraceVal:      errors.Errorf("%+v", errors.New(message)),
 		},
 	}
 }
@@ -41,7 +41,7 @@ func WrapNotFoundError(err error, message string) *NotFoundErrorType {
 	}
 }
 
-func WrapNotFoundErrorf(err error, format string, args ...interface{}) *NotFoundErrorType {
+func WrapNotFoundErrorf(err error, format string, args ...any) *NotFoundErrorType {
 	message := fmt.Sprintf(format, args...)
 	baseError := NewBaseError(message, errCodeNotFound, nil)
 	wrappedError := baseError.WrapWithLocation(err, message)
