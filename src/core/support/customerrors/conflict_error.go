@@ -41,7 +41,7 @@ func WrapConflictError(err error, message string) *ConflictErrorType {
 	}
 }
 
-func WrapConflictErrorf(err error, format string, args ...interface{}) *ConflictErrorType {
+func WrapConflictErrorf(err error, format string, args ...any) *ConflictErrorType {
 	message := fmt.Sprintf(format, args...)
 	baseError := NewBaseError(message, errCodeConflict, nil)
 	wrappedError := baseError.WrapWithLocation(err, message)
