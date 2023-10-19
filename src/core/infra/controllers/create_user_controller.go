@@ -1,12 +1,18 @@
-// FWからのリクエストをユースケースに送り、レスポンスを返す
 package controllers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	errCodeConflict            = 409
+	errCodeInternalServerError = 500
+	errCodeNotFound            = 404
+	errCodeUnprocessableEntity = 400
 )
 
 type CreateUserController struct {
@@ -17,23 +23,16 @@ func NewCreateUserController(s *userapp.CreateUserAppService) *CreateUserControl
 	return &CreateUserController{createUserService: s}
 }
 
-// ここでcurlコマンドの内容をバインドしている
 func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "create_user_controller [Create] : JSON binding error"))
 		return
 	}
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
-		// エラーの種類によってHTTPステータスコードを変更
-
-		if errors.Is(err, userapp.ErrUserNameAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		c.Error(err)
 		return
 	}
 

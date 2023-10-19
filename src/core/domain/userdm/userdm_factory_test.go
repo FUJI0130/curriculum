@@ -36,14 +36,13 @@ func TestReconstruct(t *testing.T) {
 			email:   "invalidEmail",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
-			_, err := Reconstruct(tt.id, tt.title, tt.email, tt.password, tt.profile, tt.createdAt)
+			_, err := ReconstructUser(tt.id, tt.title, tt.email, tt.password, tt.profile, tt.createdAt)
 
 			if tt.wantErr {
 				assert.Error(t, err)
@@ -76,7 +75,6 @@ func TestGenWhenCreate(t *testing.T) {
 			profile: "",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {
@@ -114,7 +112,6 @@ func TestTestNewUser(t *testing.T) {
 			email:   "invalidEmail",
 			wantErr: true,
 		},
-		// 他のエラーケースやバリデーションケースを追加できます
 	}
 
 	for _, tt := range tests {

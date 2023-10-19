@@ -1,8 +1,7 @@
 package tagdm
 
 import (
-	"errors"
-
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/google/uuid"
 )
 
@@ -11,16 +10,14 @@ type TagID string
 func NewTagID() (TagID, error) {
 	tagID, err := uuid.NewRandom()
 	if err != nil {
-		return TagID(""), err
+		return TagID(""), customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
-	tagIDValueObject := TagID(tagID.String())
-	return tagIDValueObject, nil
+	return TagID(tagID.String()), nil
 }
 func NewTagIDFromString(idStr string) (TagID, error) {
-	// UUIDの形式であるか確認
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", errors.New("invalid UUID format")
+		return "", customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
 	return TagID(idStr), nil
 }

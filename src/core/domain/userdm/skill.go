@@ -27,6 +27,7 @@ func NewSkill(tagID tagdm.TagID, userID UserID, evaluation uint8, years uint8, c
 	if err != nil {
 		return nil, err
 	}
+
 	skillCreatedAt := sharedvo.NewCreatedAt()
 	if err != nil {
 		return nil, err

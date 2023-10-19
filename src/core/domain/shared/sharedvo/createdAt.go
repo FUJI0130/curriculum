@@ -1,18 +1,19 @@
 package sharedvo
 
 import (
-	"errors"
 	"time"
+
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type CreatedAt time.Time
 
 func NewCreatedAtByVal(createdAt time.Time) (CreatedAt, error) {
 	if createdAt.IsZero() {
-		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be zero value")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("CreatedAt cannot be zero value")
 	}
 	if createdAt.After(time.Now()) {
-		return CreatedAt(time.Time{}), errors.New("CreatedAt cannot be future date")
+		return CreatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("CreatedAt is future")
 	}
 	return CreatedAt(createdAt), nil
 }

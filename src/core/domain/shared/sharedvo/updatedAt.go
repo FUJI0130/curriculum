@@ -1,24 +1,20 @@
 package sharedvo
 
 import (
-	"errors"
 	"time"
-)
 
-var LastDuration time.Duration // 経過時間を保存するための変数
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+)
 
 type UpdatedAt time.Time
 
-// NewUpdatedAtByVal は指定した時刻での UpdatedAt を生成する
 func NewUpdatedAtByVal(updatedAt time.Time) (UpdatedAt, error) {
 	if updatedAt.IsZero() {
-		return UpdatedAt(time.Time{}), errors.New("UpdatedAt cannot be zero value")
+		return UpdatedAt(time.Time{}), customerrors.NewUnprocessableEntityError("UpdatedAt is empty")
 	}
-
 	return UpdatedAt(updatedAt), nil
 }
 
-// NewUpdatedAt は現在の時刻での UpdatedAt を生成する
 func NewUpdatedAt() UpdatedAt {
 	return UpdatedAt(time.Now())
 }

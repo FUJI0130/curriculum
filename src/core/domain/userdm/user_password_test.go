@@ -35,9 +35,9 @@ func TestNewUserPassword(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt // capture the range variable for parallel execution
+		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel() // this allows the subtest to run in parallel
+			t.Parallel()
 			_, err := NewUserPassword(tt.input)
 			if tt.expectedError != "" {
 				assert.Error(t, err, "エラーが期待されましたが、nilが返されました")

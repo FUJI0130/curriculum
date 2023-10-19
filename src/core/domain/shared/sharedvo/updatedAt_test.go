@@ -9,8 +9,6 @@ import (
 )
 
 func TestNewUpdatedAtByVal(t *testing.T) {
-	// validTime := time.Now().Add(time.Hour)
-	// validTime := time.Now().Add(0)
 	validTime := time.Now().Add(time.Millisecond)
 	pastTime := time.Now().Add(-time.Hour * 24)
 	tests := []struct {
@@ -45,7 +43,6 @@ func TestNewUpdatedAtByVal(t *testing.T) {
 			t.Parallel()
 			got, err := NewUpdatedAtByVal(tt.input)
 
-			// エラーの有無を確認
 			if tt.wantError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.wantError.Error(), err.Error())

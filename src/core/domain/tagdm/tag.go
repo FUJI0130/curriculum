@@ -1,10 +1,10 @@
 package tagdm
 
 import (
-	"errors"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type Tag struct {
@@ -14,24 +14,17 @@ type Tag struct {
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-var (
-	ErrTagNameEmpty = errors.New("tag name cannot be empty")
-	ErrTagNotFound  = errors.New("tag not found")
-)
-
-const nameMaxLength = 15
-
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
-		return nil, ErrTagNameEmpty
+		return nil, customerrors.NewUnprocessableEntityError("name is empty")
 	}
 	createdAtByVal, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "createdAt is invalid")
 	}
 	updatedAtByVal, err := sharedvo.NewUpdatedAtByVal(updatedAt)
 	if err != nil {
-		return nil, err
+		return nil, customerrors.WrapUnprocessableEntityError(err, "updatedAt is invalid")
 	}
 	return &Tag{
 		id:        id,

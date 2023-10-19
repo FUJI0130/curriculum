@@ -2,7 +2,9 @@
 
 package tagdm
 
-import "context"
+import (
+	"context"
+)
 
 type TagRepository interface {
 	Store(ctx context.Context, tag *Tag) error

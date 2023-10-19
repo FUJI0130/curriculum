@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -31,7 +31,6 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
 	_, err := repo.Conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
-
 		return err
 	}
 
@@ -44,16 +43,16 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 	err := repo.Conn.Get(&tempTag, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, tagdm.ErrTagNotFound
+			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_impl FindByName")
 		}
-		return nil, fmt.Errorf("tag_repository_impl FindByName database error: %v", err)
+		return nil, err
 	}
 
 	tagID := tagdm.TagID(tempTag.ID)
 	tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 
 	if err != nil {
-		return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
+		return nil, err
 	}
 
 	return tag, nil
@@ -69,7 +68,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 
 	err = repo.Conn.Select(&tempTags, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("database error: %v", err)
+		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select tag_repository database error")
 	}
 
 	var tags []*tagdm.Tag
@@ -77,7 +76,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 		tagID := tagdm.TagID(tempTag.ID)
 		tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 		if err != nil {
-			return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
+			return nil, customerrors.WrapInternalServerError(err, "FindByNames error reconstructing tag from tagRequest")
 		}
 		tags = append(tags, tag)
 	}
@@ -91,15 +90,15 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 	err := repo.Conn.Get(&tempTag, query, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, tagdm.ErrTagNotFound
+			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_imple  FindByID")
 		}
-		return nil, fmt.Errorf("database error: %v", err)
+		return nil, err
 	}
 
 	tagID := tagdm.TagID(tempTag.ID)
 	tag, err := tagdm.ReconstructTag(tagID, tempTag.Name, tempTag.CreatedAt, tempTag.UpdatedAt)
 	if err != nil {
-		return nil, fmt.Errorf("error converting tagRequest to Tag: %v", err)
+		return nil, customerrors.WrapInternalServerError(err, "FindByID error reconstructing tag from tagRequest")
 	}
 
 	return tag, nil

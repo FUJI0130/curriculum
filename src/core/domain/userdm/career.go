@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type Career struct {
@@ -17,6 +18,10 @@ type Career struct {
 }
 
 func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
+
+	if detail == "" {
+		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
+	}
 
 	careerID, err := NewCareerID()
 	if err != nil {
@@ -44,7 +49,6 @@ func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID Use
 	}, nil
 }
 
-// 以下のゲッターはそのままです。
 func (c *Career) ID() CareerID {
 	return c.id
 }

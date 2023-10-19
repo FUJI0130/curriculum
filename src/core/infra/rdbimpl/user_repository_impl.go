@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -64,15 +64,14 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, userdm.ErrUserNotFound
+			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName: user not found")
 		}
-		return nil, fmt.Errorf("user_repository FindByName database error: %v", err)
+		return nil, err
 	}
-
-	user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+	user, err := userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
 	if err != nil {
-		return nil, fmt.Errorf("error reconstructing user from userRequest: %v", err)
+		return nil, err
 	}
 
 	return user, nil
@@ -88,15 +87,16 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 
 	err = repo.Conn.Select(&tempUsers, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("database error: %v", err)
+		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
 	}
 
 	userMap := make(map[string]*userdm.User)
 	for _, tempUser := range tempUsers {
-		user, err := userdm.Reconstruct(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+		user, err := userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 		if err != nil {
-			return nil, fmt.Errorf("error converting userRequest to User: %v", err)
+			return nil, customerrors.WrapInternalServerError(err, "FindByNames error converting userRequest to User")
 		}
+
 		userMap[tempUser.Name] = user
 	}
 

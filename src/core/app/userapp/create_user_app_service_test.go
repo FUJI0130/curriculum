@@ -2,15 +2,15 @@ package userapp_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
-	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mockExistByNameDomainService"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockTag"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mock_exist_by_name_domain_service"
+	mockTag "github.com/FUJI0130/curriculum/src/core/mock/mock_tag"
+	mockUser "github.com/FUJI0130/curriculum/src/core/mock/mock_user"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
@@ -59,7 +59,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(true, nil)
 			},
-			wantErr: userapp.ErrUserNameAlreadyExists,
+			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", mockName),
 		},
 		{
 			title: "タグの新規作成",
@@ -117,7 +117,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName, mockTagName}).Return([]*tagdm.Tag{existingTag, existingTag}, nil).Times(1)
 
 			},
-			wantErr: errors.New("同じスキルタグを複数回持つことはできません"), // 期待されるエラーメッセージ
+			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", mockTagName),
 		},
 	}
 

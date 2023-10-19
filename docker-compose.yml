@@ -1,6 +1,8 @@
 version: "3.8"
+
 volumes:
   sql:
+
 services:
   app:
     image: curriculum
@@ -11,9 +13,15 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - .:/app # ホストのカレントディレクトリをコンテナの/appディレクトリにマウント
+      - .:/app 
     environment:
       - TZ=Asia/Tokyo
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=sql
+      - APP_PORT=8080
   mysql:
     build: 
       context: .

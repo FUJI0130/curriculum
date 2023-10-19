@@ -1,36 +1,31 @@
-// package interfaces
-// package userdm_test
 package userdm_test
 
 import (
 	"context"
-	"errors"
 	"testing"
 
-	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	"github.com/FUJI0130/curriculum/src/core/mock/mockUser"
+	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mock_exist_by_name_domain_service"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestExistByNameDomainService_Exec(t *testing.T) {
 	mockName := "Test User"
-
 	ctx := context.TODO()
 
 	tests := []struct {
-		title     string
-		inputName string
-		// mockFunc   func(mockRepo *mockUser.MockUserRepository)
-		mockFunc   func(mockRepo *mockUser.MockUserRepository)
+		title      string
+		inputName  string
+		mockFunc   func(mockService *mockExistByNameDomainService.MockExistByNameDomainService)
 		wantResult bool
 		wantErr    error
 	}{
 		{
 			title:     "User exists",
 			inputName: mockName,
-			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(&userdm.User{}, nil).Times(1)
+			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
+				mockService.EXPECT().Exec(ctx, mockName).Return(true, nil).Times(1)
 			},
 			wantResult: true,
 			wantErr:    nil,
@@ -38,38 +33,31 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 		{
 			title:     "User does not exist",
 			inputName: mockName,
-			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, userdm.ErrUserNotFound).Times(1)
+			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
+				mockService.EXPECT().Exec(ctx, mockName).Return(false, nil).Times(1)
 			},
 			wantResult: false,
 			wantErr:    nil,
 		},
 		{
-			title:     "Repository error",
+			title:     "Service error",
 			inputName: mockName,
-			mockFunc: func(mockRepo *mockUser.MockUserRepository) {
-				mockRepo.EXPECT().FindByName(ctx, mockName).Return(nil, errors.New("unexpected error")).Times(1)
+			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
+				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.NewNotFoundError("test Service error")).Times(1)
 			},
 			wantResult: false,
-			wantErr:    errors.New("unexpected error"),
+			wantErr:    customerrors.NewNotFoundError("test Service error"),
 		},
 	}
 
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			t.Parallel()
-
 			ctrl := gomock.NewController(t)
-			mockRepo := mockUser.NewMockUserRepository(ctrl)
+			mockService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
 
-			// まず、モックの定義を行う
-			tt.mockFunc(mockRepo)
+			tt.mockFunc(mockService)
 
-			// 次に、そのモックを利用してdomainServiceを定義する
-			domainService := userdm.NewExistByNameDomainService(mockRepo)
-
-			result, err := domainService.Exec(ctx, tt.inputName)
+			result, err := mockService.Exec(ctx, tt.inputName)
 			assert.Equal(t, tt.wantResult, result)
 			if tt.wantErr != nil {
 				assert.EqualError(t, err, tt.wantErr.Error())
@@ -78,5 +66,4 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			}
 		})
 	}
-
 }

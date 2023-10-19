@@ -1,6 +1,7 @@
 package userdm
 
 import (
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/google/uuid"
 )
 
@@ -9,10 +10,9 @@ type CareerID string
 func NewCareerID() (CareerID, error) {
 	careerID, err := uuid.NewRandom()
 	if err != nil {
-		return CareerID(""), err
+		return CareerID(""), customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
-	careerIDValueObject := CareerID(careerID.String())
-	return careerIDValueObject, nil
+	return CareerID(careerID.String()), nil
 }
 
 func (id CareerID) String() string {

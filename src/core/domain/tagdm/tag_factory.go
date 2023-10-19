@@ -1,23 +1,24 @@
 package tagdm
 
 import (
-	"errors"
 	"unicode/utf8"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type TagParam struct {
 	Name string
 }
 
-// GenWhenCreateTag creates a new tag with the given parameters.
+const NameMaxLength = 15
+
 func GenWhenCreateTag(name string) (*Tag, error) {
 	if name == "" {
-		return nil, ErrTagNameEmpty
+		return nil, customerrors.NewUnprocessableEntityError("Tag name is empty")
 	}
-	if utf8.RuneCountInString(name) > nameMaxLength {
-		return nil, ErrTagTooLong
+	if utf8.RuneCountInString(name) > NameMaxLength {
+		return nil, customerrors.NewUnprocessableEntityError("Tag name is Too long")
 	}
 	tagID, err := NewTagID()
 	if err != nil {
@@ -34,13 +35,12 @@ func GenWhenCreateTag(name string) (*Tag, error) {
 	}, nil
 }
 
-// TestNewTag is a function for testing purposes and creates a tag with predefined values.
 func TestNewTag(id string, name string) (*Tag, error) {
 	if name == "" {
-		return nil, ErrTagNameEmpty
+		return nil, customerrors.NewUnprocessableEntityError("name is empty")
 	}
-	if utf8.RuneCountInString(name) > nameMaxLength {
-		return nil, ErrTagTooLong
+	if utf8.RuneCountInString(name) > NameMaxLength {
+		return nil, customerrors.NewUnprocessableEntityError("Tag name is Too long")
 	}
 	tagID, err := NewTagIDFromString(id)
 	if err != nil {
@@ -56,5 +56,3 @@ func TestNewTag(id string, name string) (*Tag, error) {
 		updatedAt: tagUpdatedAt,
 	}, nil
 }
-
-var ErrTagTooLong = errors.New("tag name is too long")

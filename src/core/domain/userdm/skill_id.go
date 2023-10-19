@@ -1,8 +1,7 @@
 package userdm
 
 import (
-	"errors"
-
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/google/uuid"
 )
 
@@ -11,16 +10,15 @@ type SkillID string
 func NewSkillID() (SkillID, error) {
 	skillID, err := uuid.NewRandom()
 	if err != nil {
-		return SkillID(""), err
+		return SkillID(""), customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
 	skillIDValueObject := SkillID(skillID.String())
 	return skillIDValueObject, nil
 }
-func NewsSkillIDFromString(idStr string) (SkillID, error) {
-	// UUIDの形式であるか確認
+func NewSkillIDFromString(idStr string) (SkillID, error) {
 	_, err := uuid.Parse(idStr)
 	if err != nil {
-		return "", errors.New("invalid UUID format")
+		return "", customerrors.WrapUnprocessableEntityError(err, "ID is error")
 	}
 	return SkillID(idStr), nil
 }

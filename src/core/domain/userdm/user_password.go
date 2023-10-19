@@ -1,26 +1,29 @@
 package userdm
 
 import (
-	"errors"
-	"fmt"
 	"unicode/utf8"
+
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+)
+
+const (
+	PasswordMinlength = 13
+	PasswordMaxlength = 256
 )
 
 type UserPassword string
 
 func NewUserPassword(userPassword string) (UserPassword, error) {
 	count := utf8.RuneCountInString(userPassword)
-	fmt.Println("Password Length:", count)
 	if userPassword == "" {
-		return "", errors.New("userPassword cannot be empty")
-	} else if nameMaxlength < count {
-		return "", errors.New("userPassword length over nameMaxlength")
-	} else if count < 13 {
-		return "", errors.New("userPassword length under 12")
+		return "", customerrors.NewUnprocessableEntityError("password is empty")
+	} else if PasswordMaxlength < count {
+		return "", customerrors.NewUnprocessableEntityError("password is too long")
+	} else if count < PasswordMinlength {
+		return "", customerrors.NewUnprocessableEntityError("password is too short")
 	}
 
-	userPasswordValueObject := UserPassword(userPassword)
-	return userPasswordValueObject, nil
+	return UserPassword(userPassword), nil
 }
 
 func (password UserPassword) String() string {

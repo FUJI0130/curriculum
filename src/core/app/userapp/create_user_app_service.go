@@ -2,11 +2,11 @@ package userapp
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 type CreateUserAppService struct {
@@ -44,47 +44,44 @@ type CareersRequest struct {
 	AdTo   time.Time
 }
 
-var test = ""
-
-var ErrUserNameAlreadyExists = errors.New("user name already exists")
-var ErrTagNameAlreadyExists = errors.New("tag name already exists")
-
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
+
 	isExist, err := app.existService.Exec(ctx, req.Name)
+
 	if err != nil {
 		return err
 	}
 
 	if isExist {
-		return ErrUserNameAlreadyExists
+		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 	}
 
-	// 全てのタグ名を一度に取得するためのスライスの作成
 	tagNames := make([]string, len(req.Skills))
 	for i, s := range req.Skills {
 		tagNames[i] = s.TagName
 	}
 
-	// 一度のクエリでタグを取得
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 		return err
 	}
+
 	tagsMap := make(map[string]*tagdm.Tag)
 	for _, tag := range tags {
 		tagsMap[tag.Name()] = tag
 	}
+
 	seenSkills := make(map[string]bool)
 	skillsParams := make([]userdm.SkillParam, len(req.Skills))
 
 	for i, s := range req.Skills {
 
 		if seenSkills[s.TagName] {
-			return errors.New("同じスキルタグを複数回持つことはできません")
+
+			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
 		}
 		seenSkills[s.TagName] = true
 
-		// タグが存在しない場合は新しく作成
 		if _, ok := tagsMap[s.TagName]; !ok {
 			tag, err := tagdm.GenWhenCreateTag(s.TagName)
 			if err != nil {
@@ -94,6 +91,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
+
 			tagsMap[s.TagName] = tag
 		}
 
@@ -105,7 +103,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 
 	}
-
 	careersParams := make([]userdm.CareerParam, len(req.Careers))
 	for i, c := range req.Careers {
 		careersParams[i] = userdm.CareerParam{

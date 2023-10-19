@@ -1,29 +1,30 @@
 package middleware
 
 import (
-	"errors"
-	"log"
 	"net/http"
+
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+	"github.com/gin-gonic/gin"
 )
 
-func ErrorHandler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if rec := recover(); rec != nil {
-				var err error
-				switch t := rec.(type) {
-				case string:
-					err = errors.New(t)
-				case error:
-					err = t
-				default:
-					err = errors.New("unknown panic")
-				}
-				log.Printf("recovered from panic: %v", err)
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-			}
-		}()
+func ErrorHandler(c *gin.Context) {
+	c.Next()
 
-		next.ServeHTTP(w, r)
+	if len(c.Errors) > 0 {
+		handleError(c, c.Errors.Last().Err)
+		return
+	}
+}
+
+func handleError(c *gin.Context, err error) {
+	if customErr, ok := err.(customerrors.BaseError); ok {
+		message, _ := customerrors.SplitMessageAndTrace(customErr.Error())
+		c.JSON(customErr.StatusCode(), gin.H{
+			"message": message,
+		})
+		return
+	}
+	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+		"message": "Internal Server Error",
 	})
 }

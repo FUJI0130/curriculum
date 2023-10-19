@@ -16,6 +16,7 @@ build: ## Build docker image to deploy		docker build -t go_webapp_hands_on --tar
 	docker build -t curriculum:${DOCKER_TAG} \
 		--target go_dev \
 		-f ./.docker/app.Dockerfile \
+		--no-cache \
 		./
 
 up: ## Do docker compose up with hot reload
