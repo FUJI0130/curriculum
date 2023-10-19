@@ -10,19 +10,10 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
-	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
-
-func myHandler(c *gin.Context) {
-	panic("this is a test panic")
-}
-
-func myBaseErrorHandler(c *gin.Context) {
-	panic(customerrors.NewBaseError("This is a BaseError panic", 404, nil))
-}
 
 func main() {
 
@@ -39,9 +30,6 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
-
-	r.GET("/panic", myHandler)
-	r.GET("/base-error-panic", myBaseErrorHandler)
 
 	controllers.InitControllers(r, createUserService)
 	log.Println("Starting server on port:", config.Env.AppPort)
