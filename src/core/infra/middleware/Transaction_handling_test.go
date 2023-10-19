@@ -20,22 +20,24 @@ import (
 func initializeDB(db *sqlx.DB) error {
 	// テスト開始前のDBの状態を初期化（例：特定のテーブルのテストデータを削除）
 	tables := []string{
-		"contracts",
-		"contract_requests",
-		"proposals",
-		"skills",
-		"mentor_recruitments_tags",
-		"mentor_recruitments",
-		"plans_tags",
-		"plans",
-		"careers",
+		"users",
 		"tags",
+		"careers",
+		"proposals",
+		"plans",
 		"categories",
-		"users", // 他のテーブルも追加することができます
+		"plans_tags",
+		"mentor_recruitments",
+		"mentor_recruitments_tags",
+		"contract_requests",
+		"contracts",
+		"skills",
 	}
 
 	for _, table := range tables {
-		_, err := db.Exec("TRUNCATE " + table + ";")
+		// _, err := db.Exec("TRUNCATE " + table + ";")
+		_, err := db.Exec("DELETE FROM " + table + ";")
+
 		if err != nil {
 			return err
 		}

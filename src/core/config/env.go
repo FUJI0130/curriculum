@@ -25,6 +25,6 @@ var Env EnvConfig
 func init() {
 	err := envconfig.Process("", &Env)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatalf("Failed to process env config: %v", err)
 	}
 }
