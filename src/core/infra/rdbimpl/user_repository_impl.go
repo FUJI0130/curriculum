@@ -97,7 +97,9 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	var tempUser userRequest
 	err := repo.Conn.Get(&tempUser, query, name)
 	if err != nil {
+		log.Printf("user Repository FindByName error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("user Repository FindByName: user not found")
 			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName: user not found")
 		}
 		return nil, err

@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 )
@@ -43,26 +43,30 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
-		c.Error(customerrors.WrapUnprocessableEntityError(err, "create_user_controller [CreateWithTransaction] : JSON binding error"))
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
 		return
 	}
 
-	ctx := c.Request.Context()
-	tx, _ := c.MustGet("tx").(*sqlx.Tx)
+	tx, ok := c.Get("tx")
+	if !ok || tx == nil {
+		c.Error(errors.New("transaction not found"))
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		return
+	}
 
-	if err := ctrl.createUserService.ExecWithTransaction(ctx, tx, &req); err != nil {
-		if customErr, ok := err.(customerrors.BaseError); ok {
-			log.Println("Error is of type customerrors.BaseError")
-			c.Error(customErr)
-			c.Status(customErr.StatusCode())
-			// c.JSON(customErr.StatusCode(), gin.H{"message": customErr.Error()})
-		} else {
-			log.Println("Error is NOT of type customerrors.BaseError")
-			c.Error(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		}
+	if err := ctrl.createUserService.ExecWithTransaction(c.Request.Context(), tx.(*sqlx.Tx), &req); err != nil {
+		handleServiceError(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
+}
+
+func handleServiceError(c *gin.Context, err error) {
+	if customErr, ok := err.(customerrors.BaseError); ok {
+		c.Status(customErr.StatusCode())
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+	}
+	c.Error(err)
 }

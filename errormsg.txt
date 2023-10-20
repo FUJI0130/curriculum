@@ -1,0 +1,47 @@
+リクエストがコードで失敗しました: 500, メッセージ: 
+"An error occurred in Exec when calling userRepo.FindByName ### 
+An error occurred in Exec when calling userRepo.FindByName: 
+sql: transaction has already been committed or rolled back
+
+(1) attached stack trace
+  -- stack trace:
+  | github.com/FUJI0130/curriculum/src/core/support/customerrors.(*BaseErr).WrapWithLocation
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/support/customerrors/error.go:35
+  | github.com/FUJI0130/curriculum/src/core/support/customerrors.WrapInternalServerError
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/support/customerrors/internal_server_error.go:38
+  | github.com/FUJI0130/curriculum/src/core/domain/userdm.(*existByNameDomainService).Exec
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/domain/userdm/exist_by_name_domain_service.go:29
+  | github.com/FUJI0130/curriculum/src/core/app/userapp.(*CreateUserAppService).ExecWithTransaction
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/app/userapp/create_user_app_service.go:126
+  | github.com/FUJI0130/curriculum/src/core/infra/middleware.testEndpointHandler.func1
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/infra/middleware/transaction_handling_test.go:65
+  | github.com/gin-gonic/gin.(*Context).Next
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174
+  | github.com/FUJI0130/curriculum/src/core/infra/middleware.TransactionHandler.func1
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/infra/middleware/transaction_handling.go:21
+  | github.com/gin-gonic/gin.(*Context).Next
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174
+  | github.com/gin-gonic/gin.CustomRecoveryWithWriter.func1
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/recovery.go:102
+  | github.com/gin-gonic/gin.(*Context).Next
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174
+  | github.com/gin-gonic/gin.LoggerWithConfig.func1
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/logger.go:240
+  | github.com/gin-gonic/gin.(*Context).Next
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/context.go:174
+  | github.com/gin-gonic/gin.(*Engine).handleHTTPRequest
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/gin.go:620
+  | github.com/gin-gonic/gin.(*Engine).ServeHTTP
+  | \t/home/fuji0130/go/pkg/mod/github.com/gin-gonic/gin@v1.9.1/gin.go:576
+  | github.com/FUJI0130/curriculum/src/core/infra/middleware.performTestRequest
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/infra/middleware/transaction_handling_test.go:364
+  | github.com/FUJI0130/curriculum/src/core/infra/middleware.TestTransactionHandling.func1
+  | \t/home/fuji0130/go/workspace/curriculum/src/core/infra/middleware/transaction_handling_test.go:105
+  | testing.tRunner
+  | \t/usr/local/go/src/testing/testing.go:1576
+  | runtime.goexit
+  | \t/usr/local/go/src/runtime/asm_amd64.s:1598
+
+Wraps: (2) An error occurred in Exec when calling userRepo.FindByName
+Wraps: (3) sql: transaction has already been committed or rolled back
+Error types: (1) *withstack.withStack (2) *errutil.withPrefix (3) *errors.errorString"
