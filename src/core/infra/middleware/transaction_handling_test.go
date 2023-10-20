@@ -21,8 +21,32 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func initializeDB(db *sqlx.DB) error {
-	// テスト開始前のDBの状態を初期化（例：特定のテーブルのテストデータを削除）
+func TestTransactionHandling(t *testing.T) {
+	db := initDB(t)
+	defer db.Close()
+
+	r := setupRouterWithDB(db)
+
+	tests := getTestCases()
+
+	runTests(tests, r, db, t)
+}
+
+func initDB(t *testing.T) *sqlx.DB {
+	fmt.Println("config.Env is : ", config.Env)
+	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local",
+		config.Env.TestDbUser,
+		config.Env.TestDbPassword,
+		config.Env.TestDbHost,
+		config.Env.TestDbPort,
+		config.Env.TestDbName))
+	if err != nil {
+		t.Fatalf("Failed to connect to database: %v", err)
+	}
+	return db
+}
+func clearTestTables(db *sqlx.DB) error {
+	// テスト開始前のDBのテーブルをクリア（データを削除）
 	tables := []string{
 		"careers",
 		"skills",
@@ -39,9 +63,7 @@ func initializeDB(db *sqlx.DB) error {
 	}
 
 	for _, table := range tables {
-		// _, err := db.Exec("TRUNCATE " + table + ";")
 		_, err := db.Exec("DELETE FROM " + table + ";")
-
 		if err != nil {
 			return err
 		}
@@ -49,23 +71,40 @@ func initializeDB(db *sqlx.DB) error {
 	return nil
 }
 
-func TestTransactionHandling(t *testing.T) {
-	fmt.Println("config.Env is : ", config.Env)
-	selectedTestCase := os.Getenv("SELECTED_TEST_CASE")
-	// DBの接続情報を設定ファイルから取得
-	db, err := sqlx.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=True&loc=Local",
-		config.Env.TestDbUser,
-		config.Env.TestDbPassword,
-		config.Env.TestDbHost,
-		config.Env.TestDbPort,
-		config.Env.TestDbName))
+func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
+	r := gin.Default()
+	r.Use(TransactionHandler(db))
+	r.POST("/test-endpoint", func(c *gin.Context) {
+		tx, _ := c.Get("tx")
+		ctx := context.WithValue(context.Background(), "tx", tx.(*sqlx.Tx))
 
-	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
+		var input userapp.CreateUserRequest
+		if err := c.ShouldBindJSON(&input); err != nil {
+			c.JSON(400, gin.H{"error": err.Error()})
+			return
+		}
 
-	tests := []struct {
+		userRepo := rdbimpl.NewUserRepository(tx.(*sqlx.Tx))
+		tagRepo := rdbimpl.NewTagRepository(tx.(*sqlx.Tx))
+		existService := userdm.NewExistByNameDomainService(userRepo)
+		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
+
+		err := service.ExecWithTransaction(ctx, tx.(*sqlx.Tx), &input)
+		if err != nil {
+			c.JSON(500, err.Error())
+			return
+		}
+		c.JSON(200, "success")
+	})
+	return r
+}
+
+func getTestCases() []struct {
+	name      string
+	input     *userapp.CreateUserRequest
+	wantError bool
+} {
+	return []struct {
 		name      string
 		input     *userapp.CreateUserRequest
 		wantError bool
@@ -299,59 +338,38 @@ func TestTransactionHandling(t *testing.T) {
 			wantError: true, // エラーを期待
 		},
 	}
+}
 
-	// これはテスト関数の外部、最初に一度だけ実行します。
-	r := gin.Default()
-	r.Use(TransactionHandler(db))
-
-	r.POST("/test-endpoint", func(c *gin.Context) {
-		tx, _ := c.Get("tx")
-		ctx := context.WithValue(context.Background(), "tx", tx.(*sqlx.Tx))
-
-		var input userapp.CreateUserRequest
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.JSON(400, gin.H{"error": err.Error()})
-			return
-		}
-
-		userRepo := rdbimpl.NewUserRepository(tx.(*sqlx.Tx))
-		tagRepo := rdbimpl.NewTagRepository(tx.(*sqlx.Tx))
-		existService := userdm.NewExistByNameDomainService(userRepo)
-		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
-
-		err := service.ExecWithTransaction(ctx, tx.(*sqlx.Tx), &input)
-		if err != nil {
-			c.JSON(500, err.Error())
-			return
-		}
-		c.JSON(200, "success")
-	})
-
+func runTests(tests []struct {
+	name      string
+	input     *userapp.CreateUserRequest
+	wantError bool
+}, r *gin.Engine, db *sqlx.DB, t *testing.T) {
 	for _, tt := range tests {
-		if selectedTestCase != "" && tt.name != selectedTestCase {
+		if os.Getenv("SELECTED_TEST_CASE") != "" && tt.name != os.Getenv("SELECTED_TEST_CASE") {
 			continue
 		}
 
 		t.Run(tt.name, func(t *testing.T) {
 			if tt.name == "正常なリクエスト" {
-				if err := initializeDB(db); err != nil {
-					t.Fatalf("Failed to initialize the database: %v", err)
-				}
+				clearTestTables(db)
 			}
-			jsonData, err := json.Marshal(tt.input)
-			if err != nil {
-				t.Fatalf("Failed to marshal input: %v", err)
-			}
-			body := bytes.NewBuffer(jsonData)
-			// ダミーエンドポイントを呼び出します。
-			resp := httptest.NewRecorder()
-			req, _ := http.NewRequest("POST", "/test-endpoint", body)
-			r.ServeHTTP(resp, req)
-
-			if (resp.Code != 200) != tt.wantError {
-				t.Errorf("Request failed with code: %d, message: %s", resp.Code, resp.Body.String())
-			}
+			testRequest(r, tt.input, tt.wantError, t)
 		})
 	}
+}
 
+func testRequest(r *gin.Engine, input *userapp.CreateUserRequest, wantError bool, t *testing.T) {
+	jsonData, err := json.Marshal(input)
+	if err != nil {
+		t.Fatalf("Failed to marshal input: %v", err)
+	}
+	body := bytes.NewBuffer(jsonData)
+	resp := httptest.NewRecorder()
+	req, _ := http.NewRequest("POST", "/test-endpoint", body)
+	r.ServeHTTP(resp, req)
+
+	if (resp.Code != 200) != wantError {
+		t.Errorf("Request failed with code: %d, message: %s", resp.Code, resp.Body.String())
+	}
 }
