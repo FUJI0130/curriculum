@@ -27,15 +27,12 @@ func isModifyingMethod(method string) bool {
 func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 	tx, err := db.Beginx()
 	if err != nil {
-		handleTransactionError(c, err)
+		wrappedErr := customerrors.WrapInternalServerError(err, "Failed to start transaction")
+		c.Error(wrappedErr)
 		return nil
 	}
 	c.Set("tx", tx)
 	return tx
-}
-func handleTransactionError(c *gin.Context, err error) {
-	wrappedErr := customerrors.WrapInternalServerError(err, "Failed to start transaction")
-	c.Error(wrappedErr)
 }
 
 func finalizeTransaction(tx *sqlx.Tx, c *gin.Context) {
