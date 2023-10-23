@@ -12,7 +12,6 @@ import (
 )
 
 type tagRepositoryImpl struct {
-	// Conn *sqlx.DB
 	Conn Queryer
 }
 
@@ -22,10 +21,6 @@ type tagRequest struct {
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 }
-
-// func NewTagRepository(conn *sqlx.DB) tagdm.TagRepository {
-// 	return &tagRepositoryImpl{Conn: conn}
-// }
 
 func NewTagRepository(conn Queryer) tagdm.TagRepository {
 	return &tagRepositoryImpl{Conn: conn}

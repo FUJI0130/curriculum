@@ -13,7 +13,6 @@ import (
 )
 
 type userRepositoryImpl struct {
-	// Conn *sqlx.DB
 	Conn Queryer
 }
 
@@ -27,9 +26,6 @@ type userRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-//	func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
-//		return &userRepositoryImpl{Conn: conn}
-//	}
 func NewUserRepository(conn Queryer) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }

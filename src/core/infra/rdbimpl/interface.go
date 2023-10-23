@@ -11,5 +11,4 @@ type Queryer interface {
 	Get(dest interface{}, query string, args ...interface{}) error
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Select(dest interface{}, query string, args ...interface{}) error
-	// 必要に応じて他のメソッドも追加
 }

@@ -12,7 +12,7 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
 		}
-		c.Next() // エンドポイントの処理を実行。
+		c.Next()
 	}
 }
 func isModifyingMethod(method string) bool {
