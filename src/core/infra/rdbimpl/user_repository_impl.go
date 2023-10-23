@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -14,6 +15,7 @@ import (
 
 type userRepositoryImpl struct {
 	Conn Queryer
+	db   *sqlx.DB
 }
 
 type userRequest struct {
@@ -29,7 +31,6 @@ type userRequest struct {
 func NewUserRepository(conn Queryer) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
-
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
 
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -58,19 +59,19 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 	return nil
 }
 
-func (repo *userRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, userdomain *userdm.UserDomain) error {
+func (repo *userRepositoryImpl) StoreWithTransaction(transaction domain.Transaction, userdomain *userdm.UserDomain) error {
 
 	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
-	_, err := tx.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
+	_, err := transaction.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "Failed to store user")
 	}
 
 	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = tx.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+		_, err = transaction.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
 			return customerrors.WrapInternalServerError(err, "Failed to store skill")
 		}
@@ -78,7 +79,7 @@ func (repo *userRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, userdomain *us
 
 	for _, career := range userdomain.Careers {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = tx.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+		_, err = transaction.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
 			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
+	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/gin-gonic/gin"
@@ -75,8 +76,16 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(TransactionHandler(db))
 	r.POST("/test-endpoint", func(c *gin.Context) {
-		tx, _ := c.Get("tx")
-		ctx := context.WithValue(context.Background(), "tx", tx.(*sqlx.Tx))
+		transaction, _ := c.Get("transaction") // Note the key change from "tx" to "transaction"
+
+		// Cast the transaction to the domain.Transaction interface
+		tx, ok := transaction.(domain.Transaction)
+		if !ok {
+			c.JSON(500, gin.H{"error": "Failed to get the transaction"})
+			return
+		}
+
+		ctx := context.Background() // You don't need to add the transaction to the context again
 
 		var input userapp.CreateUserRequest
 		if err := c.ShouldBindJSON(&input); err != nil {
@@ -84,12 +93,13 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 			return
 		}
 
-		userRepo := rdbimpl.NewUserRepository(tx.(*sqlx.Tx))
-		tagRepo := rdbimpl.NewTagRepository(tx.(*sqlx.Tx))
+		userRepo := rdbimpl.NewUserRepository(db) // We can simply pass the db here
+		tagRepo := rdbimpl.NewTagRepository(db)   // Same here
 		existService := userdm.NewExistByNameDomainService(userRepo)
 		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 
-		err := service.ExecWithTransaction(ctx, tx.(*sqlx.Tx), &input)
+		// Pass the transaction (casted to domain.Transaction) to ExecWithTransaction
+		err := service.ExecWithTransaction(ctx, tx, &input)
 		if err != nil {
 			c.JSON(500, err.Error())
 			return
@@ -98,7 +108,6 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 	})
 	return r
 }
-
 func getTestCases() []struct {
 	name      string
 	input     *userapp.CreateUserRequest

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -35,10 +36,10 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 
 	return nil
 }
-func (repo *tagRepositoryImpl) StoreWithTransaction(tx *sqlx.Tx, tag *tagdm.Tag) error {
+func (repo *tagRepositoryImpl) StoreWithTransaction(transaction domain.Transaction, tag *tagdm.Tag) error {
 
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
-	_, err := tx.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
+	_, err := transaction.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "Failed to store tag")
 	}

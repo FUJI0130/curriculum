@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
-	"github.com/jmoiron/sqlx"
 )
 
 type CreateUserAppService struct {
@@ -121,7 +121,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 	return app.userRepo.Store(ctx, userdomain)
 }
 
-func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sqlx.Tx, req *CreateUserRequest) (err error) {
+func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, transaction domain.Transaction, req *CreateUserRequest) (err error) {
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
@@ -158,7 +158,7 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 			if err != nil {
 				return err
 			}
-			if err = app.tagRepo.StoreWithTransaction(tx, tag); err != nil {
+			if err = app.tagRepo.StoreWithTransaction(transaction, tag); err != nil {
 				return err
 			}
 			tagsMap[tagName] = tag
@@ -189,7 +189,7 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, tx *sq
 		return err
 	}
 
-	err = app.userRepo.StoreWithTransaction(tx, userdomain)
+	err = app.userRepo.StoreWithTransaction(transaction, userdomain)
 
 	return err
 }
