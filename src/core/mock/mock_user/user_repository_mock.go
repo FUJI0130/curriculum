@@ -8,7 +8,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/FUJI0130/curriculum/src/core/domain"
 	userdm "github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -81,15 +80,15 @@ func (mr *MockUserRepositoryMockRecorder) Store(ctx, userdomain interface{}) *go
 }
 
 // StoreWithTransaction mocks base method.
-func (m *MockUserRepository) StoreWithTransaction(transaction domain.Transaction, userdomain *userdm.UserDomain) error {
+func (m *MockUserRepository) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreWithTransaction", transaction, userdomain)
+	ret := m.ctrl.Call(m, "StoreWithTransaction", ctx, userdomain)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StoreWithTransaction indicates an expected call of StoreWithTransaction.
-func (mr *MockUserRepositoryMockRecorder) StoreWithTransaction(transaction, userdomain interface{}) *gomock.Call {
+func (mr *MockUserRepositoryMockRecorder) StoreWithTransaction(ctx, userdomain interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockUserRepository)(nil).StoreWithTransaction), transaction, userdomain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockUserRepository)(nil).StoreWithTransaction), ctx, userdomain)
 }

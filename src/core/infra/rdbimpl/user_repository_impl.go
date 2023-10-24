@@ -7,7 +7,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
@@ -59,7 +58,12 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 	return nil
 }
 
-func (repo *userRepositoryImpl) StoreWithTransaction(transaction domain.Transaction, userdomain *userdm.UserDomain) error {
+func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
+
+	transaction, exists := ctx.Value("transaction").(Transaction)
+	if !exists {
+		return errors.New("no transaction found in context")
+	}
 
 	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"

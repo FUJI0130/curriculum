@@ -8,7 +8,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/FUJI0130/curriculum/src/core/domain"
 	tagdm "github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -96,15 +95,15 @@ func (mr *MockTagRepositoryMockRecorder) Store(ctx, tag interface{}) *gomock.Cal
 }
 
 // StoreWithTransaction mocks base method.
-func (m *MockTagRepository) StoreWithTransaction(transaction domain.Transaction, tag *tagdm.Tag) error {
+func (m *MockTagRepository) StoreWithTransaction(ctx context.Context, tag *tagdm.Tag) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreWithTransaction", transaction, tag)
+	ret := m.ctrl.Call(m, "StoreWithTransaction", ctx, tag)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // StoreWithTransaction indicates an expected call of StoreWithTransaction.
-func (mr *MockTagRepositoryMockRecorder) StoreWithTransaction(transaction, tag interface{}) *gomock.Call {
+func (mr *MockTagRepositoryMockRecorder) StoreWithTransaction(ctx, tag interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockTagRepository)(nil).StoreWithTransaction), transaction, tag)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockTagRepository)(nil).StoreWithTransaction), ctx, tag)
 }

@@ -14,7 +14,6 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
-	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/gin-gonic/gin"
@@ -76,14 +75,6 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 	r := gin.Default()
 	r.Use(TransactionHandler(db))
 	r.POST("/test-endpoint", func(c *gin.Context) {
-		transaction, _ := c.Get("transaction") // Note the key change from "tx" to "transaction"
-
-		// Cast the transaction to the domain.Transaction interface
-		tx, ok := transaction.(domain.Transaction)
-		if !ok {
-			c.JSON(500, gin.H{"error": "Failed to get the transaction"})
-			return
-		}
 
 		ctx := context.Background() // You don't need to add the transaction to the context again
 
@@ -99,7 +90,7 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 
 		// Pass the transaction (casted to domain.Transaction) to ExecWithTransaction
-		err := service.ExecWithTransaction(ctx, tx, &input)
+		err := service.ExecWithTransaction(ctx, &input)
 		if err != nil {
 			c.JSON(500, err.Error())
 			return

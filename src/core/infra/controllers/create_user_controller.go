@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
-	"github.com/FUJI0130/curriculum/src/core/domain"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
@@ -53,13 +52,8 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
-	tx, ok := txObj.(domain.Transaction)
-	if !ok {
-		c.Error(errors.New("invalid transaction type"))
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		return
-	}
-	if err := ctrl.createUserService.ExecWithTransaction(c.Request.Context(), tx, &req); err != nil {
+
+	if err := ctrl.createUserService.ExecWithTransaction(c.Request.Context(), &req); err != nil {
 		handleServiceError(c, err)
 		return
 	}
