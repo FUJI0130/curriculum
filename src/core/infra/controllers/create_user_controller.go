@@ -45,14 +45,12 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 	txObj, ok := c.Get("Conn")
 	if !ok || txObj == nil {
 		c.Error(errors.New("transaction not found"))
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
 
 	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
 
 	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
-
 		if customErr, ok := err.(customerrors.BaseError); ok {
 			c.Status(customErr.StatusCode())
 		} else {
