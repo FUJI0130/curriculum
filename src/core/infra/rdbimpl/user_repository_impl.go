@@ -14,7 +14,6 @@ import (
 
 type userRepositoryImpl struct {
 	Conn Queryer
-	// db   *sqlx.DB//使ってないのでは
 }
 
 type userRequest struct {
@@ -31,34 +30,6 @@ func NewUserRepository(conn Queryer) userdm.UserRepository {
 	return &userRepositoryImpl{Conn: conn}
 }
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
-
-	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-
-	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
-	if err != nil {
-		return err
-	}
-
-	for _, skill := range userdomain.Skills {
-		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
-		if err != nil {
-			return err
-		}
-	}
-
-	for _, career := range userdomain.Careers {
-		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
 
 	conn, exists := ctx.Value("Conn").(Transaction)
 
@@ -92,10 +63,15 @@ func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdo
 }
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
+	conn, exists := ctx.Value("Conn").(Transaction)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
 	query := "SELECT * FROM users WHERE name = ?"
 
 	var tempUser userRequest
-	err := repo.Conn.Get(&tempUser, query, name)
+	err := conn.Get(&tempUser, query, name)
 	if err != nil {
 		log.Printf("user Repository FindByName error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -114,6 +90,11 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 }
 
 func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+	conn, exists := ctx.Value("Conn").(Transaction)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
 	query := "SELECT * FROM users WHERE name IN (?)"
 	var tempUsers []userRequest
 	query, args, err := sqlx.In(query, names)
@@ -121,7 +102,7 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 		return nil, err
 	}
 
-	err = repo.Conn.Select(&tempUsers, query, args...)
+	err = conn.Select(&tempUsers, query, args...)
 	if err != nil {
 		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
 	}

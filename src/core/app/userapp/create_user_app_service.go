@@ -44,83 +44,7 @@ type CareersRequest struct {
 	AdTo   time.Time
 }
 
-func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) error {
-
-	isExist, err := app.existService.Exec(ctx, req.Name)
-
-	if err != nil {
-		return err
-	}
-
-	if isExist {
-		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
-	}
-
-	tagNames := make([]string, len(req.Skills))
-	for i, s := range req.Skills {
-		tagNames[i] = s.TagName
-	}
-
-	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
-	if err != nil {
-		return err
-	}
-
-	tagsMap := make(map[string]*tagdm.Tag)
-	for _, tag := range tags {
-		tagsMap[tag.Name()] = tag
-	}
-
-	seenSkills := make(map[string]bool)
-	skillsParams := make([]userdm.SkillParam, len(req.Skills))
-
-	for i, s := range req.Skills {
-
-		if seenSkills[s.TagName] {
-
-			return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", s.TagName)
-		}
-		seenSkills[s.TagName] = true
-
-		if _, ok := tagsMap[s.TagName]; !ok {
-			tag, err := tagdm.GenWhenCreateTag(s.TagName)
-			if err != nil {
-				return err
-			}
-
-			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				return err
-			}
-
-			tagsMap[s.TagName] = tag
-		}
-
-		skillsParams[i] = userdm.SkillParam{
-			TagID:      tagsMap[s.TagName].ID(),
-			TagName:    s.TagName,
-			Evaluation: s.Evaluation,
-			Years:      s.Years,
-		}
-
-	}
-	careersParams := make([]userdm.CareerParam, len(req.Careers))
-	for i, c := range req.Careers {
-		careersParams[i] = userdm.CareerParam{
-			Detail: c.Detail,
-			AdFrom: c.AdFrom,
-			AdTo:   c.AdTo,
-		}
-	}
-
-	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
-	if err != nil {
-		return err
-	}
-
-	return app.userRepo.Store(ctx, userdomain)
-}
-
-func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, req *CreateUserRequest) (err error) {
+func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
@@ -157,7 +81,7 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, req *C
 			if err != nil {
 				return err
 			}
-			if err = app.tagRepo.StoreWithTransaction(ctx, tag); err != nil {
+			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
 			tagsMap[tagName] = tag
@@ -188,7 +112,7 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, req *C
 		return err
 	}
 
-	err = app.userRepo.StoreWithTransaction(ctx, userdomain)
+	err = app.userRepo.Store(ctx, userdomain)
 
 	return err
 }

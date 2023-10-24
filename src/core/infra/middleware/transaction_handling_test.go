@@ -97,7 +97,7 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 
 		ctxWithTx := context.WithValue(c.Request.Context(), "transaction", txObj)
 
-		err := service.ExecWithTransaction(ctxWithTx, &input)
+		err := service.Exec(ctxWithTx, &input)
 		if err != nil {
 			c.JSON(500, err.Error())
 			return

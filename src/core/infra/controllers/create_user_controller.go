@@ -58,7 +58,7 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 
 	ctxWithTx := context.WithValue(c.Request.Context(), "transaction", txObj)
 
-	if err := ctrl.createUserService.ExecWithTransaction(ctxWithTx, &req); err != nil {
+	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "createUserService Exec error"))
 		return
 	}
