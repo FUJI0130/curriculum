@@ -2,7 +2,6 @@ package userapp
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -123,17 +122,14 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 
 func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, req *CreateUserRequest) (err error) {
 
-	log.Printf("ExecWithTransaction: %s", req.Name)
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("before isExist: %v", isExist)
 	if isExist {
 		return customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec UserName isExist  name is : %s", req.Name)
 	}
-	log.Printf("after isExist: %v", isExist)
 
 	tagNames := make([]string, 0, len(req.Skills))
 	seenSkills := make(map[string]bool)
@@ -192,7 +188,6 @@ func (app *CreateUserAppService) ExecWithTransaction(ctx context.Context, req *C
 		return err
 	}
 
-	log.Printf("before StoreWithTransaction: %s", userdomain.User.Name())
 	err = app.userRepo.StoreWithTransaction(ctx, userdomain)
 
 	return err

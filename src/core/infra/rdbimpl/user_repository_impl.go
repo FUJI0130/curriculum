@@ -60,11 +60,8 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
 
-	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
-
 	transaction, exists := ctx.Value("transaction").(Transaction)
 	if !exists {
-		log.Printf("StoreWithTransaction: no transaction found in context")
 		return errors.New("no transaction found in context")
 	}
 
