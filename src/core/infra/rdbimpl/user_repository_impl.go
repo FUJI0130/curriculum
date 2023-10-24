@@ -56,6 +56,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 		_, err = conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
+			log.Printf("Failed to store career")
 			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}
 	}

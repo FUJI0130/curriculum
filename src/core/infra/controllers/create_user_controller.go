@@ -11,13 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const (
-	errCodeConflict            = 409
-	errCodeInternalServerError = 500
-	errCodeNotFound            = 404
-	errCodeUnprocessableEntity = 400
-)
-
 type CreateUserController struct {
 	createUserService *userapp.CreateUserAppService
 }
@@ -49,16 +42,23 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 		return
 	}
 
-	txObj, ok := c.Get("transaction")
+	txObj, ok := c.Get("Conn")
 	if !ok || txObj == nil {
 		c.Error(errors.New("transaction not found"))
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
 		return
 	}
 
-	ctxWithTx := context.WithValue(c.Request.Context(), "transaction", txObj)
+	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
 
 	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
+
+		if customErr, ok := err.(customerrors.BaseError); ok {
+			c.Status(customErr.StatusCode())
+		} else {
+			c.Status(http.StatusInternalServerError)
+		}
+
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "createUserService Exec error"))
 		return
 	}

@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"log"
+
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
@@ -26,13 +28,14 @@ func isModifyingMethod(method string) bool {
 }
 
 func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
+	log.Printf("Starting transaction for %s %s", c.Request.Method, c.Request.URL.Path)
 	tx, err := db.Beginx()
 	if err != nil {
 		wrappedErr := customerrors.WrapInternalServerError(err, "Failed to start transaction")
 		c.Error(wrappedErr)
 		return nil
 	}
-
+	log.Printf("Started transaction for %s %s", c.Request.Method, c.Request.URL.Path)
 	conn := &rdbimpl.SqlxTransaction{Tx: tx}
 
 	c.Set("Conn", conn)
@@ -40,21 +43,29 @@ func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 }
 
 func finalizeTransaction(tx *sqlx.Tx, c *gin.Context) {
+	log.Printf("Finalizing transaction for %s %s", c.Request.Method, c.Request.URL.Path)
 	if r := recover(); r != nil {
 		tx.Rollback()
 		panic(r)
 	}
 
-	if hasErrors(c) || c.Writer.Status() >= 400 {
+	if hasErrors(c) {
+		log.Println("Errors detected, rolling back transaction.")
+		tx.Rollback()
+	} else if c.Writer.Status() >= 400 {
+		log.Printf("HTTP Status %d detected, rolling back transaction.", c.Writer.Status())
 		tx.Rollback()
 	} else {
+		log.Println("Committing transaction.")
 		tx.Commit()
 	}
+
 }
 
 func hasErrors(c *gin.Context) bool {
 	ginErr, exists := c.Get("C_ERRORS")
 	if !exists {
+		log.Println("No errors detected in context.")
 		return false
 	}
 
