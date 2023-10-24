@@ -9,7 +9,6 @@ import (
 )
 
 func ErrorHandler(c *gin.Context) {
-	log.Printf("Inside ErrorHandler")
 	c.Next()
 	if len(c.Errors) > 0 {
 		handleError(c, c.Errors.Last().Err)
