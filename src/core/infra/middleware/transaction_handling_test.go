@@ -16,6 +16,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/config"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
+	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -76,8 +77,6 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 	r.Use(TransactionHandler(db))
 	r.POST("/test-endpoint", func(c *gin.Context) {
 
-		ctx := context.Background() // You don't need to add the transaction to the context again
-
 		var input userapp.CreateUserRequest
 		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(400, gin.H{"error": err.Error()})
@@ -89,8 +88,16 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 		existService := userdm.NewExistByNameDomainService(userRepo)
 		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 
-		// Pass the transaction (casted to domain.Transaction) to ExecWithTransaction
-		err := service.ExecWithTransaction(ctx, &input)
+		txObj, ok := c.Get("transaction")
+		if !ok || txObj == nil {
+			c.Error(errors.New("transaction not found"))
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+			return
+		}
+
+		ctxWithTx := context.WithValue(c.Request.Context(), "transaction", txObj)
+
+		err := service.ExecWithTransaction(ctxWithTx, &input)
 		if err != nil {
 			c.JSON(500, err.Error())
 			return
