@@ -41,6 +41,7 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
 }
+
 func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {

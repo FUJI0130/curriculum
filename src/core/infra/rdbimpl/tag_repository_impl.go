@@ -36,12 +36,13 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 	return nil
 }
 func (repo *tagRepositoryImpl) StoreWithTransaction(ctx context.Context, tag *tagdm.Tag) error {
-	transaction, exists := ctx.Value("transaction").(Transaction)
+	conn, exists := ctx.Value("Conn").(Transaction)
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
 	query := "INSERT INTO tags (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)"
-	_, err := transaction.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
+	_, err := conn.Exec(query, tag.ID(), tag.Name(), tag.CreatedAt().DateTime(), tag.UpdatedAt().DateTime())
+
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "Failed to store tag")
 	}

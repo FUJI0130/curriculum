@@ -14,6 +14,8 @@ type SQLResult struct {
 }
 type Transaction interface {
 	Exec(query string, args ...any) (Result, error)
+	Get(dest any, query string, args ...any) error
+	Select(dest any, query string, args ...any) error
 	Commit() error
 	Rollback() error
 }
@@ -43,4 +45,12 @@ func (t *SqlxTransaction) Exec(query string, args ...any) (Result, error) {
 		return nil, err
 	}
 	return &SQLResult{res: result}, nil
+}
+
+func (t *SqlxTransaction) Get(dest any, query string, args ...any) error {
+	return t.Tx.Get(dest, query, args...)
+}
+
+func (t *SqlxTransaction) Select(dest any, query string, args ...any) error {
+	return t.Tx.Select(dest, query, args...)
 }

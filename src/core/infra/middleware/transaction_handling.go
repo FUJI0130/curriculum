@@ -33,9 +33,9 @@ func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 		return nil
 	}
 
-	transaction := &rdbimpl.SqlxTransaction{Tx: tx}
+	conn := &rdbimpl.SqlxTransaction{Tx: tx}
 
-	c.Set("transaction", transaction)
+	c.Set("Conn", conn)
 	return tx
 }
 

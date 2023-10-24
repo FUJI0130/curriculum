@@ -14,7 +14,7 @@ import (
 
 type userRepositoryImpl struct {
 	Conn Queryer
-	db   *sqlx.DB
+	// db   *sqlx.DB//使ってないのでは
 }
 
 type userRequest struct {
@@ -60,21 +60,22 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
 
-	transaction, exists := ctx.Value("transaction").(Transaction)
+	conn, exists := ctx.Value("Conn").(Transaction)
+
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
 
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
-	_, err := transaction.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
+	_, err := conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "Failed to store user")
 	}
 
 	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = transaction.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+		_, err = conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
 			return customerrors.WrapInternalServerError(err, "Failed to store skill")
 		}
@@ -82,7 +83,7 @@ func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdo
 
 	for _, career := range userdomain.Careers {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = transaction.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+		_, err = conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
 			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}
