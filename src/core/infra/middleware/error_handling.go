@@ -19,6 +19,7 @@ func ErrorHandler(c *gin.Context) {
 
 func handleError(c *gin.Context, err error) {
 	log.Printf("handleError: ")
+	log.Printf("err type is %T", err)
 	if customErr, ok := err.(customerrors.BaseError); ok {
 		message, _ := customerrors.SplitMessageAndTrace(customErr.Error())
 		c.JSON(customErr.StatusCode(), gin.H{
@@ -29,6 +30,6 @@ func handleError(c *gin.Context, err error) {
 		log.Printf("Error is not of type customerrors.BaseError")
 	}
 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-		"message": "Internal Server Error",
+		"message": "handleError Internal Server Error",
 	})
 }

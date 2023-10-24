@@ -60,12 +60,14 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
 
+	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
+
 	transaction, exists := ctx.Value("transaction").(Transaction)
 	if !exists {
+		log.Printf("StoreWithTransaction: no transaction found in context")
 		return errors.New("no transaction found in context")
 	}
 
-	log.Printf("StoreWithTransaction: %s", userdomain.User.Name())
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
 	_, err := transaction.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
@@ -88,7 +90,6 @@ func (repo *userRepositoryImpl) StoreWithTransaction(ctx context.Context, userdo
 			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}
 	}
-
 	return nil
 }
 

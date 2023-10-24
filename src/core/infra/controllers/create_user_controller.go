@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
+
+	"github.com/cockroachdb/errors"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
-	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,19 +55,12 @@ func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.createUserService.ExecWithTransaction(c.Request.Context(), &req); err != nil {
-		handleServiceError(c, err)
+	ctxWithTx := context.WithValue(c.Request.Context(), "transaction", txObj)
+
+	if err := ctrl.createUserService.ExecWithTransaction(ctxWithTx, &req); err != nil {
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "createUserService Exec error"))
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
-}
-
-func handleServiceError(c *gin.Context, err error) {
-	if customErr, ok := err.(customerrors.BaseError); ok {
-		c.Status(customErr.StatusCode())
-	} else {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-	}
-	c.Error(err)
 }
