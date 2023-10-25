@@ -63,8 +63,6 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
 
-	log.Printf("FindByName ctx.Value(\"Conn\") is %v", ctx.Value("Conn"))
-
 	conn, exists := ctx.Value("Conn").(dbOperator)
 
 	if !exists {
