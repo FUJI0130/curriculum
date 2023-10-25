@@ -13,6 +13,8 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 		if isModifyingMethod(c.Request.Method) {
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
+		} else {
+			c.Set("Conn", db)
 		}
 		c.Next()
 	}
