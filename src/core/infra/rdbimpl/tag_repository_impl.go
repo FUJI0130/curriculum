@@ -11,9 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type tagRepositoryImpl struct {
-	Conn Queryer
-}
+type tagRepositoryImpl struct{}
 
 type tagRequest struct {
 	ID        string    `db:"id"`
@@ -22,12 +20,12 @@ type tagRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func NewTagRepository(conn Queryer) tagdm.TagRepository {
-	return &tagRepositoryImpl{Conn: conn}
+func NewTagRepository() tagdm.TagRepository {
+	return &tagRepositoryImpl{}
 }
 
 func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
@@ -42,7 +40,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 }
 
 func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}
@@ -67,7 +65,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 }
 
 func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) ([]*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}
@@ -97,7 +95,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 }
 
 func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}

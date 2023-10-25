@@ -23,8 +23,8 @@ func main() {
 	}
 	defer db.Close()
 
-	userRepo := rdbimpl.NewUserRepository(db)
-	tagRepo := rdbimpl.NewTagRepository(db)
+	userRepo := rdbimpl.NewUserRepository()
+	tagRepo := rdbimpl.NewTagRepository()
 	existService := userdm.NewExistByNameDomainService(userRepo)
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 

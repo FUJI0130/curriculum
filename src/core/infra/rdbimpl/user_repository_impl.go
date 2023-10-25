@@ -12,9 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type userRepositoryImpl struct {
-	Conn Queryer
-}
+type userRepositoryImpl struct{}
 
 type userRequest struct {
 	ID        string    `db:"id"`
@@ -26,12 +24,12 @@ type userRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func NewUserRepository(conn Queryer) userdm.UserRepository {
-	return &userRepositoryImpl{Conn: conn}
+func NewUserRepository() userdm.UserRepository {
+	return &userRepositoryImpl{}
 }
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
 
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 
 	if !exists {
 		return errors.New("no transaction found in context")
@@ -64,7 +62,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 }
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 
 	if !exists {
 		return nil, errors.New("no transaction found in context")
@@ -91,7 +89,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 }
 
 func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
-	conn, exists := ctx.Value("Conn").(*sqlx.Tx)
+	conn, exists := ctx.Value("Conn").(*sqlx.DB)
 
 	if !exists {
 		return nil, errors.New("no transaction found in context")
