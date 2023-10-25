@@ -15,12 +15,12 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
 			log.Printf("DBTxRun is tx")
-			c.Set("Conn", &rdbimpl.DBTxRun{Runner: tx})
+			c.Set("Conn", &rdbimpl.DBTxRun{DBoperator: tx})
 
 			log.Printf("ctx.Value(\"Conn\") is %v", c.Value("Conn"))
 		} else {
 			log.Printf("DBTxRun is db")
-			c.Set("Conn", &rdbimpl.DBTxRun{Runner: db})
+			c.Set("Conn", &rdbimpl.DBTxRun{DBoperator: db})
 
 			log.Printf("ctx.Value(\"Conn\") is %v", c.Value("Conn"))
 		}

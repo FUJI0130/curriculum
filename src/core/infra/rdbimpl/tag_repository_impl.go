@@ -25,7 +25,7 @@ func NewTagRepository() tagdm.TagRepository {
 }
 
 func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error {
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
@@ -40,7 +40,7 @@ func (repo *tagRepositoryImpl) Store(ctx context.Context, tag *tagdm.Tag) error 
 }
 
 func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}
@@ -65,7 +65,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 }
 
 func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) ([]*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}
@@ -95,7 +95,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 }
 
 func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.Tag, error) {
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}

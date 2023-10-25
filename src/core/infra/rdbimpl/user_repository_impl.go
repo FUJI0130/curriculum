@@ -29,7 +29,7 @@ func NewUserRepository() userdm.UserRepository {
 }
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
 
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 
 	if !exists {
 		return errors.New("no transaction found in context")
@@ -65,7 +65,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 
 	log.Printf("FindByName ctx.Value(\"Conn\") is %v", ctx.Value("Conn"))
 
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 
 	if !exists {
 		return nil, errors.New("no transaction found in context")
@@ -92,7 +92,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 }
 
 func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
-	conn, exists := ctx.Value("Conn").(*DBTxRun)
+	conn, exists := ctx.Value("Conn").(dbOperator)
 
 	if !exists {
 		return nil, errors.New("no transaction found in context")
