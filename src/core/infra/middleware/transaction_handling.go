@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 
+	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -13,8 +14,15 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 		if isModifyingMethod(c.Request.Method) {
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
+			log.Printf("DBTxRun is tx")
+			c.Set("Conn", &rdbimpl.DBTxRun{Runner: tx})
+
+			log.Printf("ctx.Value(\"Conn\") is %v", c.Value("Conn"))
 		} else {
-			c.Set("Conn", db)
+			log.Printf("DBTxRun is db")
+			c.Set("Conn", &rdbimpl.DBTxRun{Runner: db})
+
+			log.Printf("ctx.Value(\"Conn\") is %v", c.Value("Conn"))
 		}
 		c.Next()
 	}
@@ -35,7 +43,6 @@ func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 		c.Error(wrappedErr)
 		return nil
 	}
-	c.Set("Conn", tx)
 	return tx
 }
 

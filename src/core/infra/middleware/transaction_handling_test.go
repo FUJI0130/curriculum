@@ -83,8 +83,8 @@ func setupRouterWithDB(db *sqlx.DB) *gin.Engine {
 			return
 		}
 
-		userRepo := rdbimpl.NewUserRepository(db) // We can simply pass the db here
-		tagRepo := rdbimpl.NewTagRepository(db)   // Same here
+		userRepo := rdbimpl.NewUserRepository() // We can simply pass the db here
+		tagRepo := rdbimpl.NewTagRepository()   // Same here
 		existService := userdm.NewExistByNameDomainService(userRepo)
 		service := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 
