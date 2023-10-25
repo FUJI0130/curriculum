@@ -3,7 +3,6 @@ package middleware
 import (
 	"log"
 
-	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
@@ -34,9 +33,7 @@ func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 		c.Error(wrappedErr)
 		return nil
 	}
-	conn := &rdbimpl.SqlxTransaction{Tx: tx}
-
-	c.Set("Conn", conn)
+	c.Set("Conn", tx)
 	return tx
 }
 
