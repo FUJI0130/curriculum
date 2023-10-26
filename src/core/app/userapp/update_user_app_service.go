@@ -30,61 +30,52 @@ type UpdateUserRequest struct {
 	Careers  []CareersRequest
 }
 
-func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserRequest) (err error) {
+func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserRequest) error {
 	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
-		// emailが一致しなかったらエラーを返す
 		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.Email)
 	}
 
-	// Userオブジェクトを再構築
-	updatedUser, err := userdm.ReconstructUser(userDataOnDB.ID().String(), userDataOnDB.Name(), req.Email, userDataOnDB.Password().String(), req.Profile, userDataOnDB.CreatedAt().DateTime())
-
-	userDiffs := userDataOnDB.MismatchedFields(updatedUser) // 前提: reqがuserDataOnDBと比較可能で、MismatchedFieldsメソッドが存在する
-
-	if len(userDiffs) > 0 {
-		// 変更があった場合のみ新しい値を使用
-		newUsername := userDataOnDB.Name()
-		newEmail := userDataOnDB.Email().String()
-		newPassword := userDataOnDB.Password().String()
-		newProfile := userDataOnDB.Profile()
-
-		if _, exists := userDiffs["username"]; exists {
-			newUsername = req.Name // reqが該当のフィールドを持っていることを想定
-		}
-		if _, exists := userDiffs["email"]; exists {
-			newEmail = req.Email
-		}
-		if _, exists := userDiffs["password"]; exists {
-			newPassword = req.Password // reqが該当のフィールドを持っていることを想定
-		}
-		if _, exists := userDiffs["profile"]; exists {
-			newProfile = req.Profile // reqが該当のフィールドを持っていることを想定
-		}
-
-		// ReconstructUser(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error)
-		// Userオブジェクトを再構築
-		updatedUser, err := userdm.ReconstructUser(
-			userDataOnDB.ID().String(),
-			newUsername,
-			newEmail,
-			newPassword,
-			newProfile,
-			userDataOnDB.CreatedAt().DateTime(),
-		)
-		if err != nil {
-			return err
-		}
-
-		// データベースに更新を適用
-		if err = app.userRepo.UpdateUser(ctx, updatedUser); err != nil {
-			return err
-		}
+	if err = app.updateUserInformation(ctx, userDataOnDB, req); err != nil {
+		return err
 	}
 
-	tagNames := make([]string, 0, len(req.Skills))
+	if err = app.updateSkills(ctx, userDataOnDB, req.Skills); err != nil {
+		return err
+	}
+
+	if err = app.updateCareers(ctx, userDataOnDB, req.Careers); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (app *UpdateUserAppService) updateUserInformation(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
+	updatedUser, err := userdm.ReconstructUser(
+		userDataOnDB.ID().String(),
+		req.Name,
+		req.Email,
+		req.Password,
+		req.Profile,
+		userDataOnDB.CreatedAt().DateTime(),
+	)
+	if err != nil {
+		return err
+	}
+
+	userDiffs := userDataOnDB.MismatchedFields(updatedUser)
+	if len(userDiffs) == 0 {
+		return nil
+	}
+
+	return app.userRepo.UpdateUser(ctx, updatedUser)
+}
+
+func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequest) error {
+	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
-	for _, s := range req.Skills {
+	for _, s := range skillsReq {
 		if seenSkills[s.TagName] {
 			return customerrors.NewUnprocessableEntityErrorf("Skill with tag name %s is duplicated", s.TagName)
 		}
@@ -118,8 +109,8 @@ func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserReques
 	//TODO: FindSkillsByUserIDの結果を格納するSkillsのValue Objectが必要
 	skills, err := app.userRepo.FindSkillsByUserID(ctx, userDataOnDB.ID().String())
 
-	skillsParams := make([]userdm.SkillParam, len(req.Skills))
-	for i, s := range req.Skills {
+	skillsParams := make([]userdm.SkillParam, len(skillsReq))
+	for i, s := range skillsReq {
 		skillsParams[i] = userdm.SkillParam{
 			TagID:      tagsMap[s.TagName].ID(),
 			TagName:    s.TagName,
@@ -179,14 +170,20 @@ func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserReques
 			}
 		}
 		if !found {
-			return customerrors.NewNotFoundErrorf("Skill with TagID %s not found   userEmail is : %s ", skill.TagID().String(), req.Email)
+			return customerrors.NewNotFoundErrorf("Skill with TagID %s not found   userEmail is : %s ", skill.TagID().String(), userDataOnDB.Email().String())
 		}
 	}
+	return err
+}
 
+func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequest) error {
 	careers, err := app.userRepo.FindCareersByUserID(ctx, userDataOnDB.ID().String())
+	if err != nil {
+		return err
+	}
 
-	careersParams := make([]userdm.CareerParam, len(req.Careers))
-	for i, c := range req.Careers {
+	careersParams := make([]userdm.CareerParam, len(careersReq))
+	for i, c := range careersReq {
 		careersParams[i] = userdm.CareerParam{
 			Detail: c.Detail,
 			AdFrom: c.AdFrom,
@@ -257,9 +254,8 @@ func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserReques
 			}
 		}
 		if !found {
-			return customerrors.NewNotFoundErrorf("Career with UserID %s not found. userEmail is: %s", userDataOnDB.ID().String(), req.Email)
+			return customerrors.NewNotFoundErrorf("Career with UserID %s not found. userEmail is: %s", userDataOnDB.ID().String(), userDataOnDB.Email().String())
 		}
 	}
-
 	return err
 }
