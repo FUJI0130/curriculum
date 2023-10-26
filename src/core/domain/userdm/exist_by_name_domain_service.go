@@ -4,6 +4,7 @@ package userdm
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
@@ -26,7 +27,7 @@ func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool
 		if customerrors.IsNotFoundError(err) {
 			return false, nil
 		}
-		return false, customerrors.WrapInternalServerError(err, "An error occurred in Exec when calling userRepo.FindByName")
+		return false, customerrors.WrapInternalServerError(err, fmt.Sprintf("An error occurred in Exec when calling userRepo.FindByName name is : %s", name))
 	}
 	return existingUser != nil, nil
 }

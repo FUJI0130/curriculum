@@ -25,7 +25,7 @@ func handlePanic(c *gin.Context, err error) {
 	err = errors.WithStack(err)
 	log.Printf("Stack Trace: %+v", err)
 	c.JSON(http.StatusInternalServerError, gin.H{
-		"message": "Internal Server Error",
+		"message": "handlePanic Internal Server Error",
 	})
 }
 

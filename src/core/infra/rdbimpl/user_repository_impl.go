@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -11,9 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type userRepositoryImpl struct {
-	Conn *sqlx.DB
-}
+type userRepositoryImpl struct{}
 
 type userRequest struct {
 	ID        string    `db:"id"`
@@ -25,45 +24,58 @@ type userRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func NewUserRepository(conn *sqlx.DB) userdm.UserRepository {
-	return &userRepositoryImpl{Conn: conn}
+func NewUserRepository() userdm.UserRepository {
+	return &userRepositoryImpl{}
 }
-
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
+
+	conn, exists := ctx.Value("Conn").(dbOperator)
+
+	if !exists {
+		return errors.New("no transaction found in context")
+	}
 
 	queryUser := "INSERT INTO users (id, name, email, password, profile, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
-	_, err := repo.Conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
+	_, err := conn.Exec(queryUser, userdomain.User.ID().String(), userdomain.User.Name(), userdomain.User.Email(), userdomain.User.Password(), userdomain.User.Profile(), userdomain.User.CreatedAt().DateTime(), userdomain.User.UpdatedAt().DateTime())
 	if err != nil {
-		return err
+		return customerrors.WrapInternalServerError(err, "Failed to store user")
 	}
 
 	for _, skill := range userdomain.Skills {
 		querySkill := "INSERT INTO skills (id,tag_id,user_id,created_at,updated_at, evaluation, years) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
+		_, err = conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), userdomain.User.ID().String(), skill.CreatedAt().DateTime(), skill.UpdatedAt().DateTime(), skill.Evaluation().Value(), skill.Year().Value())
 		if err != nil {
-			return err
+			return customerrors.WrapInternalServerError(err, "Failed to store skill")
 		}
 	}
 
 	for _, career := range userdomain.Careers {
 		queryCareer := "INSERT INTO careers (id,user_id, detail, ad_from, ad_to, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-		_, err = repo.Conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
+		_, err = conn.Exec(queryCareer, career.ID().String(), career.UserID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), career.UpdatedAt().DateTime())
 		if err != nil {
-			return err
+			log.Printf("Failed to store career")
+			return customerrors.WrapInternalServerError(err, "Failed to store career")
 		}
 	}
-
 	return nil
 }
 
 func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
+
+	conn, exists := ctx.Value("Conn").(dbOperator)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
 	query := "SELECT * FROM users WHERE name = ?"
 
 	var tempUser userRequest
-	err := repo.Conn.Get(&tempUser, query, name)
+	err := conn.Get(&tempUser, query, name)
 	if err != nil {
+		log.Printf("user Repository FindByName error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("user Repository FindByName: user not found")
 			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName: user not found")
 		}
 		return nil, err
@@ -78,6 +90,11 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 }
 
 func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
 	query := "SELECT * FROM users WHERE name IN (?)"
 	var tempUsers []userRequest
 	query, args, err := sqlx.In(query, names)
@@ -85,7 +102,7 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 		return nil, err
 	}
 
-	err = repo.Conn.Select(&tempUsers, query, args...)
+	err = conn.Select(&tempUsers, query, args...)
 	if err != nil {
 		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
 	}

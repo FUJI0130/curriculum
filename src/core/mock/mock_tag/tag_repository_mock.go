@@ -93,3 +93,17 @@ func (mr *MockTagRepositoryMockRecorder) Store(ctx, tag interface{}) *gomock.Cal
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockTagRepository)(nil).Store), ctx, tag)
 }
+
+// StoreWithTransaction mocks base method.
+func (m *MockTagRepository) StoreWithTransaction(ctx context.Context, tag *tagdm.Tag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "StoreWithTransaction", ctx, tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// StoreWithTransaction indicates an expected call of StoreWithTransaction.
+func (mr *MockTagRepositoryMockRecorder) StoreWithTransaction(ctx, tag interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockTagRepository)(nil).StoreWithTransaction), ctx, tag)
+}

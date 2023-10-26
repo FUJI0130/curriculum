@@ -1,18 +1,14 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
+
+	"github.com/cockroachdb/errors"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/gin-gonic/gin"
-)
-
-const (
-	errCodeConflict            = 409
-	errCodeInternalServerError = 500
-	errCodeNotFound            = 404
-	errCodeUnprocessableEntity = 400
 )
 
 type CreateUserController struct {
@@ -33,6 +29,35 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 
 	if err := ctrl.createUserService.Exec(c, &req); err != nil {
 		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
+}
+
+func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
+	var req userapp.CreateUserRequest
+	if err := c.BindJSON(&req); err != nil {
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
+		return
+	}
+
+	txObj, ok := c.Get("Conn")
+	if !ok || txObj == nil {
+		c.Error(errors.New("transaction not found"))
+		return
+	}
+
+	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
+
+	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
+		if customErr, ok := err.(customerrors.BaseError); ok {
+			c.Status(customErr.StatusCode())
+		} else {
+			c.Status(http.StatusInternalServerError)
+		}
+
+		c.Error(customerrors.WrapUnprocessableEntityError(err, "createUserService Exec error"))
 		return
 	}
 
