@@ -56,7 +56,6 @@ func finalizeTransaction(tx *sqlx.Tx, c *gin.Context) {
 		log.Println("Committing transaction.")
 		tx.Commit()
 	}
-
 }
 
 func hasErrors(c *gin.Context) bool {

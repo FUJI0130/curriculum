@@ -35,34 +35,34 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
-// FindByName mocks base method.
-func (m *MockUserRepository) FindByName(ctx context.Context, name string) (*userdm.User, error) {
+// FindByUserName mocks base method.
+func (m *MockUserRepository) FindByUserName(ctx context.Context, name string) (*userdm.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByName", ctx, name)
+	ret := m.ctrl.Call(m, "FindByUserName", ctx, name)
 	ret0, _ := ret[0].(*userdm.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindByName indicates an expected call of FindByName.
-func (mr *MockUserRepositoryMockRecorder) FindByName(ctx, name interface{}) *gomock.Call {
+// FindByUserName indicates an expected call of FindByUserName.
+func (mr *MockUserRepositoryMockRecorder) FindByUserName(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByName", reflect.TypeOf((*MockUserRepository)(nil).FindByName), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserName", reflect.TypeOf((*MockUserRepository)(nil).FindByUserName), ctx, name)
 }
 
-// FindByNames mocks base method.
-func (m *MockUserRepository) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+// FindByUserNames mocks base method.
+func (m *MockUserRepository) FindByUserNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByNames", ctx, names)
+	ret := m.ctrl.Call(m, "FindByUserNames", ctx, names)
 	ret0, _ := ret[0].(map[string]*userdm.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// FindByNames indicates an expected call of FindByNames.
-func (mr *MockUserRepositoryMockRecorder) FindByNames(ctx, names interface{}) *gomock.Call {
+// FindByUserNames indicates an expected call of FindByUserNames.
+func (mr *MockUserRepositoryMockRecorder) FindByUserNames(ctx, names interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByNames", reflect.TypeOf((*MockUserRepository)(nil).FindByNames), ctx, names)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserNames", reflect.TypeOf((*MockUserRepository)(nil).FindByUserNames), ctx, names)
 }
 
 // Store mocks base method.
@@ -77,18 +77,4 @@ func (m *MockUserRepository) Store(ctx context.Context, userdomain *userdm.UserD
 func (mr *MockUserRepositoryMockRecorder) Store(ctx, userdomain interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockUserRepository)(nil).Store), ctx, userdomain)
-}
-
-// StoreWithTransaction mocks base method.
-func (m *MockUserRepository) StoreWithTransaction(ctx context.Context, userdomain *userdm.UserDomain) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "StoreWithTransaction", ctx, userdomain)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// StoreWithTransaction indicates an expected call of StoreWithTransaction.
-func (mr *MockUserRepositoryMockRecorder) StoreWithTransaction(ctx, userdomain interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreWithTransaction", reflect.TypeOf((*MockUserRepository)(nil).StoreWithTransaction), ctx, userdomain)
 }

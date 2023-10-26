@@ -2,7 +2,6 @@ package userdm_test
 
 import (
 	"testing"
-	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -47,10 +46,10 @@ func TestNewSkill(t *testing.T) {
 			dummyUserID, err := userdm.NewUserID()
 			assert.NoError(t, err)
 
-			dummyCreatedAt := time.Now()
-			dummyUpdatedAt := time.Now()
+			// dummyCreatedAt := time.Now()
+			// dummyUpdatedAt := time.Now()
 
-			_, err = userdm.NewSkill(dummyTagID, dummyUserID, tt.evaluation, tt.years, dummyCreatedAt, dummyUpdatedAt)
+			_, err = userdm.NewSkill(dummyTagID, dummyUserID, tt.evaluation, tt.years)
 
 			if tt.wantErr {
 				assert.NotNil(t, err)

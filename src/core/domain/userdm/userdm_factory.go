@@ -27,7 +27,7 @@ func GenWhenCreate(name string, email string, password string, profile string, s
 
 	skills := make([]*Skill, 0, len(skillParams))
 	for _, param := range skillParams {
-		skill, err := NewSkill(param.TagID, user.ID(), param.Evaluation, param.Years, user.createdAt.DateTime(), user.updatedAt.DateTime())
+		skill, err := NewSkill(param.TagID, user.ID(), param.Evaluation, param.Years)
 		if err != nil {
 			return nil, err
 		}

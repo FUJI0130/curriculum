@@ -76,3 +76,67 @@ func (c *Career) CreatedAt() sharedvo.CreatedAt {
 func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 	return c.updatedAt
 }
+
+func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
+	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
+	if err != nil {
+		return nil, err
+	}
+
+	uID, err := NewUserIDFromString(userID) // UserID reconstruction function, as per Skill example
+	if err != nil {
+		return nil, err
+	}
+
+	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	if err != nil {
+		return nil, err
+	}
+
+	careerUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Career{
+		id:        careerId,
+		detail:    detail,
+		adFrom:    adFrom,
+		adTo:      adTo,
+		userID:    uID,
+		createdAt: careerCreatedAt,
+		updatedAt: careerUpdatedAt,
+	}, nil
+}
+
+func (c *Career) MismatchedFields(other *Career) map[string]bool {
+	if other == nil {
+		return map[string]bool{"other": true}
+	}
+
+	mismatches := map[string]bool{}
+
+	if !c.id.Equal(other.id) {
+		mismatches["id"] = true
+	}
+	if c.detail != other.detail {
+		mismatches["detail"] = true
+	}
+	if !c.adFrom.Equal(other.adFrom) {
+		mismatches["adFrom"] = true
+	}
+	if !c.adTo.Equal(other.adTo) {
+		mismatches["adTo"] = true
+	}
+	if !c.userID.Equal(other.userID) {
+		mismatches["userID"] = true
+	}
+	if !c.createdAt.Equal(other.createdAt) {
+		mismatches["createdAt"] = true
+	}
+	if !c.updatedAt.Equal(other.updatedAt) {
+		mismatches["updatedAt"] = true
+	}
+
+	return mismatches
+}

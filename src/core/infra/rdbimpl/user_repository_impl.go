@@ -24,6 +24,16 @@ type userRequest struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
+type skillRequest struct {
+	ID         string    `db:"id"`
+	TagID      string    `db:"tag_id"`
+	UserID     string    `db:"user_id"`
+	CreatedAt  time.Time `db:"created_at"`
+	UpdatedAt  time.Time `db:"updated_at"`
+	Evaluation uint8     `db:"evaluation"`
+	Years      uint8     `db:"years"`
+}
+
 func NewUserRepository() userdm.UserRepository {
 	return &userRepositoryImpl{}
 }
@@ -61,7 +71,7 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 	return nil
 }
 
-func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*userdm.User, error) {
+func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string) (*userdm.User, error) {
 
 	conn, exists := ctx.Value("Conn").(dbOperator)
 
@@ -89,7 +99,7 @@ func (repo *userRepositoryImpl) FindByName(ctx context.Context, name string) (*u
 	return user, nil
 }
 
-func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
+func (repo *userRepositoryImpl) FindByUserNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 
 	if !exists {
@@ -118,4 +128,63 @@ func (repo *userRepositoryImpl) FindByNames(ctx context.Context, names []string)
 	}
 
 	return userMap, nil
+}
+
+func (repo *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (*userdm.User, error) {
+
+	conn, exists := ctx.Value("Conn").(dbOperator)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+	query := "SELECT * FROM users WHERE email = ?"
+
+	var tempUser userRequest
+	err := conn.Get(&tempUser, query, email)
+	if err != nil {
+		log.Printf("user Repository FindByEmail error: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("user Repository FindByEmail: user not found")
+			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByEmail: user not found")
+		}
+		return nil, err
+	}
+	user, err := userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (repo *userRepositoryImpl) FindSkillsByUserID(ctx context.Context, userID string) ([]userdm.Skill, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+	query := "SELECT * FROM skills WHERE user_id = ?"
+
+	var tempSkills []skillRequest
+	err := conn.Select(&tempSkills, query, userID)
+	if err != nil {
+		log.Printf("user Repository FindSkillsByUserID error: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			log.Printf("user Repository FindSkillsByUserID: skills not found for userID: %s", userID)
+			return nil, customerrors.WrapNotFoundError(err, "user Repository FindSkillsByUserID: skills not found")
+		}
+		return nil, err
+	}
+
+	var skills []userdm.Skill
+	for _, tempSkill := range tempSkills {
+		skill, err := userdm.ReconstructSkill(tempSkill.ID, tempSkill.TagID, tempSkill.UserID, tempSkill.Evaluation, tempSkill.Years, tempSkill.CreatedAt, tempSkill.UpdatedAt)
+		if err != nil {
+			return nil, customerrors.WrapInternalServerError(err, "FindSkillsByUserID error converting skillRequest to Skill")
+		}
+		skills = append(skills, *skill)
+	}
+
+	return skills, nil
 }

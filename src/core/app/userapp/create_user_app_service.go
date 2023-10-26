@@ -2,7 +2,6 @@ package userapp
 
 import (
 	"context"
-	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -30,18 +29,6 @@ type CreateUserRequest struct {
 	Skills   []SkillRequest
 	Profile  string
 	Careers  []CareersRequest
-}
-
-type SkillRequest struct {
-	TagName    string
-	Evaluation uint8
-	Years      uint8
-}
-
-type CareersRequest struct {
-	Detail string
-	AdFrom time.Time
-	AdTo   time.Time
 }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
