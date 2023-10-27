@@ -7,7 +7,7 @@ import (
 
 func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService) {
 	InitHealthController(r)
-	InitCreateUserControllerWithTransaction(r, createUserService)
+	InitCreateUserController(r, createUserService)
 }
 
 func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
@@ -15,12 +15,8 @@ func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
 	r.POST("/users", ctrl.Create)
 }
 
-func InitCreateUserControllerWithTransaction(r *gin.Engine, s *userapp.CreateUserAppService) {
-	ctrl := NewCreateUserController(s)
-	r.POST("/users", ctrl.CreateWithTransaction)
-}
 func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUserAppService) {
 	ctrl := NewUpdateUserController(UpdateuserService)
 	r.GET("/users/:userID", ctrl.Fetch)
-	r.POST("/users", ctrl.Update)
+	r.PATCH("/users", ctrl.Update)
 }

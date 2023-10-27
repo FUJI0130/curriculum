@@ -20,22 +20,6 @@ func NewCreateUserController(s *userapp.CreateUserAppService) *CreateUserControl
 }
 
 func (ctrl *CreateUserController) Create(c *gin.Context) {
-
-	var req userapp.CreateUserRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.Error(customerrors.WrapUnprocessableEntityError(err, "create_user_controller [Create] : JSON binding error"))
-		return
-	}
-
-	if err := ctrl.createUserService.Exec(c, &req); err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "User created successfully"})
-}
-
-func (ctrl *CreateUserController) CreateWithTransaction(c *gin.Context) {
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
