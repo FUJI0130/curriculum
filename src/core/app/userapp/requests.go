@@ -2,6 +2,13 @@ package userapp
 
 import "time"
 
+type UserRequest struct {
+	Name     string
+	Email    string
+	Password string
+	Profile  string
+}
+
 type SkillRequest struct {
 	TagName    string
 	Evaluation uint8

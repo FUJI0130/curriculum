@@ -34,6 +34,16 @@ type skillRequest struct {
 	Years      uint8     `db:"years"`
 }
 
+type careerRequest struct {
+	ID        string    `db:"id"`
+	UserID    string    `db:"user_id"`
+	Detail    string    `db:"detail"`
+	AdFrom    time.Time `db:"ad_from"`
+	AdTo      time.Time `db:"ad_to"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 func NewUserRepository() userdm.UserRepository {
 	return &userRepositoryImpl{}
 }
@@ -187,4 +197,77 @@ func (repo *userRepositoryImpl) FindSkillsByUserID(ctx context.Context, userID s
 	}
 
 	return skills, nil
+}
+
+func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string) (*userdm.User, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+	query := "SELECT * FROM users WHERE id = ?"
+
+	var tempUser userRequest
+	err := conn.Get(&tempUser, query, userID)
+	if err == sql.ErrNoRows {
+		return nil, customerrors.WrapNotFoundError(err, "User not found by userID")
+	} else if err != nil {
+		return nil, err
+	}
+	return userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+}
+
+func (repo *userRepositoryImpl) FindCareersByUserID(ctx context.Context, userID string) ([]userdm.Career, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+	query := "SELECT * FROM careers WHERE user_id = ?"
+
+	var tempCareers []careerRequest
+	err := conn.Select(&tempCareers, query, userID)
+	if err == sql.ErrNoRows {
+		return nil, customerrors.WrapNotFoundError(err, "Careers not found by userID")
+	} else if err != nil {
+		return nil, err
+	}
+
+	var careers []userdm.Career
+	for _, tempCareer := range tempCareers {
+		career, err := userdm.ReconstructCareer(tempCareer.ID, tempCareer.Detail, tempCareer.AdFrom, tempCareer.AdTo, tempCareer.UserID, tempCareer.CreatedAt, tempCareer.UpdatedAt)
+		if err != nil {
+			return nil, customerrors.WrapInternalServerError(err, "Error converting careerRequest to Career")
+		}
+		careers = append(careers, *career)
+	}
+	return careers, nil
+}
+
+func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *userdm.User) error {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return errors.New("no transaction found in context")
+	}
+	query := "UPDATE users SET name = ?, email = ?, password = ?, profile = ?, updated_at = ? WHERE id = ?"
+	_, err := conn.Exec(query, user.Name(), user.Email(), user.Password(), user.Profile(), time.Now(), user.ID().String())
+	return err
+}
+
+func (repo *userRepositoryImpl) UpdateSkill(ctx context.Context, skill *userdm.Skill) error {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return errors.New("no transaction found in context")
+	}
+	query := "UPDATE skills SET tag_id = ?, evaluation = ?, years = ?, updated_at = ? WHERE id = ?"
+	_, err := conn.Exec(query, skill.TagID().String(), skill.Evaluation().Value(), skill.Year().Value(), time.Now(), skill.ID().String())
+	return err
+}
+
+func (repo *userRepositoryImpl) UpdateCareer(ctx context.Context, career *userdm.Career) error {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return errors.New("no transaction found in context")
+	}
+	query := "UPDATE careers SET detail = ?, ad_from = ?, ad_to = ?, updated_at = ? WHERE id = ?"
+	_, err := conn.Exec(query, career.Detail(), career.AdFrom(), career.AdTo(), time.Now(), career.ID().String())
+	return err
 }

@@ -19,3 +19,8 @@ func InitCreateUserControllerWithTransaction(r *gin.Engine, s *userapp.CreateUse
 	ctrl := NewCreateUserController(s)
 	r.POST("/users", ctrl.CreateWithTransaction)
 }
+func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUserAppService) {
+	ctrl := NewUpdateUserController(UpdateuserService)
+	r.GET("/users/:userID", ctrl.Fetch)
+	r.POST("/users", ctrl.Update)
+}

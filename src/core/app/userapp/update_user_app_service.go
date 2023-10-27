@@ -22,18 +22,15 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 }
 
 type UpdateUserRequest struct {
-	Name     string
-	Email    string
-	Password string
+	UserInfo UserRequest
 	Skills   []SkillRequest
-	Profile  string
 	Careers  []CareersRequest
 }
 
-func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserRequest) error {
-	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.Email)
+func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequest) error {
+	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.UserInfo.Email)
 	if err != nil {
-		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.Email)
+		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UserInfo.Email)
 	}
 
 	if err = app.updateUserInformation(ctx, userDataOnDB, req); err != nil {
@@ -54,10 +51,10 @@ func (app *UpdateUserAppService) Exec(ctx context.Context, req *UpdateUserReques
 func (app *UpdateUserAppService) updateUserInformation(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
 	updatedUser, err := userdm.ReconstructUser(
 		userDataOnDB.ID().String(),
-		req.Name,
-		req.Email,
-		req.Password,
-		req.Profile,
+		req.UserInfo.Name,
+		req.UserInfo.Email,
+		req.UserInfo.Password,
+		req.UserInfo.Profile,
 		userDataOnDB.CreatedAt().DateTime(),
 	)
 	if err != nil {
@@ -258,4 +255,23 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB
 		}
 	}
 	return err
+}
+
+func (app *UpdateUserAppService) ExecFetch(ctx context.Context, userID string) (*userdm.User, []userdm.Skill, []userdm.Career, error) {
+	userDataOnDB, err := app.userRepo.FindByUserID(ctx, userID)
+	if err != nil {
+		return nil, nil, nil, customerrors.NewNotFoundErrorf("Update_user_app_service  ExecFetch User Not Exist  userID is : %s", userID)
+	}
+
+	skills, err := app.userRepo.FindSkillsByUserID(ctx, userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	careers, err := app.userRepo.FindCareersByUserID(ctx, userID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return userDataOnDB, skills, careers, nil
 }
