@@ -5,9 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService) {
+func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService, updateUserService *userapp.UpdateUserAppService) {
 	InitHealthController(r)
 	InitCreateUserController(r, createUserService)
+	InitUpdateUserController(r, updateUserService)
 }
 
 func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
