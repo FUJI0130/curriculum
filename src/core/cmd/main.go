@@ -27,12 +27,13 @@ func main() {
 	tagRepo := rdbimpl.NewTagRepository()
 	existService := userdm.NewExistByNameDomainService(userRepo)
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
+	updateUserService := userapp.NewUpdateUserAppService(userRepo, tagRepo)
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
 	r.Use(middleware.TransactionHandler(db))
 
-	controllers.InitControllers(r, createUserService)
+	controllers.InitControllers(r, createUserService, updateUserService)
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
 }

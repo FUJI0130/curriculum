@@ -2,6 +2,7 @@ package userapp
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -22,39 +23,45 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 }
 
 type UpdateUserRequest struct {
-	UserInfo UserRequest
-	Skills   []SkillRequest
-	Careers  []CareersRequest
+	Command    string `json:"command"`
+	UserID     string `json:"userID"`
+	UpdateData struct {
+		UserInfo UserRequest      `json:"UserInfo"`
+		Skills   []SkillRequest   `json:"Skills"`
+		Careers  []CareersRequest `json:"Careers"`
+	} `json:"updateData"`
 }
 
 func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequest) error {
-	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.UserInfo.Email)
+	log.Printf("req is : %v\n", req)
+	log.Printf("req.UserInfo.Email is : %s\n", req.UpdateData.UserInfo.Email)
+	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.UpdateData.UserInfo.Email)
 	if err != nil {
-		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UserInfo.Email)
+		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UpdateData.UserInfo.Email)
 	}
-
-	if err = app.updateUserInformation(ctx, userDataOnDB, req); err != nil {
+	log.Printf("log checkpoint1")
+	if err = app.updateUsersInfo(ctx, userDataOnDB, req); err != nil {
 		return err
 	}
-
-	if err = app.updateSkills(ctx, userDataOnDB, req.Skills); err != nil {
+	log.Print("log checkpoint2")
+	if err = app.updateSkillsInfo(ctx, userDataOnDB, req.UpdateData.Skills); err != nil {
 		return err
 	}
-
-	if err = app.updateCareers(ctx, userDataOnDB, req.Careers); err != nil {
+	log.Print("log checkpoint3")
+	if err = app.updateCareersInfo(ctx, userDataOnDB, req.UpdateData.Careers); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (app *UpdateUserAppService) updateUserInformation(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
+func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
 	updatedUser, err := userdm.ReconstructUser(
 		userDataOnDB.ID().String(),
-		req.UserInfo.Name,
-		req.UserInfo.Email,
-		req.UserInfo.Password,
-		req.UserInfo.Profile,
+		req.UpdateData.UserInfo.Name,
+		req.UpdateData.UserInfo.Email,
+		req.UpdateData.UserInfo.Password,
+		req.UpdateData.UserInfo.Profile,
 		userDataOnDB.CreatedAt().DateTime(),
 	)
 	if err != nil {
@@ -69,7 +76,7 @@ func (app *UpdateUserAppService) updateUserInformation(ctx context.Context, user
 	return app.userRepo.UpdateUser(ctx, updatedUser)
 }
 
-func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequest) error {
+func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequest) error {
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
 	for _, s := range skillsReq {
@@ -105,6 +112,16 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 
 	//TODO: FindSkillsByUserIDの結果を格納するSkillsのValue Objectが必要
 	skills, err := app.userRepo.FindSkillsByUserID(ctx, userDataOnDB.ID().String())
+	if err != nil {
+		log.Printf("Error fetching skills by userID: %s. Error: %v", userDataOnDB.ID().String(), err)
+		return err
+	}
+
+	// Log all skills from DB
+	log.Printf("Skills from DB:")
+	for _, skill := range skills {
+		log.Printf("SkillID: %s, TagID: %s, UserID: %s, Evaluation: %d, Years: %d", skill.ID().String(), skill.TagID().String(), skill.UserID().String(), skill.Evaluation().Value(), skill.Year().Value())
+	}
 
 	skillsParams := make([]userdm.SkillParam, len(skillsReq))
 	for i, s := range skillsReq {
@@ -114,6 +131,11 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 			Evaluation: s.Evaluation,
 			Years:      s.Years,
 		}
+	}
+
+	log.Printf("Skills from Request:")
+	for _, s := range skillsParams {
+		log.Printf("TagID: %s, TagName: %s, Evaluation: %d, Years: %d", s.TagID.String(), s.TagName, s.Evaluation, s.Years)
 	}
 
 	// DBの既存のSkillテーブルのデータと比較して、変更があった場合は変更を行う
@@ -129,22 +151,21 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 				}
 				diffs := skill.MismatchedFields(updateSkill)
 
-				// 変更があった場合、Skillオブジェクトを再構築して更新
 				if len(diffs) > 0 {
-					// 既存のスキルの値をデフォルトとして使用
+					log.Printf("Skill data is difference")
 					newTagID := skill.TagID().String()
-					newEvaluation := skill.Evaluation().Value() // 前提としてEvaluation()がuint8を返すか、Value()メソッドを持っていることを想定
-					newYears := skill.Year().Value()            // 前提としてYears()がuint8を返すか、Value()メソッドを持っていることを想定
+					newEvaluation := skill.Evaluation().Value()
+					newYears := skill.Year().Value()
 
-					// 変更があった場合のみ新しい値を使用
-					if _, exists := diffs["Evaluation"]; exists {
+					if _, exists := diffs["evaluation"]; exists {
+						log.Printf("evaluation is difference")
 						newEvaluation = s.Evaluation
 					}
-					if _, exists := diffs["Years"]; exists {
+					if _, exists := diffs["years"]; exists {
+						log.Printf("years is difference")
 						newYears = s.Years
 					}
 
-					// Skillオブジェクトを再構築
 					resultSkill, err := userdm.ReconstructSkill(
 						skill.ID().String(),
 						newTagID,
@@ -158,7 +179,6 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 						return err
 					}
 
-					// データベースに更新を適用
 					if err = app.userRepo.UpdateSkill(ctx, resultSkill); err != nil {
 						return err
 					}
@@ -167,35 +187,63 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 			}
 		}
 		if !found {
-			return customerrors.NewNotFoundErrorf("Skill with TagID %s not found   userEmail is : %s ", skill.TagID().String(), userDataOnDB.Email().String())
+			return err
 		}
 	}
 	return err
 }
 
-func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequest) error {
+func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequest) error {
 	careers, err := app.userRepo.FindCareersByUserID(ctx, userDataOnDB.ID().String())
+	if err != nil {
+		return err
+	}
+
+	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return err
 	}
 
 	careersParams := make([]userdm.CareerParam, len(careersReq))
 	for i, c := range careersReq {
+		log.Printf("AdFrom is : %s\n", c.AdFrom)
+		log.Printf("AdTo is : %s\n", c.AdTo)
+
+		adFromInJST := c.AdFrom.In(jst)
+		adToInJST := c.AdTo.In(jst)
 		careersParams[i] = userdm.CareerParam{
 			Detail: c.Detail,
-			AdFrom: c.AdFrom,
-			AdTo:   c.AdTo,
+			AdFrom: adFromInJST,
+			AdTo:   adToInJST,
 		}
 	}
 
-	//DBの既存のCareerテーブルのデータと比較して、変更があった場合は変更を行う
 	for _, career := range careers {
 		found := false
 		for _, c := range careersParams {
-			if career.Detail() == c.Detail && career.AdFrom() == c.AdFrom && career.AdTo() == c.AdTo {
+			careerAdFrom := toUTCAndTruncate(career.AdFrom())
+			careerAdTo := toUTCAndTruncate(career.AdTo())
+			cAdFrom := toUTCAndTruncate(c.AdFrom)
+			cAdTo := toUTCAndTruncate(c.AdTo)
+
+			log.Printf("DB career adFrom: %s, request career adFrom: %s", careerAdFrom, cAdFrom)
+			log.Printf("DB career adTo: %s, request career adTo: %s", careerAdTo, cAdTo)
+
+			if careerAdFrom == cAdFrom {
+				log.Printf("AdFrom is same")
+			} else {
+				log.Printf("AdFrom is not same career.AdFrom is : %s, c.AdFrom is : %s", careerAdFrom, cAdFrom)
+			}
+			if careerAdTo == cAdTo {
+				log.Printf("AdTo is same")
+			} else {
+				log.Printf("AdTo is not same career.AdTo is : %s, c.AdTo is : %s", careerAdTo, cAdTo)
+			}
+
+			if career.Detail() != c.Detail || career.AdFrom() != c.AdFrom || career.AdTo() != c.AdTo {
 				found = true
 
-				// Careerオブジェクトを再構築
+				log.Printf("career checkpoint2")
 				updateCareer, err := userdm.ReconstructCareer(
 					career.ID().String(),
 					c.Detail,
@@ -211,9 +259,10 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB
 
 				diffs := career.MismatchedFields(updateCareer)
 
+				log.Printf("career checkpoint3")
 				if len(diffs) > 0 {
 
-					// 変更があった場合のみ新しい値を使用
+					log.Printf("career checkpoint4")
 					newDetail := career.Detail()
 					newAdFrom := career.AdFrom()
 					newAdTo := career.AdTo()
@@ -228,7 +277,6 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB
 						newAdTo = c.AdTo
 					}
 
-					// Careerオブジェクトを再構築して変更を反映
 					finalCareer, err := userdm.ReconstructCareer(
 						career.ID().String(),
 						newDetail,
@@ -242,6 +290,7 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB
 						return err
 					}
 
+					log.Printf("career checkpoint4")
 					// データベースに更新を適用
 					if err = app.userRepo.UpdateCareer(ctx, finalCareer); err != nil {
 						return err
@@ -251,16 +300,20 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB
 			}
 		}
 		if !found {
-			return customerrors.NewNotFoundErrorf("Career with UserID %s not found. userEmail is: %s", userDataOnDB.ID().String(), userDataOnDB.Email().String())
+			// return customerrors.NewNotFoundErrorf("Career with UserID %s not found. userEmail is: %s", userDataOnDB.ID().String(), userDataOnDB.Email().String())
+			return err
 		}
 	}
 	return err
+}
+func toUTCAndTruncate(t time.Time) time.Time {
+	return t.UTC().Truncate(time.Second)
 }
 
 func (app *UpdateUserAppService) ExecFetch(ctx context.Context, userID string) (*userdm.User, []userdm.Skill, []userdm.Career, error) {
 	userDataOnDB, err := app.userRepo.FindByUserID(ctx, userID)
 	if err != nil {
-		return nil, nil, nil, customerrors.NewNotFoundErrorf("Update_user_app_service  ExecFetch User Not Exist  userID is : %s", userID)
+		return nil, nil, nil, err
 	}
 
 	skills, err := app.userRepo.FindSkillsByUserID(ctx, userID)

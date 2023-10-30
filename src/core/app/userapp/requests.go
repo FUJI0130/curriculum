@@ -3,20 +3,20 @@ package userapp
 import "time"
 
 type UserRequest struct {
-	Name     string
-	Email    string
-	Password string
-	Profile  string
+	Name     string `json:"Name"`
+	Email    string `json:"Email"`
+	Password string `json:"Password"`
+	Profile  string `json:"Profile"`
 }
 
 type SkillRequest struct {
-	TagName    string
-	Evaluation uint8
-	Years      uint8
+	TagName    string `json:"TagName"`
+	Evaluation uint8  `json:"Evaluation"`
+	Years      uint8  `json:"Years"`
 }
 
 type CareersRequest struct {
-	Detail string
-	AdFrom time.Time
-	AdTo   time.Time
+	Detail string    `json:"Detail"`
+	AdFrom time.Time `json:"AdFrom"`
+	AdTo   time.Time `json:"AdTo"`
 }

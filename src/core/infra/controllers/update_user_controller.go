@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
@@ -21,6 +22,7 @@ func NewUpdateUserController(s *userapp.UpdateUserAppService) *UpdateUserControl
 func (ctrl UpdateUserController) Update(c *gin.Context) {
 	var req userapp.UpdateUserRequest
 	if err := c.BindJSON(&req); err != nil {
+		log.Printf("Error while binding JSON: %v", err)
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
 		return
 	}
@@ -48,12 +50,6 @@ func (ctrl UpdateUserController) Update(c *gin.Context) {
 }
 
 func (ctrl UpdateUserController) Fetch(c *gin.Context) {
-	var req userapp.UpdateUserRequest
-	if err := c.BindJSON(&req); err != nil {
-		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
-		return
-	}
-
 	txObj, ok := c.Get("Conn")
 	if !ok || txObj == nil {
 		c.Error(errors.New("transaction not found"))

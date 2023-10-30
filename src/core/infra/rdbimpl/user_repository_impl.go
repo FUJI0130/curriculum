@@ -47,6 +47,7 @@ type careerRequest struct {
 func NewUserRepository() userdm.UserRepository {
 	return &userRepositoryImpl{}
 }
+
 func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.UserDomain) error {
 
 	conn, exists := ctx.Value("Conn").(dbOperator)
