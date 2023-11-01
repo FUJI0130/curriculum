@@ -26,9 +26,9 @@ type UpdateUserRequest struct {
 	Command    string `json:"command"`
 	UserID     string `json:"userID"`
 	UpdateData struct {
-		UserInfo UserRequest      `json:"UserInfo"`
-		Skills   []SkillRequest   `json:"Skills"`
-		Careers  []CareersRequest `json:"Careers"`
+		UserInfo UserRequestUpdate      `json:"UserInfo"`
+		Skills   []SkillRequestUpdate   `json:"Skills"`
+		Careers  []CareersRequestUpdate `json:"Careers"`
 	} `json:"updateData"`
 }
 
@@ -76,7 +76,7 @@ func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOn
 	return app.userRepo.UpdateUser(ctx, updatedUser)
 }
 
-func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequest) error {
+func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequestUpdate) error {
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
 	for _, s := range skillsReq {
@@ -193,7 +193,7 @@ func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataO
 	return err
 }
 
-func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequest) error {
+func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequestUpdate) error {
 	careers, err := app.userRepo.FindCareersByUserID(ctx, userDataOnDB.ID().String())
 	if err != nil {
 		return err

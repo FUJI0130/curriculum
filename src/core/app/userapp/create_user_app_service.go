@@ -26,9 +26,9 @@ type CreateUserRequest struct {
 	Name     string
 	Email    string
 	Password string
-	Skills   []SkillRequest
+	Skills   []SkillRequestCreate
 	Profile  string
-	Careers  []CareersRequest
+	Careers  []CareersRequestCreate
 }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
