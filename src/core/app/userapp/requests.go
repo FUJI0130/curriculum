@@ -3,6 +3,7 @@ package userapp
 import "time"
 
 type UserRequestUpdate struct {
+	ID       string `json:"ID"`
 	Name     string `json:"Name"`
 	Email    string `json:"Email"`
 	Password string `json:"Password"`

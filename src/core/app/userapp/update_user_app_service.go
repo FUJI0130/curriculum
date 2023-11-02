@@ -35,7 +35,7 @@ type UpdateUserRequest struct {
 func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequest) error {
 	log.Printf("req is : %v\n", req)
 	log.Printf("req.UserInfo.Email is : %s\n", req.UpdateData.UserInfo.Email)
-	userDataOnDB, err := app.userRepo.FindByEmail(ctx, req.UpdateData.UserInfo.Email)
+	userDataOnDB, err := app.userRepo.FindByUserID(ctx, req.UpdateData.UserInfo.ID)
 	if err != nil {
 		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UpdateData.UserInfo.Email)
 	}

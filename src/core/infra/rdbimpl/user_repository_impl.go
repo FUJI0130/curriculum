@@ -201,6 +201,7 @@ func (repo *userRepositoryImpl) FindSkillsByUserID(ctx context.Context, userID s
 }
 
 func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string) (*userdm.User, error) {
+	log.Printf("FindUserByUserID: userID: %s", userID)
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
@@ -209,7 +210,9 @@ func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string)
 
 	var tempUser userRequest
 	err := conn.Get(&tempUser, query, userID)
+	log.Printf("FindUserByUserID: tempUser: %v", tempUser)
 	if err == sql.ErrNoRows {
+		log.Printf("sql.ErrNoRows")
 		return nil, customerrors.WrapNotFoundError(err, "User not found by userID")
 	} else if err != nil {
 		return nil, err
