@@ -53,7 +53,7 @@ func TestReconstruct(t *testing.T) {
 	}
 }
 
-func TestGenWhenCreate(t *testing.T) {
+func TestGenWhenCreateUserdm(t *testing.T) {
 
 	tests := []struct {
 		title    string
@@ -81,7 +81,7 @@ func TestGenWhenCreate(t *testing.T) {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
-			_, err := GenWhenCreate("TestName", tt.email, tt.password, tt.profile, []SkillParam{}, []CareerParam{})
+			_, err := GenWhenCreateUserdm("TestName", tt.email, tt.password, tt.profile, []SkillParam{}, []CareerParam{})
 
 			if tt.wantErr {
 				assert.Error(t, err)

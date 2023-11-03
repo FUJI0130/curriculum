@@ -44,7 +44,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		return err
 	}
 	log.Print("log checkpoint2")
-	if err = app.updateSkillsInfo(ctx, userDataOnDB, req.UpdateData.Skills); err != nil {
+	if err = app.UpdateSkillsInfo(ctx, userDataOnDB, req.UpdateData.Skills); err != nil {
 		return err
 	}
 	log.Print("log checkpoint3")
@@ -56,7 +56,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 }
 
 func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
-	updatedUser, err := userdm.ReconstructUser(
+	updatedUser, err := userdm.GenWhenUpdateUser(
 		userDataOnDB.ID().String(),
 		req.UpdateData.UserInfo.Name,
 		req.UpdateData.UserInfo.Email,
@@ -76,7 +76,7 @@ func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOn
 	return app.userRepo.UpdateUser(ctx, updatedUser)
 }
 
-func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequestUpdate) error {
+func (app *UpdateUserAppService) UpdateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequestUpdate) error {
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
 	for _, s := range skillsReq {
@@ -110,202 +110,128 @@ func (app *UpdateUserAppService) updateSkillsInfo(ctx context.Context, userDataO
 		}
 	}
 
-	//TODO: FindSkillsByUserIDの結果を格納するSkillsのValue Objectが必要
 	skills, err := app.userRepo.FindSkillsByUserID(ctx, userDataOnDB.ID().String())
 	if err != nil {
-		log.Printf("Error fetching skills by userID: %s. Error: %v", userDataOnDB.ID().String(), err)
 		return err
 	}
 
-	// Log all skills from DB
-	log.Printf("Skills from DB:")
+	existingSkillsMap := make(map[string]*userdm.Skill)
 	for _, skill := range skills {
-		log.Printf("SkillID: %s, TagID: %s, UserID: %s, Evaluation: %d, Years: %d", skill.ID().String(), skill.TagID().String(), skill.UserID().String(), skill.Evaluation().Value(), skill.Year().Value())
+		log.Printf("Processing skill with ID: %s and TagID: %s", skill.ID().String(), skill.TagID().String()) // ← ログ追加: 現在のスキルのIDとTagIDを出力
+		skillCopy := skill
+		existingSkillsMap[skill.TagID().String()] = &skillCopy
 	}
 
-	skillsParams := make([]userdm.SkillParam, len(skillsReq))
-	for i, s := range skillsReq {
-		skillsParams[i] = userdm.SkillParam{
-			TagID:      tagsMap[s.TagName].ID(),
-			TagName:    s.TagName,
-			Evaluation: s.Evaluation,
-			Years:      s.Years,
-		}
+	// ログ追加: existingSkillsMapの全体的なサイズと中身を出力
+	log.Printf("Size of existingSkillsMap: %d", len(existingSkillsMap))
+	for tagID, skill := range existingSkillsMap {
+		log.Printf("Key (TagID): %s, Skill ID: %s", tagID, skill.ID().String())
 	}
 
-	log.Printf("Skills from Request:")
-	for _, s := range skillsParams {
-		log.Printf("TagID: %s, TagName: %s, Evaluation: %d, Years: %d", s.TagID.String(), s.TagName, s.Evaluation, s.Years)
-	}
+	for _, s := range skillsReq {
+		tagID := tagsMap[s.TagName].ID().String()
+		log.Printf("Processing skill with tagID: %s", tagID) // ← ログ追加
 
-	// DBの既存のSkillテーブルのデータと比較して、変更があった場合は変更を行う
-	for _, skill := range skills {
-		found := false
-		for _, s := range skillsParams {
-			if skill.TagID().String() == s.TagID.String() {
-				found = true
+		if skill, exists := existingSkillsMap[tagID]; exists {
+			log.Println("Updating existing skill") // ← ログ追加
+			log.Printf("GenWhenUpdateSkill Params:\nSkillID: %s\nTagID: %s\nUserID: %s\nEvaluation: %d\nYears: %d\nCreatedAt: %v\nUpdatedAt: %v\n",
+				skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
 
-				updateSkill, err := userdm.ReconstructSkill(skill.ID().String(), skill.TagID().String(), skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
-				if err != nil {
-					return err
-				}
-				diffs := skill.MismatchedFields(updateSkill)
+			StoreSkill, err := userdm.GenWhenUpdateSkill(skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
+			log.Println("after GenWhenUpdateSkill")
+			if err != nil {
+				return err
+			}
+			if err = app.userRepo.StoreSkill(ctx, StoreSkill); err != nil {
+				return err
+			}
+			log.Println("after StoreSkill")
+		} else {
+			log.Println("Creating new skill") // ← ログ追加
+			// Handle scenario where a new skill is present in the request but not in the DB
+			newSkill, err := userdm.GenWhenCreateSkill(
+				tagID,
+				userDataOnDB.ID().String(),
+				s.Evaluation,
+				s.Years,
+				time.Now(), // Current time as createdAt
+				time.Now(), // Current time as updatedAt
+			)
+			if err != nil {
+				return err
+			}
 
-				if len(diffs) > 0 {
-					log.Printf("Skill data is difference")
-					newTagID := skill.TagID().String()
-					newEvaluation := skill.Evaluation().Value()
-					newYears := skill.Year().Value()
-
-					if _, exists := diffs["evaluation"]; exists {
-						log.Printf("evaluation is difference")
-						newEvaluation = s.Evaluation
-					}
-					if _, exists := diffs["years"]; exists {
-						log.Printf("years is difference")
-						newYears = s.Years
-					}
-
-					resultSkill, err := userdm.ReconstructSkill(
-						skill.ID().String(),
-						newTagID,
-						skill.UserID().String(),
-						newEvaluation,
-						newYears,
-						skill.CreatedAt().DateTime(),
-						skill.UpdatedAt().DateTime(),
-					)
-					if err != nil {
-						return err
-					}
-
-					if err = app.userRepo.UpdateSkill(ctx, resultSkill); err != nil {
-						return err
-					}
-				}
-				break
+			// Assuming you have a method to store a new skill in the userRepo
+			if err = app.userRepo.StoreSkill(ctx, newSkill); err != nil {
+				return err
 			}
 		}
-		if !found {
-			return err
-		}
 	}
-	return err
+
+	return nil
 }
 
 func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequestUpdate) error {
-	careers, err := app.userRepo.FindCareersByUserID(ctx, userDataOnDB.ID().String())
-	if err != nil {
-		return err
-	}
-
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return err
 	}
 
-	careersParams := make([]userdm.CareerParam, len(careersReq))
-	for i, c := range careersReq {
-		log.Printf("AdFrom is : %s\n", c.AdFrom)
-		log.Printf("AdTo is : %s\n", c.AdTo)
+	// ユーザーIDに基づいて既存のキャリア情報を取得
+	existingCareers, err := app.userRepo.FindCareersByUserID(ctx, userDataOnDB.ID().String())
+	if err != nil {
+		return err
+	}
 
+	existingCareersMap := make(map[string]*userdm.Career)
+	for _, career := range existingCareers {
+		careerCopy := career
+		existingCareersMap[career.ID().String()] = &careerCopy
+	}
+
+	for _, c := range careersReq {
 		adFromInJST := c.AdFrom.In(jst)
 		adToInJST := c.AdTo.In(jst)
-		careersParams[i] = userdm.CareerParam{
-			Detail: c.Detail,
-			AdFrom: adFromInJST,
-			AdTo:   adToInJST,
+
+		if career, exists := existingCareersMap[c.ID]; exists {
+			// 既存のキャリア情報がリクエストに存在する場合、内容を置き換え
+			updatedCareer, err := userdm.GenWhenUpdateCareer(
+				career.ID().String(),
+				c.Detail,
+				adFromInJST,
+				adToInJST,
+				userDataOnDB.ID().String(),
+				career.CreatedAt().DateTime(),
+				time.Now(), // Current time as updatedAt
+			)
+			if err != nil {
+				return err
+			}
+			if err = app.userRepo.StoreCareer(ctx, updatedCareer); err != nil {
+				return err
+			}
+		} else {
+			// リクエストに新しいキャリア情報があれば、それを追加
+			newCareer, err := userdm.GenWhenCreateCareer(
+				c.Detail,
+				adFromInJST,
+				adToInJST,
+				userDataOnDB.ID().String(),
+				time.Now(), // Current time as createdAt
+				time.Now(), // Current time as updatedAt
+			)
+			if err != nil {
+				return err
+			}
+			if err = app.userRepo.StoreCareer(ctx, newCareer); err != nil {
+				return err
+			}
 		}
 	}
 
-	for _, career := range careers {
-		found := false
-		for _, c := range careersParams {
-			careerAdFrom := toUTCAndTruncate(career.AdFrom())
-			careerAdTo := toUTCAndTruncate(career.AdTo())
-			cAdFrom := toUTCAndTruncate(c.AdFrom)
-			cAdTo := toUTCAndTruncate(c.AdTo)
-
-			log.Printf("DB career adFrom: %s, request career adFrom: %s", careerAdFrom, cAdFrom)
-			log.Printf("DB career adTo: %s, request career adTo: %s", careerAdTo, cAdTo)
-
-			if careerAdFrom == cAdFrom {
-				log.Printf("AdFrom is same")
-			} else {
-				log.Printf("AdFrom is not same career.AdFrom is : %s, c.AdFrom is : %s", careerAdFrom, cAdFrom)
-			}
-			if careerAdTo == cAdTo {
-				log.Printf("AdTo is same")
-			} else {
-				log.Printf("AdTo is not same career.AdTo is : %s, c.AdTo is : %s", careerAdTo, cAdTo)
-			}
-
-			if career.Detail() != c.Detail || career.AdFrom() != c.AdFrom || career.AdTo() != c.AdTo {
-				found = true
-
-				log.Printf("career checkpoint2")
-				updateCareer, err := userdm.ReconstructCareer(
-					career.ID().String(),
-					c.Detail,
-					c.AdFrom,
-					c.AdTo,
-					career.UserID().String(),
-					career.CreatedAt().DateTime(),
-					career.UpdatedAt().DateTime(),
-				)
-				if err != nil {
-					return err
-				}
-
-				diffs := career.MismatchedFields(updateCareer)
-
-				log.Printf("career checkpoint3")
-				if len(diffs) > 0 {
-
-					log.Printf("career checkpoint4")
-					newDetail := career.Detail()
-					newAdFrom := career.AdFrom()
-					newAdTo := career.AdTo()
-
-					if _, exists := diffs["detail"]; exists {
-						newDetail = c.Detail
-					}
-					if _, exists := diffs["adFrom"]; exists {
-						newAdFrom = c.AdFrom
-					}
-					if _, exists := diffs["adTo"]; exists {
-						newAdTo = c.AdTo
-					}
-
-					finalCareer, err := userdm.ReconstructCareer(
-						career.ID().String(),
-						newDetail,
-						newAdFrom,
-						newAdTo,
-						career.UserID().String(),
-						career.CreatedAt().DateTime(),
-						career.UpdatedAt().DateTime(),
-					)
-					if err != nil {
-						return err
-					}
-
-					log.Printf("career checkpoint4")
-					// データベースに更新を適用
-					if err = app.userRepo.UpdateCareer(ctx, finalCareer); err != nil {
-						return err
-					}
-				}
-				break
-			}
-		}
-		if !found {
-			// return customerrors.NewNotFoundErrorf("Career with UserID %s not found. userEmail is: %s", userDataOnDB.ID().String(), userDataOnDB.Email().String())
-			return err
-		}
-	}
-	return err
+	return nil
 }
+
 func toUTCAndTruncate(t time.Time) time.Time {
 	return t.UTC().Truncate(time.Second)
 }

@@ -15,6 +15,6 @@ type UserRepository interface {
 	FindSkillsByUserID(ctx context.Context, userID string) ([]Skill, error)   // 新しいメソッド
 	FindCareersByUserID(ctx context.Context, userID string) ([]Career, error) // 新しいメソッド
 	UpdateUser(ctx context.Context, user *User) error
-	UpdateSkill(ctx context.Context, skill *Skill) error    // 新しいメソッド
-	UpdateCareer(ctx context.Context, career *Career) error // 新しいメソッド
+	StoreSkill(ctx context.Context, skill *Skill) error    // 新しいメソッド
+	StoreCareer(ctx context.Context, career *Career) error // 新しいメソッド
 }

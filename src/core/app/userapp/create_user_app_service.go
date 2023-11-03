@@ -94,7 +94,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 	}
 
-	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
+	userdomain, err := userdm.GenWhenCreateUserdm(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
 		return err
 	}

@@ -139,32 +139,32 @@ func (mr *MockUserRepositoryMockRecorder) Store(ctx, userdomain interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockUserRepository)(nil).Store), ctx, userdomain)
 }
 
-// UpdateCareer mocks base method.
-func (m *MockUserRepository) UpdateCareer(ctx context.Context, career *userdm.Career) error {
+// StoreCareer mocks base method.
+func (m *MockUserRepository) StoreCareer(ctx context.Context, career *userdm.Career) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateCareer", ctx, career)
+	ret := m.ctrl.Call(m, "StoreCareer", ctx, career)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateCareer indicates an expected call of UpdateCareer.
-func (mr *MockUserRepositoryMockRecorder) UpdateCareer(ctx, career interface{}) *gomock.Call {
+// StoreCareer indicates an expected call of StoreCareer.
+func (mr *MockUserRepositoryMockRecorder) StoreCareer(ctx, career interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCareer", reflect.TypeOf((*MockUserRepository)(nil).UpdateCareer), ctx, career)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreCareer", reflect.TypeOf((*MockUserRepository)(nil).StoreCareer), ctx, career)
 }
 
-// UpdateSkill mocks base method.
-func (m *MockUserRepository) UpdateSkill(ctx context.Context, skill *userdm.Skill) error {
+// StoreSkill mocks base method.
+func (m *MockUserRepository) StoreSkill(ctx context.Context, skill *userdm.Skill) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateSkill", ctx, skill)
+	ret := m.ctrl.Call(m, "StoreSkill", ctx, skill)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateSkill indicates an expected call of UpdateSkill.
-func (mr *MockUserRepositoryMockRecorder) UpdateSkill(ctx, skill interface{}) *gomock.Call {
+// StoreSkill indicates an expected call of StoreSkill.
+func (mr *MockUserRepositoryMockRecorder) StoreSkill(ctx, skill interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateSkill", reflect.TypeOf((*MockUserRepository)(nil).UpdateSkill), ctx, skill)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StoreSkill", reflect.TypeOf((*MockUserRepository)(nil).StoreSkill), ctx, skill)
 }
 
 // UpdateUser mocks base method.

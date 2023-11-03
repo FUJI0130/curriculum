@@ -256,7 +256,7 @@ func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *userdm.Use
 	return err
 }
 
-func (repo *userRepositoryImpl) UpdateSkill(ctx context.Context, skill *userdm.Skill) error {
+func (repo *userRepositoryImpl) StoreSkill(ctx context.Context, skill *userdm.Skill) error {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
@@ -266,7 +266,7 @@ func (repo *userRepositoryImpl) UpdateSkill(ctx context.Context, skill *userdm.S
 	return err
 }
 
-func (repo *userRepositoryImpl) UpdateCareer(ctx context.Context, career *userdm.Career) error {
+func (repo *userRepositoryImpl) StoreCareer(ctx context.Context, career *userdm.Career) error {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
