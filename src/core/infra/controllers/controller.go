@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/gin-gonic/gin"
 )
@@ -20,4 +21,9 @@ func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUs
 	ctrl := NewUpdateUserController(UpdateuserService)
 	r.GET("/users/:userID", ctrl.Fetch)
 	r.PATCH("/users", ctrl.Update)
+}
+
+func InitMentorController(r *gin.Engine, getMentorListAppService *mentorapp.GetMentorListAppService) {
+	ctrl := NewMentorController(getMentorListAppService)
+	r.GET("/mentors", ctrl.Fetch)
 }
