@@ -1,6 +1,7 @@
 package userdm
 
 import (
+	"errors"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -101,6 +102,10 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 		return nil, err
 	}
 
+	if detail == "" {
+		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
+	}
+
 	uID, err := NewUserIDFromString(userID) // UserID reconstruction function, as per Skill example
 	if err != nil {
 		return nil, err
@@ -127,6 +132,22 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 	}, nil
 }
 
+func GenWhenUpdate(updatedUser *User, updatedSkills []*Skill, updatedCareers []*Career) (*UserDomain, error) {
+	if updatedUser == nil {
+		return nil, errors.New("updated user is required")
+	}
+	if updatedSkills == nil {
+		return nil, errors.New("updated skills are required")
+	}
+	if updatedCareers == nil {
+		return nil, errors.New("updated careers are required")
+	}
+
+	// Construct the UserDomain object with the updated entities.
+	userDomain := NewUserDomain(updatedUser, updatedSkills, updatedCareers)
+
+	return userDomain, nil
+}
 func GenUserWhenUpdate(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
 	userId, err := NewUserIDFromString(id)
 	if err != nil {
@@ -215,6 +236,10 @@ func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.T
 	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
 	if err != nil {
 		return nil, err
+	}
+
+	if detail == "" {
+		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
 	}
 
 	uID, err := NewUserIDFromString(userID) // UserID reconstruction function, as per Skill example

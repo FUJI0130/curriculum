@@ -246,32 +246,33 @@ func (repo *userRepositoryImpl) FindCareersByUserID(ctx context.Context, userID 
 	return careers, nil
 }
 
-func (repo *userRepositoryImpl) UpdateUser(ctx context.Context, user *userdm.User) error {
+func (repo *userRepositoryImpl) Update(ctx context.Context, userDomain *userdm.UserDomain) error {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
-	query := "UPDATE users SET name = ?, email = ?, password = ?, profile = ?, updated_at = ? WHERE id = ?"
-	_, err := conn.Exec(query, user.Name(), user.Email(), user.Password(), user.Profile(), time.Now(), user.ID().String())
-	return err
-}
 
-func (repo *userRepositoryImpl) StoreSkill(ctx context.Context, skill *userdm.Skill) error {
-	conn, exists := ctx.Value("Conn").(dbOperator)
-	if !exists {
-		return errors.New("no transaction found in context")
+	// ユーザー情報を更新
+	queryUser := "UPDATE users SET name = ?, email = ?, password = ?, profile = ?, updated_at = ? WHERE id = ?"
+	if _, err := conn.Exec(queryUser, userDomain.User.Name(), userDomain.User.Email(), userDomain.User.Password(), userDomain.User.Profile(), time.Now(), userDomain.User.ID().String()); err != nil {
+		return err
 	}
-	query := "UPDATE skills SET tag_id = ?, evaluation = ?, years = ?, updated_at = ? WHERE id = ?"
-	_, err := conn.Exec(query, skill.TagID().String(), skill.Evaluation().Value(), skill.Year().Value(), time.Now(), skill.ID().String())
-	return err
-}
 
-func (repo *userRepositoryImpl) StoreCareer(ctx context.Context, career *userdm.Career) error {
-	conn, exists := ctx.Value("Conn").(dbOperator)
-	if !exists {
-		return errors.New("no transaction found in context")
+	// スキル情報を更新
+	for _, skill := range userDomain.Skills {
+		querySkill := "UPDATE skills SET tag_id = ?, evaluation = ?, years = ?, updated_at = ? WHERE id = ?"
+		if _, err := conn.Exec(querySkill, skill.TagID().String(), skill.Evaluation().Value(), skill.Year().Value(), time.Now(), skill.ID().String()); err != nil {
+			return err
+		}
 	}
-	query := "UPDATE careers SET detail = ?, ad_from = ?, ad_to = ?, updated_at = ? WHERE id = ?"
-	_, err := conn.Exec(query, career.Detail(), career.AdFrom(), career.AdTo(), time.Now(), career.ID().String())
-	return err
+
+	// キャリア情報を更新
+	for _, career := range userDomain.Careers {
+		queryCareer := "UPDATE careers SET detail = ?, ad_from = ?, ad_to = ?, updated_at = ? WHERE id = ?"
+		if _, err := conn.Exec(queryCareer, career.Detail(), career.AdFrom(), career.AdTo(), time.Now(), career.ID().String()); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
