@@ -36,9 +36,9 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Name:     mockName,
 				Email:    mockEmail,
 				Password: mockPassword,
-				Skills:   []userapp.SkillRequestCreate{{TagName: mockTagName, Evaluation: 5, Years: 2}},
+				Skills:   []userapp.CreateSkillRequest{{TagName: mockTagName, Evaluation: 5, Years: 2}},
 				Profile:  mockProfile,
-				Careers:  []userapp.CareersRequestCreate{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+				Careers:  []userapp.CreateCareerRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 
@@ -67,9 +67,9 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Name:     mockName,
 				Email:    mockEmail,
 				Password: mockPassword,
-				Skills:   []userapp.SkillRequestCreate{{TagName: "New Tag", Evaluation: 5, Years: 2}},
+				Skills:   []userapp.CreateSkillRequest{{TagName: "New Tag", Evaluation: 5, Years: 2}},
 				Profile:  mockProfile,
-				Careers:  []userapp.CareersRequestCreate{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+				Careers:  []userapp.CreateCareerRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(false, nil)
@@ -86,9 +86,9 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Name:     mockName,
 				Email:    mockEmail,
 				Password: mockPassword,
-				Skills:   []userapp.SkillRequestCreate{{TagName: mockTagName, Evaluation: 5, Years: 2}},
+				Skills:   []userapp.CreateSkillRequest{{TagName: mockTagName, Evaluation: 5, Years: 2}},
 				Profile:  mockProfile,
-				Careers:  []userapp.CareersRequestCreate{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+				Careers:  []userapp.CreateCareerRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(false, nil)
@@ -106,9 +106,9 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				Name:     mockName,
 				Email:    mockEmail,
 				Password: mockPassword,
-				Skills:   []userapp.SkillRequestCreate{{TagName: mockTagName, Evaluation: 5, Years: 2}, {TagName: mockTagName, Evaluation: 4, Years: 1}},
+				Skills:   []userapp.CreateSkillRequest{{TagName: mockTagName, Evaluation: 5, Years: 2}, {TagName: mockTagName, Evaluation: 4, Years: 1}},
 				Profile:  mockProfile,
-				Careers:  []userapp.CareersRequestCreate{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
+				Careers:  []userapp.CreateCareerRequest{{Detail: "Dev", AdFrom: time.Now(), AdTo: time.Now().AddDate(1, 0, 0)}},
 			},
 			mockFunc: func(mockUserRepo *mockUser.MockUserRepository, mockTagRepo *mockTag.MockTagRepository, mockExistService *mockExistByNameDomainService.MockExistByNameDomainService) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(false, nil)

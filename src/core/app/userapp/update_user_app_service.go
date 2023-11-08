@@ -22,46 +22,46 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 	}
 }
 
-type UpdateUserRequest struct {
+type UpdateUserRequestData struct {
 	Command    string `json:"command"`
 	UserID     string `json:"userID"`
 	UpdateData struct {
-		UserInfo UserRequestUpdate      `json:"UserInfo"`
-		Skills   []SkillRequestUpdate   `json:"Skills"`
-		Careers  []CareersRequestUpdate `json:"Careers"`
+		Users   UpdateUserRequest     `json:"Users"`
+		Skills  []UpdateSkillRequest  `json:"Skills"`
+		Careers []UpdateCareerRequest `json:"Careers"`
 	} `json:"updateData"`
 }
 
-func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequest) error {
+func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequestData) error {
 	log.Printf("req is : %v\n", req)
-	log.Printf("req.UserInfo.Email is : %s\n", req.UpdateData.UserInfo.Email)
-	userDataOnDB, err := app.userRepo.FindByUserID(ctx, req.UpdateData.UserInfo.ID)
+	log.Printf("req.Users.Email is : %s\n", req.UpdateData.Users.Email)
+	userDataOnDB, err := app.userRepo.FindByUserID(ctx, req.UpdateData.Users.ID)
 	if err != nil {
-		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UpdateData.UserInfo.Email)
+		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  email is : %s", req.UpdateData.Users.Email)
 	}
 	log.Printf("log checkpoint1")
-	if err = app.updateUsersInfo(ctx, userDataOnDB, req); err != nil {
+	if err = app.updateUsers(ctx, userDataOnDB, &req.UpdateData.Users); err != nil {
 		return err
 	}
 	log.Print("log checkpoint2")
-	if err = app.UpdateSkillsInfo(ctx, userDataOnDB, req.UpdateData.Skills); err != nil {
+	if err = app.updateSKills(ctx, userDataOnDB, req.UpdateData.Skills); err != nil {
 		return err
 	}
 	log.Print("log checkpoint3")
-	if err = app.updateCareersInfo(ctx, userDataOnDB, req.UpdateData.Careers); err != nil {
+	if err = app.updateCareers(ctx, userDataOnDB, req.UpdateData.Careers); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
-	updatedUser, err := userdm.GenWhenUpdateUser(
+func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) error {
+	updatedUser, err := userdm.GenUserWhenUpdate(
 		userDataOnDB.ID().String(),
-		req.UpdateData.UserInfo.Name,
-		req.UpdateData.UserInfo.Email,
-		req.UpdateData.UserInfo.Password,
-		req.UpdateData.UserInfo.Profile,
+		req.Name,
+		req.Email,
+		req.Password,
+		req.Profile,
 		userDataOnDB.CreatedAt().DateTime(),
 	)
 	if err != nil {
@@ -76,7 +76,7 @@ func (app *UpdateUserAppService) updateUsersInfo(ctx context.Context, userDataOn
 	return app.userRepo.UpdateUser(ctx, updatedUser)
 }
 
-func (app *UpdateUserAppService) UpdateSkillsInfo(ctx context.Context, userDataOnDB *userdm.User, skillsReq []SkillRequestUpdate) error {
+func (app *UpdateUserAppService) updateSKills(ctx context.Context, userDataOnDB *userdm.User, skillsReq []UpdateSkillRequest) error {
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
 	for _, s := range skillsReq {
@@ -103,6 +103,7 @@ func (app *UpdateUserAppService) UpdateSkillsInfo(ctx context.Context, userDataO
 			if err != nil {
 				return err
 			}
+			//N+1
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
@@ -134,22 +135,22 @@ func (app *UpdateUserAppService) UpdateSkillsInfo(ctx context.Context, userDataO
 
 		if skill, exists := existingSkillsMap[tagID]; exists {
 			log.Println("Updating existing skill") // ← ログ追加
-			log.Printf("GenWhenUpdateSkill Params:\nSkillID: %s\nTagID: %s\nUserID: %s\nEvaluation: %d\nYears: %d\nCreatedAt: %v\nUpdatedAt: %v\n",
+			log.Printf("GenSkillWhenUpdate Params:\nSkillID: %s\nTagID: %s\nUserID: %s\nEvaluation: %d\nYears: %d\nCreatedAt: %v\nUpdatedAt: %v\n",
 				skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
 
-			StoreSkill, err := userdm.GenWhenUpdateSkill(skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
-			log.Println("after GenWhenUpdateSkill")
+			storeSkill, err := userdm.GenSkillWhenUpdate(skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
+			log.Println("after GenSkillWhenUpdate")
 			if err != nil {
 				return err
 			}
-			if err = app.userRepo.StoreSkill(ctx, StoreSkill); err != nil {
+			if err = app.userRepo.StoreSkill(ctx, storeSkill); err != nil {
 				return err
 			}
 			log.Println("after StoreSkill")
 		} else {
 			log.Println("Creating new skill") // ← ログ追加
 			// Handle scenario where a new skill is present in the request but not in the DB
-			newSkill, err := userdm.GenWhenCreateSkill(
+			newSkill, err := userdm.GenSkillWhenCreate(
 				tagID,
 				userDataOnDB.ID().String(),
 				s.Evaluation,
@@ -171,7 +172,7 @@ func (app *UpdateUserAppService) UpdateSkillsInfo(ctx context.Context, userDataO
 	return nil
 }
 
-func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userDataOnDB *userdm.User, careersReq []CareersRequestUpdate) error {
+func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDataOnDB *userdm.User, careersReq []UpdateCareerRequest) error {
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return err
@@ -195,7 +196,7 @@ func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userData
 
 		if career, exists := existingCareersMap[c.ID]; exists {
 			// 既存のキャリア情報がリクエストに存在する場合、内容を置き換え
-			updatedCareer, err := userdm.GenWhenUpdateCareer(
+			updatedCareer, err := userdm.GenCareerWhenUpdate(
 				career.ID().String(),
 				c.Detail,
 				adFromInJST,
@@ -212,7 +213,7 @@ func (app *UpdateUserAppService) updateCareersInfo(ctx context.Context, userData
 			}
 		} else {
 			// リクエストに新しいキャリア情報があれば、それを追加
-			newCareer, err := userdm.GenWhenCreateCareer(
+			newCareer, err := userdm.GenCareerWhenCreate(
 				c.Detail,
 				adFromInJST,
 				adToInJST,

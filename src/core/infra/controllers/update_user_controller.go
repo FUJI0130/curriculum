@@ -20,7 +20,7 @@ func NewUpdateUserController(s *userapp.UpdateUserAppService) *UpdateUserControl
 }
 
 func (ctrl UpdateUserController) Update(c *gin.Context) {
-	var req userapp.UpdateUserRequest
+	var req userapp.UpdateUserRequestData
 	if err := c.BindJSON(&req); err != nil {
 		log.Printf("Error while binding JSON: %v", err)
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
@@ -78,7 +78,7 @@ func (ctrl UpdateUserController) Fetch(c *gin.Context) {
 	}
 
 	response := map[string]interface{}{
-		"UserInfo": map[string]interface{}{
+		"Users": map[string]interface{}{
 			"Name":     user.Name,
 			"Email":    user.Email,
 			"Password": user.Password, // Be cautious about sending passwords, you might not want to do this in a real application!

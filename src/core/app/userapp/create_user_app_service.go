@@ -26,9 +26,9 @@ type CreateUserRequest struct {
 	Name     string
 	Email    string
 	Password string
-	Skills   []SkillRequestCreate
+	Skills   []CreateSkillRequest
 	Profile  string
-	Careers  []CareersRequestCreate
+	Careers  []CreateCareerRequest
 }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
@@ -94,7 +94,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 	}
 
-	userdomain, err := userdm.GenWhenCreateUserdm(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
+	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
 	if err != nil {
 		return err
 	}

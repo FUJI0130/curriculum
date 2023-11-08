@@ -122,7 +122,7 @@ func getTestCases() []struct {
 				Name:     "TestNameUser",
 				Email:    "validEmail@gmail.com",
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -140,7 +140,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -156,7 +156,7 @@ func getTestCases() []struct {
 				Name:     "InvalidEmailUser",
 				Email:    "invalidEmail",
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -174,7 +174,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -190,7 +190,7 @@ func getTestCases() []struct {
 				Name:     "ExistingEmailUser",
 				Email:    "validEmail@gmail.com", // 既存のメールアドレスと同じ
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -208,7 +208,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -224,7 +224,7 @@ func getTestCases() []struct {
 				Name:     "ShortPasswordUser",
 				Email:    "shortPasswordEmail@gmail.com",
 				Password: "pass",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -242,7 +242,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -258,7 +258,7 @@ func getTestCases() []struct {
 				Name:     "NonExistentDuplicateSkillUser",
 				Email:    "nonExistentDuplicate@gmail.com",
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "NewSkill1",
 						Evaluation: 2,
@@ -271,7 +271,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -287,7 +287,7 @@ func getTestCases() []struct {
 				Name:     "ExistentDuplicateSkillUser",
 				Email:    "existentDuplicate@gmail.com",
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -300,7 +300,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: "Worked at XYZ Corp",
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -316,7 +316,7 @@ func getTestCases() []struct {
 				Name:     "TestNameUser2",
 				Email:    "validEmail2@gmail.com",
 				Password: "password12345",
-				Skills: []userapp.SkillRequestCreate{
+				Skills: []userapp.CreateSkillRequest{
 					{
 						TagName:    "RDBMS",
 						Evaluation: 2,
@@ -334,7 +334,7 @@ func getTestCases() []struct {
 					},
 				},
 				Profile: "Software Developer",
-				Careers: []userapp.CareersRequestCreate{
+				Careers: []userapp.CreateCareerRequest{
 					{
 						Detail: strings.Repeat("a", 1001), // 1000文字以上（あるいはデータベースの制限を超える文字数）でエラーを起こす仮定
 						AdFrom: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
