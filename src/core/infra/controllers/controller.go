@@ -18,6 +18,5 @@ func InitCreateUserController(r *gin.Engine, s *userapp.CreateUserAppService) {
 
 func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUserAppService) {
 	ctrl := NewUpdateUserController(UpdateuserService)
-	r.GET("/users/:userID", ctrl.Fetch)
 	r.PATCH("/users", ctrl.Update)
 }

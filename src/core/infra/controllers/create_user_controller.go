@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/cockroachdb/errors"
@@ -32,9 +31,7 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 		return
 	}
 
-	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
-
-	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
+	if err := ctrl.createUserService.Exec(c.Request.Context(), &req); err != nil {
 		if customErr, ok := err.(customerrors.BaseError); ok {
 			c.Status(customErr.StatusCode())
 		} else {
