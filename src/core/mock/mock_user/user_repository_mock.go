@@ -50,10 +50,10 @@ func (mr *MockUserRepositoryMockRecorder) FindByEmail(arg0, arg1 interface{}) *g
 }
 
 // FindByUserID mocks base method
-func (m *MockUserRepository) FindByUserID(arg0 context.Context, arg1 string) (*userdm.User, error) {
+func (m *MockUserRepository) FindByUserID(arg0 context.Context, arg1 string) (*userdm.UserDomain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUserID", arg0, arg1)
-	ret0, _ := ret[0].(*userdm.User)
+	ret0, _ := ret[0].(*userdm.UserDomain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockUserRepositoryMockRecorder) FindByUserID(arg0, arg1 interface{}) *
 }
 
 // FindByUserName mocks base method
-func (m *MockUserRepository) FindByUserName(arg0 context.Context, arg1 string) (*userdm.User, error) {
+func (m *MockUserRepository) FindByUserName(arg0 context.Context, arg1 string) (*userdm.UserDomain, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUserName", arg0, arg1)
-	ret0, _ := ret[0].(*userdm.User)
+	ret0, _ := ret[0].(*userdm.UserDomain)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -77,51 +77,6 @@ func (m *MockUserRepository) FindByUserName(arg0 context.Context, arg1 string) (
 func (mr *MockUserRepositoryMockRecorder) FindByUserName(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserName", reflect.TypeOf((*MockUserRepository)(nil).FindByUserName), arg0, arg1)
-}
-
-// FindByUserNames mocks base method
-func (m *MockUserRepository) FindByUserNames(arg0 context.Context, arg1 []string) (map[string]*userdm.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByUserNames", arg0, arg1)
-	ret0, _ := ret[0].(map[string]*userdm.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindByUserNames indicates an expected call of FindByUserNames
-func (mr *MockUserRepositoryMockRecorder) FindByUserNames(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByUserNames", reflect.TypeOf((*MockUserRepository)(nil).FindByUserNames), arg0, arg1)
-}
-
-// FindCareersByUserID mocks base method
-func (m *MockUserRepository) FindCareersByUserID(arg0 context.Context, arg1 string) ([]userdm.Career, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindCareersByUserID", arg0, arg1)
-	ret0, _ := ret[0].([]userdm.Career)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindCareersByUserID indicates an expected call of FindCareersByUserID
-func (mr *MockUserRepositoryMockRecorder) FindCareersByUserID(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindCareersByUserID", reflect.TypeOf((*MockUserRepository)(nil).FindCareersByUserID), arg0, arg1)
-}
-
-// FindSkillsByUserID mocks base method
-func (m *MockUserRepository) FindSkillsByUserID(arg0 context.Context, arg1 string) ([]userdm.Skill, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindSkillsByUserID", arg0, arg1)
-	ret0, _ := ret[0].([]userdm.Skill)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindSkillsByUserID indicates an expected call of FindSkillsByUserID
-func (mr *MockUserRepositoryMockRecorder) FindSkillsByUserID(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindSkillsByUserID", reflect.TypeOf((*MockUserRepository)(nil).FindSkillsByUserID), arg0, arg1)
 }
 
 // Store mocks base method

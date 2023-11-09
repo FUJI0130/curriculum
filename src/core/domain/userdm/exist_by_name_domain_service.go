@@ -29,5 +29,5 @@ func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool
 		}
 		return false, customerrors.WrapInternalServerError(err, fmt.Sprintf("An error occurred in Exec when calling userRepo.FindByName name is : %s", name))
 	}
-	return existingUser != nil, nil
+	return existingUser.User != nil, nil
 }

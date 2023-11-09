@@ -9,7 +9,6 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
-	"github.com/jmoiron/sqlx"
 )
 
 type userRepositoryImpl struct{}
@@ -82,63 +81,48 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 	return nil
 }
 
-func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string) (*userdm.User, error) {
+func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string) (*userdm.UserDomain, error) {
+	// ユーザーエンティティを取得
+	user, err := repo.findUserByName(ctx, name) // 既存のメソッドをプライベートメソッドに変更
+	if err != nil {
+		return nil, err
+	}
 
+	// ユーザーIDを使用して関連するスキルを取得
+	skills, err := repo.findSkillsByUserID(ctx, user.ID().String())
+	if err != nil {
+		return nil, err
+	}
+
+	// ユーザーIDを使用して関連するキャリアを取得
+	careers, err := repo.findCareersByUserID(ctx, user.ID().String())
+	if err != nil {
+		return nil, err
+	}
+
+	// UserDomain オブジェクトを作成
+	userDomain := userdm.NewUserDomain(user, skills, careers)
+	return userDomain, nil
+}
+
+// findUserByName は、名前に基づいてユーザーエンティティを取得するプライベートメソッド
+func (repo *userRepositoryImpl) findUserByName(ctx context.Context, name string) (*userdm.User, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
-
 	if !exists {
-		return nil, errors.New("no transaction found in context")
+		return nil, errors.New("コンテキスト内にトランザクションが見つかりません")
 	}
 	query := "SELECT * FROM users WHERE name = ?"
 
 	var tempUser userRequest
 	err := conn.Get(&tempUser, query, name)
 	if err != nil {
-		log.Printf("user Repository FindByName error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("user Repository FindByName: user not found")
-			return nil, customerrors.WrapNotFoundError(err, "user Repository FindByName: user not found")
+			return nil, customerrors.WrapNotFoundError(err, "ユーザーが見つかりません")
 		}
 		return nil, err
 	}
-	user, err := userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (repo *userRepositoryImpl) FindByUserNames(ctx context.Context, names []string) (map[string]*userdm.User, error) {
-	conn, exists := ctx.Value("Conn").(dbOperator)
-
-	if !exists {
-		return nil, errors.New("no transaction found in context")
-	}
-	query := "SELECT * FROM users WHERE name IN (?)"
-	var tempUsers []userRequest
-	query, args, err := sqlx.In(query, names)
-	if err != nil {
-		return nil, err
-	}
-
-	err = conn.Select(&tempUsers, query, args...)
-	if err != nil {
-		return nil, customerrors.WrapInternalServerError(err, "FindByNames Select User Repository database error")
-	}
-
-	userMap := make(map[string]*userdm.User)
-	for _, tempUser := range tempUsers {
-		user, err := userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
-		if err != nil {
-			return nil, customerrors.WrapInternalServerError(err, "FindByNames error converting userRequest to User")
-		}
-
-		userMap[tempUser.Name] = user
-	}
-
-	return userMap, nil
+	return userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
 }
 
 func (repo *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (*userdm.User, error) {
@@ -169,81 +153,28 @@ func (repo *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (
 	return user, nil
 }
 
-func (repo *userRepositoryImpl) FindSkillsByUserID(ctx context.Context, userID string) ([]userdm.Skill, error) {
-	conn, exists := ctx.Value("Conn").(dbOperator)
-
-	if !exists {
-		return nil, errors.New("no transaction found in context")
-	}
-	query := "SELECT * FROM skills WHERE user_id = ?"
-
-	var tempSkills []skillRequest
-	err := conn.Select(&tempSkills, query, userID)
+func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string) (*userdm.UserDomain, error) {
+	// ユーザーエンティティを取得
+	user, err := repo.findUsersByUserID(ctx, userID)
 	if err != nil {
-		log.Printf("user Repository FindSkillsByUserID error: %v", err)
-		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("user Repository FindSkillsByUserID: skills not found for userID: %s", userID)
-			return nil, customerrors.WrapNotFoundError(err, "user Repository FindSkillsByUserID: skills not found")
-		}
 		return nil, err
 	}
 
-	var skills []userdm.Skill
-	for _, tempSkill := range tempSkills {
-		skill, err := userdm.ReconstructSkill(tempSkill.ID, tempSkill.TagID, tempSkill.UserID, tempSkill.Evaluation, tempSkill.Years, tempSkill.CreatedAt, tempSkill.UpdatedAt)
-		if err != nil {
-			return nil, customerrors.WrapInternalServerError(err, "FindSkillsByUserID error converting skillRequest to Skill")
-		}
-		skills = append(skills, *skill)
-	}
-
-	return skills, nil
-}
-
-func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string) (*userdm.User, error) {
-	log.Printf("FindUserByUserID: userID: %s", userID)
-	conn, exists := ctx.Value("Conn").(dbOperator)
-	if !exists {
-		return nil, errors.New("no transaction found in context")
-	}
-	query := "SELECT * FROM users WHERE id = ?"
-
-	var tempUser userRequest
-	err := conn.Get(&tempUser, query, userID)
-	log.Printf("FindUserByUserID: tempUser: %v", tempUser)
-	if err == sql.ErrNoRows {
-		log.Printf("sql.ErrNoRows")
-		return nil, customerrors.WrapNotFoundError(err, "User not found by userID")
-	} else if err != nil {
-		return nil, err
-	}
-	return userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
-}
-
-func (repo *userRepositoryImpl) FindCareersByUserID(ctx context.Context, userID string) ([]userdm.Career, error) {
-	conn, exists := ctx.Value("Conn").(dbOperator)
-	if !exists {
-		return nil, errors.New("no transaction found in context")
-	}
-	query := "SELECT * FROM careers WHERE user_id = ?"
-
-	var tempCareers []careerRequest
-	err := conn.Select(&tempCareers, query, userID)
-	if err == sql.ErrNoRows {
-		return nil, customerrors.WrapNotFoundError(err, "Careers not found by userID")
-	} else if err != nil {
+	// 関連するスキルを取得
+	skills, err := repo.findSkillsByUserID(ctx, userID) // このメソッドはプライベートメソッドとする
+	if err != nil {
 		return nil, err
 	}
 
-	var careers []userdm.Career
-	for _, tempCareer := range tempCareers {
-		career, err := userdm.ReconstructCareer(tempCareer.ID, tempCareer.Detail, tempCareer.AdFrom, tempCareer.AdTo, tempCareer.UserID, tempCareer.CreatedAt, tempCareer.UpdatedAt)
-		if err != nil {
-			return nil, customerrors.WrapInternalServerError(err, "Error converting careerRequest to Career")
-		}
-		careers = append(careers, *career)
+	// 関連するキャリアを取得
+	careers, err := repo.findCareersByUserID(ctx, userID) // このメソッドはプライベートメソッドとする
+	if err != nil {
+		return nil, err
 	}
-	return careers, nil
+
+	// UserDomain オブジェクトを作成
+	userDomain := userdm.NewUserDomain(user, skills, careers)
+	return userDomain, nil
 }
 
 func (repo *userRepositoryImpl) Update(ctx context.Context, userDomain *userdm.UserDomain) error {
@@ -275,4 +206,74 @@ func (repo *userRepositoryImpl) Update(ctx context.Context, userDomain *userdm.U
 	}
 
 	return nil
+}
+
+func (repo *userRepositoryImpl) findUsersByUserID(ctx context.Context, userID string) (*userdm.User, error) {
+	log.Printf("FindUserByUserID: userID: %s", userID)
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+	query := "SELECT * FROM users WHERE id = ?"
+
+	var tempUser userRequest
+	err := conn.Get(&tempUser, query, userID)
+	log.Printf("FindUserByUserID: tempUser: %v", tempUser)
+	if err == sql.ErrNoRows {
+		log.Printf("sql.ErrNoRows")
+		return nil, customerrors.WrapNotFoundError(err, "User not found by userID")
+	} else if err != nil {
+		return nil, err
+	}
+	return userdm.ReconstructUser(tempUser.ID, tempUser.Name, tempUser.Email, tempUser.Password, tempUser.Profile, tempUser.CreatedAt)
+}
+
+func (repo *userRepositoryImpl) findSkillsByUserID(ctx context.Context, userID string) ([]*userdm.Skill, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+
+	query := "SELECT * FROM skills WHERE user_id = ?"
+	var tempSkills []skillRequest
+	err := conn.Select(&tempSkills, query, userID)
+	if err != nil {
+		return nil, err // You should handle not found error and other errors appropriately
+	}
+
+	var skills []*userdm.Skill
+	for _, tempSkill := range tempSkills {
+		skill, err := userdm.ReconstructSkill(tempSkill.ID, tempSkill.TagID, tempSkill.UserID, tempSkill.Evaluation, tempSkill.Years, tempSkill.CreatedAt, tempSkill.UpdatedAt)
+		if err != nil {
+			return nil, err // Handle the error appropriately
+		}
+		skills = append(skills, skill)
+	}
+
+	return skills, nil
+}
+
+func (repo *userRepositoryImpl) findCareersByUserID(ctx context.Context, userID string) ([]*userdm.Career, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+
+	query := "SELECT * FROM careers WHERE user_id = ?"
+	var tempCareers []careerRequest
+	err := conn.Select(&tempCareers, query, userID)
+	if err != nil {
+		return nil, err // You should handle not found error and other errors appropriately
+	}
+
+	var careers []*userdm.Career
+	for _, tempCareer := range tempCareers {
+		career, err := userdm.ReconstructCareer(tempCareer.ID, tempCareer.Detail, tempCareer.AdFrom, tempCareer.AdTo, tempCareer.UserID, tempCareer.CreatedAt, tempCareer.UpdatedAt)
+		if err != nil {
+			return nil, err // Handle the error appropriately
+		}
+		careers = append(careers, career)
+	}
+
+	return careers, nil
 }

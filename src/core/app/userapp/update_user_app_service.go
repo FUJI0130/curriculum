@@ -33,25 +33,25 @@ type UpdateUserRequestData struct {
 func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequestData) error {
 	log.Printf("req is : %v\n", req)
 
-	userDataOnDB, err := app.userRepo.FindByUserID(ctx, req.UpdateData.Users.ID)
+	userDomainDataOnDB, err := app.userRepo.FindByUserID(ctx, req.UpdateData.Users.ID)
 	if err != nil {
 		return customerrors.NewNotFoundErrorf("Update_user_app_service  Exec User Not Exist  UserID is : %s", req.UpdateData.Users.ID)
 	}
 	log.Printf("log checkpoint1")
 
-	updatedUser, err := app.updateUsers(ctx, userDataOnDB, &req.UpdateData.Users)
+	updatedUser, err := app.updateUsers(ctx, userDomainDataOnDB.User, &req.UpdateData.Users)
 	if err != nil {
 		return err
 	}
 	log.Print("log checkpoint2")
 
-	updatedSkills, err := app.updateSkills(ctx, updatedUser, req.UpdateData.Skills)
+	updatedSkills, err := app.updateSkills(ctx, userDomainDataOnDB, req.UpdateData.Skills)
 	if err != nil {
 		return err
 	}
 	log.Print("log checkpoint3")
 
-	updatedCareers, err := app.updateCareers(ctx, updatedUser.ID(), req.UpdateData.Careers)
+	updatedCareers, err := app.updateCareers(ctx, userDomainDataOnDB, req.UpdateData.Careers)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,8 @@ func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *
 	return updatedUser, nil
 }
 
-func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB *userdm.User, skillsReq []updateSkillRequest) ([]*userdm.Skill, error) {
+func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *userdm.UserDomain, skillsReq []updateSkillRequest) ([]*userdm.Skill, error) {
+
 	updatedSkills := []*userdm.Skill{}
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
@@ -117,15 +118,10 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 		}
 	}
 
-	skills, err := app.userRepo.FindSkillsByUserID(ctx, userDataOnDB.ID().String())
-	if err != nil {
-		return nil, err
-	}
-
 	existingSkillsMap := make(map[string]*userdm.Skill)
-	for _, skill := range skills {
+	for _, skill := range userDomain.Skills {
 		skillCopy := skill
-		existingSkillsMap[skill.TagID().String()] = &skillCopy
+		existingSkillsMap[skill.TagID().String()] = skillCopy
 	}
 
 	for _, s := range skillsReq {
@@ -137,7 +133,7 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 			}
 			updatedSkills = append(updatedSkills, updatedSkill)
 		} else {
-			newSkill, err := userdm.GenSkillWhenCreate(tagID, userDataOnDB.ID().String(), s.Evaluation, s.Years, time.Now(), time.Now())
+			newSkill, err := userdm.GenSkillWhenCreate(tagID, userDomain.User.ID().String(), s.Evaluation, s.Years, time.Now(), time.Now())
 			if err != nil {
 				return nil, err
 			}
@@ -148,21 +144,19 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDataOnDB 
 	return updatedSkills, nil
 }
 
-func (app *UpdateUserAppService) updateCareers(ctx context.Context, userID userdm.UserID, careersReq []updateCareerRequest) ([]*userdm.Career, error) {
+func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *userdm.UserDomain, careersReq []updateCareerRequest) ([]*userdm.Career, error) {
+
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return nil, err
 	}
 
-	existingCareers, err := app.userRepo.FindCareersByUserID(ctx, userID.String())
-	if err != nil {
-		return nil, err
-	}
+	existingCareers := userDomain.Careers
 
 	existingCareersMap := make(map[string]*userdm.Career)
 	for _, career := range existingCareers {
 		careerCopy := career
-		existingCareersMap[career.ID().String()] = &careerCopy
+		existingCareersMap[career.ID().String()] = careerCopy
 	}
 
 	careersToUpdate := make([]*userdm.Career, 0, len(careersReq))
@@ -178,7 +172,7 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userID userd
 				c.Detail,
 				adFromInJST,
 				adToInJST,
-				userID.String(),
+				userDomain.User.ID().String(),
 				existingCareer.CreatedAt().DateTime(),
 				time.Now(),
 			)
@@ -190,7 +184,7 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userID userd
 				c.Detail,
 				adFromInJST,
 				adToInJST,
-				userID.String(),
+				userDomain.User.ID().String(),
 				time.Now(),
 				time.Now(),
 			)
