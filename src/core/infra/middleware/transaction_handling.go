@@ -11,9 +11,11 @@ import (
 func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if isModifyingMethod(c.Request.Method) {
+			log.Printf("method is : %s\n", c.Request.Method)
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
 			c.Set("Conn", tx)
+			log.Printf("Transaction set in context: %v", tx != nil)
 
 		} else {
 			c.Set("Conn", db)
@@ -22,6 +24,7 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 	}
 }
 func isModifyingMethod(method string) bool {
+	log.Printf("method is : %s\n", method)
 	switch method {
 	case "POST", "PATCH", "PUT", "DELETE":
 		return true
@@ -31,8 +34,10 @@ func isModifyingMethod(method string) bool {
 }
 
 func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
+	log.Printf("handleTransaction")
 	tx, err := db.Beginx()
 	if err != nil {
+		log.Printf("Failed to start transaction")
 		wrappedErr := customerrors.WrapInternalServerError(err, "Failed to start transaction")
 		c.Error(wrappedErr)
 		return nil
@@ -41,6 +46,7 @@ func handleTransaction(db *sqlx.DB, c *gin.Context) *sqlx.Tx {
 }
 
 func finalizeTransaction(tx *sqlx.Tx, c *gin.Context) {
+	log.Printf("finalizeTransaction")
 	if r := recover(); r != nil {
 		tx.Rollback()
 		panic(r)

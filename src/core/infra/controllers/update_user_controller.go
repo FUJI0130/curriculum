@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -32,7 +33,10 @@ func (ctrl UpdateUserController) Update(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.UpdateUserService.ExecUpdate(c.Request.Context(), &req); err != nil {
+	log.Printf("CreateUserController Create: txObj: %v", txObj) //確認用
+	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
+
+	if err := ctrl.UpdateUserService.ExecUpdate(ctxWithTx, &req); err != nil {
 		if customErr, ok := err.(customerrors.BaseError); ok {
 			c.Status(customErr.StatusCode())
 		} else {

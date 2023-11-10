@@ -21,7 +21,7 @@ func NewExistByNameDomainService(userRepo UserRepository) *existByNameDomainServ
 }
 
 func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool, error) {
-	existingUser, err := ds.userRepo.FindByUserName(ctx, name)
+	existingUserDomain, err := ds.userRepo.FindByUserName(ctx, name)
 	if err != nil {
 
 		if customerrors.IsNotFoundError(err) {
@@ -29,5 +29,5 @@ func (ds *existByNameDomainService) Exec(ctx context.Context, name string) (bool
 		}
 		return false, customerrors.WrapInternalServerError(err, fmt.Sprintf("An error occurred in Exec when calling userRepo.FindByName name is : %s", name))
 	}
-	return existingUser.User != nil, nil
+	return existingUserDomain.User != nil, nil
 }

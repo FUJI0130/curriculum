@@ -83,6 +83,9 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, userdomain *userdm.Us
 
 func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string) (*userdm.UserDomain, error) {
 	// ユーザーエンティティを取得
+	conn := ctx.Value("Conn")
+	log.Printf("FindByUserName: conn: %v", conn)
+
 	user, err := repo.findUserByName(ctx, name) // 既存のメソッドをプライベートメソッドに変更
 	if err != nil {
 		return nil, err
@@ -108,6 +111,7 @@ func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string)
 // findUserByName は、名前に基づいてユーザーエンティティを取得するプライベートメソッド
 func (repo *userRepositoryImpl) findUserByName(ctx context.Context, name string) (*userdm.User, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
+	log.Printf("findUserByName: conn: %v", conn)
 	if !exists {
 		return nil, errors.New("コンテキスト内にトランザクションが見つかりません")
 	}
@@ -154,25 +158,24 @@ func (repo *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (
 }
 
 func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string) (*userdm.UserDomain, error) {
-	// ユーザーエンティティを取得
+	log.Printf("before findUsersByUserID")
 	user, err := repo.findUsersByUserID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
-	// 関連するスキルを取得
+	log.Printf("before findSkillsByUserID")
 	skills, err := repo.findSkillsByUserID(ctx, userID) // このメソッドはプライベートメソッドとする
 	if err != nil {
 		return nil, err
 	}
 
-	// 関連するキャリアを取得
+	log.Printf("before findCareersByUserID")
 	careers, err := repo.findCareersByUserID(ctx, userID) // このメソッドはプライベートメソッドとする
 	if err != nil {
 		return nil, err
 	}
 
-	// UserDomain オブジェクトを作成
 	userDomain := userdm.NewUserDomain(user, skills, careers)
 	return userDomain, nil
 }
@@ -209,14 +212,17 @@ func (repo *userRepositoryImpl) Update(ctx context.Context, userDomain *userdm.U
 }
 
 func (repo *userRepositoryImpl) findUsersByUserID(ctx context.Context, userID string) (*userdm.User, error) {
-	log.Printf("FindUserByUserID: userID: %s", userID)
+	log.Printf("findUserByUserID: userID: %s", userID)
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
+		log.Printf("no transaction found in context")
 		return nil, errors.New("no transaction found in context")
 	}
+	log.Printf("before query")
 	query := "SELECT * FROM users WHERE id = ?"
 
 	var tempUser userRequest
+	log.Printf("before get")
 	err := conn.Get(&tempUser, query, userID)
 	log.Printf("FindUserByUserID: tempUser: %v", tempUser)
 	if err == sql.ErrNoRows {

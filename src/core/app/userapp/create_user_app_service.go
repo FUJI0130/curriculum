@@ -2,6 +2,7 @@ package userapp
 
 import (
 	"context"
+	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -32,6 +33,9 @@ type CreateUserRequest struct {
 }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
+
+	conn := ctx.Value("Conn")
+	log.Printf("Exec(create_user_app_service): conn: %v", conn)
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
