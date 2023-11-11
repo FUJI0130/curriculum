@@ -1,11 +1,11 @@
 package controllers
 
 import (
-	"context"
 	"log"
 	"net/http"
 
 	"github.com/cockroachdb/errors"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
@@ -27,17 +27,15 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 		return
 	}
 
-	txObj, ok := c.Get("Conn")
+	ctx := c.Request.Context()
+	txObj, ok := ctx.Value("Conn").(*sqlx.Tx)
 	if !ok || txObj == nil {
 		log.Printf("CreateUserController Create: txObj is nil")
 		c.Error(errors.New("transaction not found"))
 		return
 	}
 
-	log.Printf("CreateUserController Create: txObj: %v", txObj) //確認用
-	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
-
-	if err := ctrl.createUserService.Exec(ctxWithTx, &req); err != nil {
+	if err := ctrl.createUserService.Exec(c.Request.Context(), &req); err != nil {
 		if customErr, ok := err.(customerrors.BaseError); ok {
 			c.Status(customErr.StatusCode())
 		} else {

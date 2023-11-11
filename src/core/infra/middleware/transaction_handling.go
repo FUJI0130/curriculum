@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
@@ -14,11 +15,11 @@ func TransactionHandler(db *sqlx.DB) gin.HandlerFunc {
 			log.Printf("method is : %s\n", c.Request.Method)
 			tx := handleTransaction(db, c)
 			defer finalizeTransaction(tx, c)
-			c.Set("Conn", tx)
-			log.Printf("Transaction set in context: %v", tx != nil)
-
+			ctxWithTx := context.WithValue(c.Request.Context(), "Conn", tx)
+			c.Request = c.Request.WithContext(ctxWithTx)
 		} else {
-			c.Set("Conn", db)
+			ctxWithDB := context.WithValue(c.Request.Context(), "Conn", db)
+			c.Request = c.Request.WithContext(ctxWithDB)
 		}
 		c.Next()
 	}

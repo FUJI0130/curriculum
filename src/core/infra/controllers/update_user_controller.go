@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/cockroachdb/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 )
 
 type UpdateUserController struct {
@@ -27,16 +27,14 @@ func (ctrl UpdateUserController) Update(c *gin.Context) {
 		return
 	}
 
-	txObj, ok := c.Get("Conn")
+	ctx := c.Request.Context()
+	txObj, ok := ctx.Value("Conn").(*sqlx.Tx)
 	if !ok || txObj == nil {
 		c.Error(errors.New("transaction not found"))
 		return
 	}
 
-	log.Printf("CreateUserController Create: txObj: %v", txObj) //確認用
-	ctxWithTx := context.WithValue(c.Request.Context(), "Conn", txObj)
-
-	if err := ctrl.UpdateUserService.ExecUpdate(ctxWithTx, &req); err != nil {
+	if err := ctrl.UpdateUserService.ExecUpdate(c.Request.Context(), &req); err != nil {
 		if customErr, ok := err.(customerrors.BaseError); ok {
 			c.Status(customErr.StatusCode())
 		} else {
