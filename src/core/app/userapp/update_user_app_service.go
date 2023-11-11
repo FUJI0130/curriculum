@@ -82,7 +82,7 @@ func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *
 
 func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *userdm.UserDomain, skillsReq []updateSkillRequest) ([]*userdm.Skill, error) {
 
-	updatedSkills := []*userdm.Skill{}
+	updatedSkills := make([]*userdm.Skill, 0, len(skillsReq))
 	tagNames := make([]string, 0, len(skillsReq))
 	seenSkills := make(map[string]bool)
 
