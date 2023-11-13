@@ -3,30 +3,30 @@ package userapp
 import "time"
 
 type updateUserRequest struct {
-	ID       string `json:"ID"`
-	Name     string `json:"Name"`
-	Email    string `json:"Email"`
-	Password string `json:"Password"`
-	Profile  string `json:"Profile"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Profile  string `json:"profile"`
 }
 type updateSkillRequest struct {
-	ID         string `json:"ID"`
-	TagName    string `json:"TagName"`
-	Evaluation uint8  `json:"Evaluation"`
-	Years      uint8  `json:"Years"`
+	ID         string `json:"id"`
+	TagName    string `json:"tagName"`
+	Evaluation uint8  `json:"evaluation"`
+	Years      uint8  `json:"years"`
 }
 
 type updateCareerRequest struct {
-	ID     string    `json:"ID"`
-	Detail string    `json:"Detail"`
-	AdFrom time.Time `json:"AdFrom"`
-	AdTo   time.Time `json:"AdTo"`
+	ID     string    `json:"id"`
+	Detail string    `json:"detail"`
+	AdFrom time.Time `json:"adFrom"`
+	AdTo   time.Time `json:"adTo"`
 }
 
 type CreateSkillRequest struct {
-	TagName    string `json:"TagName"`
-	Evaluation uint8  `json:"Evaluation"`
-	Years      uint8  `json:"Years"`
+	TagName    string `json:"tagName"`
+	Evaluation uint8  `json:"evaluation"`
+	Years      uint8  `json:"years"`
 }
 
 type CreateCareerRequest struct {
