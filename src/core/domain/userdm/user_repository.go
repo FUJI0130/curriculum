@@ -12,8 +12,4 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByUserID(ctx context.Context, userID string) (*UserDomain, error)
 	Update(ctx context.Context, userdomain *UserDomain) error
-
-	// findUsersByUserID(ctx context.Context, userID string) (*User, error)
-	// findSkillsByUserID(ctx context.Context, userID string) ([]*Skill, error)
-	// findCareersByUserID(ctx context.Context, userID string) ([]*Career, error)
 }
