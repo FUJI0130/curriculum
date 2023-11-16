@@ -24,9 +24,9 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 
 type UpdateUserRequestData struct {
 	UpdateData struct {
-		Users   updateUserRequest     `json:"Users"`
-		Skills  []updateSkillRequest  `json:"Skills"`
-		Careers []updateCareerRequest `json:"Careers"`
+		Users   updateUserRequest     `json:"users"`
+		Skills  []updateSkillRequest  `json:"skills"`
+		Careers []updateCareerRequest `json:"careers"`
 	} `json:"updateData"`
 }
 

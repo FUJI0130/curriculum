@@ -30,7 +30,7 @@ type CreateSkillRequest struct {
 }
 
 type CreateCareerRequest struct {
-	Detail string    `json:"Detail"`
-	AdFrom time.Time `json:"AdFrom"`
-	AdTo   time.Time `json:"AdTo"`
+	Detail string    `json:"detail"`
+	AdFrom time.Time `json:"adFrom"`
+	AdTo   time.Time `json:"adTo"`
 }

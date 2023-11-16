@@ -2,7 +2,6 @@ package userapp
 
 import (
 	"context"
-	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -24,18 +23,15 @@ func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 }
 
 type CreateUserRequest struct {
-	Name     string
-	Email    string
-	Password string
-	Skills   []CreateSkillRequest
-	Profile  string
-	Careers  []CreateCareerRequest
+	Name     string                `json:"name"`
+	Email    string                `json:"email"`
+	Password string                `json:"password"`
+	Skills   []CreateSkillRequest  `json:"skills"`
+	Profile  string                `json:"profile"`
+	Careers  []CreateCareerRequest `json:"careers"`
 }
 
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
-
-	// conn := ctx.Value("Conn")
-	// log.Printf("Exec(create_user_app_service): conn: %v", conn)
 
 	isExist, err := app.existService.Exec(ctx, req.Name)
 	if err != nil {
@@ -56,15 +52,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		tagNames = append(tagNames, s.TagName)
 	}
 
-	log.Printf("Exec : ctx is : %v", ctx)
-	log.Printf("Exec : tagNames before calling FindByNames: %v", tagNames)
-	//ctxの型を確認する
-	log.Printf("Exec : ctx type is : %T", ctx)
-
-	//ctxのConnを取得する
-	conn := ctx.Value("Conn")
-	log.Printf("Exec : conn: %v", conn)
-	log.Printf("before FindByNames")
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 		return err

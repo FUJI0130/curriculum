@@ -15,7 +15,6 @@ import (
 	mockUser "github.com/FUJI0130/curriculum/src/core/mock/mock_user"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -26,8 +25,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 	mockProfile := "Sample Profile"
 	mockTagName := "Test Tag"
 
-	// ctx := context.TODO()
-	ctx := context.WithValue(context.Background(), "Conn", &sqlx.Tx{})
+	ctx := context.TODO()
 
 	tests := []struct {
 		title    string
@@ -119,11 +117,6 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				mockExistService.EXPECT().Exec(ctx, mockName).Return(false, nil)
 				expectedTagNames := []string{mockTagName}
 				log.Printf("Expected tagNames in mock setting: %v", expectedTagNames)
-				// 実際のメソッド呼び出しに合わせたモック設定
-				// mockTagRepo.EXPECT().FindByNames(ctx, gomock.Eq([]string{mockTagName})).Return([]*tagdm.Tag{}, nil).Times(1)
-				// mockTagRepo.EXPECT().FindByNames(ctx, []string{mockTagName}).Return([]*tagdm.Tag{}, nil).Times(1)
-				mockTagRepo.EXPECT().FindByNames(gomock.Any(), gomock.Eq([]string{mockTagName})).Return([]*tagdm.Tag{}, nil).Times(1)
-
 			},
 			wantErr: customerrors.NewUnprocessableEntityErrorf("Create_user_app_service  Exec tagname is : %s", mockTagName),
 		},
@@ -140,15 +133,6 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 			mockExistService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
 			app := userapp.NewCreateUserAppService(mockUserRepo, mockTagRepo, mockExistService)
 			tt.mockFunc(mockUserRepo, mockTagRepo, mockExistService)
-
-			log.Printf("TestCode: ctx is : %v", ctx)
-			//ctxの型を確認する
-			log.Printf("TestCode: ctx type is : %T", ctx)
-			if conn, ok := ctx.Value("Conn").(*sqlx.Tx); ok {
-				log.Printf("TestCode: ctx contains a transaction object: %#v", conn)
-			} else {
-				log.Printf("TestCode: ctx does not contain the expected transaction object")
-			}
 
 			err := app.Exec(ctx, tt.input)
 			if tt.wantErr != nil {
