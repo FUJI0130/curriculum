@@ -24,6 +24,6 @@ func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUs
 }
 
 func InitMentorController(r *gin.Engine, getMentorListAppService *mentorapp.GetMentorListAppService) {
-	ctrl := NewMentorController(getMentorListAppService)
-	r.GET("/mentors", ctrl.Fetch)
+	// ctrl := NewMentorController(getMentorListAppService)
+	// r.GET("/mentors", ctrl.Fetch)
 }
