@@ -11,7 +11,5 @@ import (
 type MentorRecruitmentRepository interface {
 	Store(ctx context.Context, mentorRecruitment *MentorRecruitment) error
 	FindByID(ctx context.Context, id MentorRecruitmentID) (*MentorRecruitment, error)
-	FindByTitle(ctx context.Context, title string) ([]*MentorRecruitment, error)
 	FindByCategoryID(ctx context.Context, categoryID categorydm.CategoryID) ([]*MentorRecruitment, error)
-	Update(ctx context.Context, mentorRecruitment *MentorRecruitment) error
 }

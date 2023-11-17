@@ -24,20 +24,6 @@ func NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo mentorrecruitmen
 	}
 }
 
-type CreateMentorRecruitmentRequest struct {
-	Title                 string   `json:"title"`
-	CategoryID            string   `json:"category_id"`
-	BudgetFrom            int      `json:"budget_from"`
-	BudgetTo              int      `json:"budget_to"`
-	ApplicationPeriodFrom int      `json:"application_period_from"`
-	ApplicationPeriodTo   int      `json:"application_period_to"`
-	ConsultationFormat    int      `json:"consultation_format"`
-	ConsultationMethod    int      `json:"consultation_method"`
-	Description           string   `json:"description"`
-	Status                int      `json:"status"`
-	TagNames              []string `json:"tag_names"`
-}
-
 func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *CreateMentorRecruitmentRequest) (err error) {
 	// カテゴリの確認
 	category, err := app.categoryRepo.FindByID(ctx, req.CategoryID)
@@ -81,7 +67,7 @@ func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *Cre
 		req.ConsultationFormat,
 		req.ConsultationMethod,
 		req.Description,
-		req.Status, // 'profile' は 'description' を再利用しています
+		req.Status,
 	)
 	if err != nil {
 		return err

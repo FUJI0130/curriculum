@@ -9,6 +9,5 @@ import (
 type CategoryRepository interface {
 	Store(ctx context.Context, category *Category) error
 	FindByName(ctx context.Context, name string) (*Category, error)
-	FindByNames(ctx context.Context, names []string) ([]*Category, error)
 	FindByID(ctx context.Context, id string) (*Category, error)
 }

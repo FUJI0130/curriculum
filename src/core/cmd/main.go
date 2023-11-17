@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
@@ -29,11 +30,17 @@ func main() {
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 	updateUserService := userapp.NewUpdateUserAppService(userRepo, tagRepo)
 
+	// メンター募集関連のリポジトリとサービス
+	mentorRecruitmentRepo := rdbimpl.NewMentorRecruitmentRepository()
+	categoryRepo := rdbimpl.NewCategoryRepository()
+	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, tagRepo, categoryRepo)
+
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
 	r.Use(middleware.TransactionHandler(db))
 
-	controllers.InitControllers(r, createUserService, updateUserService)
+	controllers.InitControllers(r, createUserService, updateUserService, createMentorRecruitmentService)
+
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
 }

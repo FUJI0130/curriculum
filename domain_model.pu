@@ -147,7 +147,7 @@ package DomainModel {
             --
             ID
             タイトル
-            タグID
+            メンター募集＿タグID
             カテゴリID
             予算from
             予算to

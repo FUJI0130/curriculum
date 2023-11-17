@@ -2,6 +2,7 @@ package mentorrecruitmentdm
 
 import (
 	"errors"
+	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
@@ -10,19 +11,17 @@ import (
 const descriptionMaxlength = 2000
 
 type MentorRecruitment struct {
-	id                    MentorRecruitmentID   `db:"id"`
-	title                 string                `db:"name"`
-	categoryID            categorydm.CategoryID `db:"tag_id"`
-	budgetFrom            int                   `db:"budget_from"`
-	budgetTo              int                   `db:"budget_to"`
-	applicationPeriodFrom int                   `db:"application_period_from"`
-	applicationPeriodTo   int                   `db:"application_period_to"`
-	consultation_format   int                   `db:"consultation_format"`
-	consultation_method   int                   `db:"consultation_method"`
-	description           string                `db:"description"`
-	status                int                   `db:"status"`
-	createdAt             sharedvo.CreatedAt    `db:"created_at"`
-	updatedAt             sharedvo.UpdatedAt    `db:"updated_at"`
+	id                  MentorRecruitmentID   `db:"id"`
+	title               string                `db:"name"`
+	categoryID          categorydm.CategoryID `db:"tag_id"`
+	budget              *Budget               // Budget オブジェクト
+	applicationPeriod   *ApplicationPeriod    // ApplicationPeriod オブジェクト
+	consultation_format int                   `db:"consultation_format"`
+	consultation_method int                   `db:"consultation_method"`
+	description         string                `db:"description"`
+	status              int                   `db:"status"`
+	createdAt           sharedvo.CreatedAt    `db:"created_at"`
+	updatedAt           sharedvo.UpdatedAt    `db:"updated_at"`
 }
 
 const (
@@ -35,8 +34,8 @@ func NewMentorRecruitment(
 	categoryID categorydm.CategoryID,
 	budgetFrom int,
 	budgetTo int,
-	applicationPeriodFrom int,
-	applicationPeriodTo int,
+	applicationPeriodFrom time.Time,
+	applicationPeriodTo time.Time,
 	consultationFormat int,
 	consultationMethod int,
 	description string,
@@ -54,16 +53,14 @@ func NewMentorRecruitment(
 	if status != StatusOpen && status != StatusClosed {
 		return nil, errors.New("invalid status: must be either open (0) or closed (1)")
 	}
-	// ここで Budget と ApplicationPeriod のバリデーションを行う
-	// 例: budgetFrom が budgetTo より大きい場合、エラーを返す
-	if budgetFrom > budgetTo {
-		return nil, errors.New("budgetFrom cannot be greater than budgetTo")
+	budget, err := NewBudget(budgetFrom, budgetTo)
+	if err != nil {
+		return nil, err
 	}
 
-	// applicationPeriod のバリデーション (具体的な条件はビジネスルールに依存)
-	// 例: applicationPeriodFrom が applicationPeriodTo より大きい場合、エラーを返す
-	if applicationPeriodFrom > applicationPeriodTo {
-		return nil, errors.New("applicationPeriodFrom cannot be greater than applicationPeriodTo")
+	applicationPeriod, err := NewApplicationPeriod(applicationPeriodFrom, applicationPeriodTo)
+	if err != nil {
+		return nil, err
 	}
 
 	mentorRecruitmentId, err := NewMentorRecruitmentID()
@@ -75,19 +72,17 @@ func NewMentorRecruitment(
 	updatedAt := sharedvo.NewUpdatedAt()
 
 	return &MentorRecruitment{
-		id:                    mentorRecruitmentId,
-		title:                 title,
-		categoryID:            categoryID,
-		budgetFrom:            budgetFrom,
-		budgetTo:              budgetTo,
-		applicationPeriodFrom: applicationPeriodFrom,
-		applicationPeriodTo:   applicationPeriodTo,
-		consultation_format:   consultationFormat,
-		consultation_method:   consultationMethod,
-		description:           description,
-		status:                status,
-		createdAt:             createdAt,
-		updatedAt:             updatedAt,
+		id:                  mentorRecruitmentId,
+		title:               title,
+		categoryID:          categoryID,
+		budget:              budget,
+		applicationPeriod:   applicationPeriod,
+		consultation_format: consultationFormat,
+		consultation_method: consultationMethod,
+		description:         description,
+		status:              status,
+		createdAt:           createdAt,
+		updatedAt:           updatedAt,
 	}, nil
 }
 
@@ -98,4 +93,60 @@ func (mr *MentorRecruitment) ID() MentorRecruitmentID {
 
 func (mr *MentorRecruitment) Title() string {
 	return mr.title
+}
+
+func (mr *MentorRecruitment) CategoryID() categorydm.CategoryID {
+	return mr.categoryID
+}
+
+func (mr *MentorRecruitment) BudgetFrom() int {
+	if mr.budget != nil {
+		return mr.budget.From()
+	}
+	return 0 // または適切なデフォルト値、あるいはエラーを返す
+}
+
+func (mr *MentorRecruitment) BudgetTo() int {
+	if mr.budget != nil {
+		return mr.budget.To()
+	}
+	return 0 // または適切なデフォルト値、あるいはエラーを返す
+}
+
+func (mr *MentorRecruitment) ApplicationPeriodFrom() time.Time {
+	if mr.applicationPeriod != nil {
+		return mr.applicationPeriod.From()
+	}
+	return time.Time{} // または適切なデフォルト値、あるいはエラーを返す
+}
+
+func (mr *MentorRecruitment) ApplicationPeriodTo() time.Time {
+	if mr.applicationPeriod != nil {
+		return mr.applicationPeriod.To()
+	}
+	return time.Time{} // または適切なデフォルト値、あるいはエラーを返す
+}
+
+func (mr *MentorRecruitment) ConsultationFormat() int {
+	return mr.consultation_format
+}
+
+func (mr *MentorRecruitment) ConsultationMethod() int {
+	return mr.consultation_method
+}
+
+func (mr *MentorRecruitment) Description() string {
+	return mr.description
+}
+
+func (mr *MentorRecruitment) Status() int {
+	return mr.status
+}
+
+func (mr *MentorRecruitment) CreatedAt() sharedvo.CreatedAt {
+	return mr.createdAt
+}
+
+func (mr *MentorRecruitment) UpdatedAt() sharedvo.UpdatedAt {
+	return mr.updatedAt
 }
