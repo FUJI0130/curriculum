@@ -29,8 +29,8 @@ type CreateMentorRecruitmentRequest struct {
 	CategoryID            string   `json:"category_id"`
 	BudgetFrom            int      `json:"budget_from"`
 	BudgetTo              int      `json:"budget_to"`
-	ApplicationPeriodFrom string   `json:"application_period_from"`
-	ApplicationPeriodTo   string   `json:"application_period_to"`
+	ApplicationPeriodFrom int      `json:"application_period_from"`
+	ApplicationPeriodTo   int      `json:"application_period_to"`
 	ConsultationFormat    int      `json:"consultation_format"`
 	ConsultationMethod    int      `json:"consultation_method"`
 	Description           string   `json:"description"`
@@ -71,7 +71,17 @@ func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *Cre
 
 	// メンター募集の作成
 	mentorRecruitment, err := mentorrecruitmentdm.NewMentorRecruitment(
-	// メンター募集の詳細情報
+		// メンター募集の詳細情報
+		req.Title,
+		categorydm.CategoryID(req.CategoryID),
+		req.BudgetFrom,
+		req.BudgetTo,
+		req.ApplicationPeriodFrom,
+		req.ApplicationPeriodTo,
+		req.ConsultationFormat,
+		req.ConsultationMethod,
+		req.Description,
+		req.Status, // 'profile' は 'description' を再利用しています
 	)
 	if err != nil {
 		return err

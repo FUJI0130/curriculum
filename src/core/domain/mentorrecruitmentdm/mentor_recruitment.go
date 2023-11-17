@@ -21,10 +21,14 @@ type MentorRecruitment struct {
 	consultation_method   int                   `db:"consultation_method"`
 	description           string                `db:"description"`
 	status                int                   `db:"status"`
-	profile               string                `db:"profile"`
 	createdAt             sharedvo.CreatedAt    `db:"created_at"`
 	updatedAt             sharedvo.UpdatedAt    `db:"updated_at"`
 }
+
+const (
+	StatusOpen   = 0
+	StatusClosed = 1
+)
 
 func NewMentorRecruitment(
 	title string,
@@ -36,7 +40,7 @@ func NewMentorRecruitment(
 	consultationFormat int,
 	consultationMethod int,
 	description string,
-	profile string,
+	status int,
 ) (*MentorRecruitment, error) {
 
 	if title == "" {
@@ -46,11 +50,10 @@ func NewMentorRecruitment(
 	if len(description) > descriptionMaxlength {
 		return nil, errors.New("description is too long")
 	}
-
-	if profile == "" {
-		return nil, errors.New("profile is empty")
+	// Status のバリデーション
+	if status != StatusOpen && status != StatusClosed {
+		return nil, errors.New("invalid status: must be either open (0) or closed (1)")
 	}
-
 	// ここで Budget と ApplicationPeriod のバリデーションを行う
 	// 例: budgetFrom が budgetTo より大きい場合、エラーを返す
 	if budgetFrom > budgetTo {
@@ -82,7 +85,7 @@ func NewMentorRecruitment(
 		consultation_format:   consultationFormat,
 		consultation_method:   consultationMethod,
 		description:           description,
-		profile:               profile,
+		status:                status,
 		createdAt:             createdAt,
 		updatedAt:             updatedAt,
 	}, nil
