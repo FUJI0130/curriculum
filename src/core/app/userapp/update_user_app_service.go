@@ -24,9 +24,9 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 
 type UpdateUserRequestData struct {
 	UpdateData struct {
-		Users   updateUserRequest     `json:"users"`
-		Skills  []updateSkillRequest  `json:"skills"`
-		Careers []updateCareerRequest `json:"careers"`
+		Users   UpdateUserRequest     `json:"users"`
+		Skills  []UpdateSkillRequest  `json:"skills"`
+		Careers []UpdateCareerRequest `json:"careers"`
 	} `json:"updateData"`
 }
 
@@ -64,7 +64,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 	return app.userRepo.Update(ctx, userDomain)
 }
 
-func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *userdm.User, req *updateUserRequest) (*userdm.User, error) {
+func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) (*userdm.User, error) {
 	updatedUser, err := userdm.GenUserWhenUpdate(
 		userDataOnDB.ID().String(),
 		req.Name,
@@ -80,7 +80,7 @@ func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *
 	return updatedUser, nil
 }
 
-func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *userdm.UserDomain, skillsReq []updateSkillRequest) ([]*userdm.Skill, error) {
+func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *userdm.UserDomain, skillsReq []UpdateSkillRequest) ([]*userdm.Skill, error) {
 
 	updatedSkills := make([]*userdm.Skill, 0, len(skillsReq))
 	tagNames := make([]string, 0, len(skillsReq))
@@ -144,7 +144,7 @@ func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *u
 	return updatedSkills, nil
 }
 
-func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *userdm.UserDomain, careersReq []updateCareerRequest) ([]*userdm.Career, error) {
+func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *userdm.UserDomain, careersReq []UpdateCareerRequest) ([]*userdm.Career, error) {
 
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {

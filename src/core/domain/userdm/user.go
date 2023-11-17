@@ -163,34 +163,3 @@ func (u *User) CreatedAt() sharedvo.CreatedAt {
 func (u *User) UpdatedAt() sharedvo.UpdatedAt {
 	return u.updatedAt
 }
-func (u *User) MismatchedFields(other *User) map[string]bool {
-	if other == nil {
-		return map[string]bool{"other": true}
-	}
-
-	mismatches := map[string]bool{}
-
-	if !u.id.Equal(other.id) {
-		mismatches["id"] = true
-	}
-	if u.name != other.name {
-		mismatches["name"] = true
-	}
-	if !u.email.Equal(other.email) {
-		mismatches["email"] = true
-	}
-	if !u.password.Equal(other.password) {
-		mismatches["password"] = true
-	}
-	if u.profile != other.profile {
-		mismatches["profile"] = true
-	}
-	if !u.createdAt.Equal(other.createdAt) {
-		mismatches["createdAt"] = true
-	}
-	if !u.updatedAt.Equal(other.updatedAt) {
-		mismatches["updatedAt"] = true
-	}
-
-	return mismatches
-}

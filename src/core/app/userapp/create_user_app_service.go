@@ -22,15 +22,6 @@ func NewCreateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 	}
 }
 
-type CreateUserRequest struct {
-	Name     string                `json:"name"`
-	Email    string                `json:"email"`
-	Password string                `json:"password"`
-	Skills   []CreateSkillRequest  `json:"skills"`
-	Profile  string                `json:"profile"`
-	Careers  []CreateCareerRequest `json:"careers"`
-}
-
 func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserRequest) (err error) {
 
 	isExist, err := app.existService.Exec(ctx, req.Name)

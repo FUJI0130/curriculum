@@ -1,11 +1,7 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
-
-	"github.com/cockroachdb/errors"
-	"github.com/jmoiron/sqlx"
 
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
@@ -24,14 +20,6 @@ func (ctrl *CreateUserController) Create(c *gin.Context) {
 	var req userapp.CreateUserRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
-		return
-	}
-
-	ctx := c.Request.Context()
-	txObj, ok := ctx.Value("Conn").(*sqlx.Tx)
-	if !ok || txObj == nil {
-		log.Printf("CreateUserController Create: txObj is nil")
-		c.Error(errors.New("transaction not found"))
 		return
 	}
 
