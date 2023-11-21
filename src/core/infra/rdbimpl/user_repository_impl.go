@@ -88,7 +88,7 @@ func (repo *userRepositoryImpl) findUserByName(ctx context.Context, name string)
 	}
 	query := "SELECT * FROM users WHERE name = ?"
 
-	var tempUser datamodel.Users
+	var tempUser datamodel.User
 	err := conn.Get(&tempUser, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -109,7 +109,7 @@ func (repo *userRepositoryImpl) FindByEmail(ctx context.Context, email string) (
 	}
 	query := "SELECT * FROM users WHERE email = ?"
 
-	var tempUser datamodel.Users
+	var tempUser datamodel.User
 	err := conn.Get(&tempUser, query, email)
 	if err != nil {
 		log.Printf("user Repository FindByEmail error: %v", err)
@@ -192,7 +192,7 @@ func (repo *userRepositoryImpl) findUsersByUserID(ctx context.Context, userID st
 	log.Printf("before query")
 	query := "SELECT * FROM users WHERE id = ?"
 
-	var tempUser datamodel.Users
+	var tempUser datamodel.User
 	log.Printf("before get")
 	err := conn.Get(&tempUser, query, userID)
 	log.Printf("FindUserByUserID: tempUser: %v", tempUser)
@@ -212,7 +212,7 @@ func (repo *userRepositoryImpl) findSkillsByUserID(ctx context.Context, userID s
 	}
 
 	query := "SELECT * FROM skills WHERE user_id = ?"
-	var tempSkills []datamodel.Skills
+	var tempSkills []datamodel.Skill
 	err := conn.Select(&tempSkills, query, userID)
 	if err != nil {
 		return nil, err // You should handle not found error and other errors appropriately
@@ -237,7 +237,7 @@ func (repo *userRepositoryImpl) findCareersByUserID(ctx context.Context, userID 
 	}
 
 	query := "SELECT * FROM careers WHERE user_id = ?"
-	var tempCareers []datamodel.Careers
+	var tempCareers []datamodel.Career
 	err := conn.Select(&tempCareers, query, userID)
 	if err != nil {
 		return nil, err // You should handle not found error and other errors appropriately
