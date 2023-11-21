@@ -50,10 +50,10 @@ func (mr *MockUserRepositoryMockRecorder) FindByEmail(arg0, arg1 interface{}) *g
 }
 
 // FindByUserID mocks base method
-func (m *MockUserRepository) FindByUserID(arg0 context.Context, arg1 string) (*userdm.UserDomain, error) {
+func (m *MockUserRepository) FindByUserID(arg0 context.Context, arg1 string) (*userdm.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUserID", arg0, arg1)
-	ret0, _ := ret[0].(*userdm.UserDomain)
+	ret0, _ := ret[0].(*userdm.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockUserRepositoryMockRecorder) FindByUserID(arg0, arg1 interface{}) *
 }
 
 // FindByUserName mocks base method
-func (m *MockUserRepository) FindByUserName(arg0 context.Context, arg1 string) (*userdm.UserDomain, error) {
+func (m *MockUserRepository) FindByUserName(arg0 context.Context, arg1 string) (*userdm.User, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindByUserName", arg0, arg1)
-	ret0, _ := ret[0].(*userdm.UserDomain)
+	ret0, _ := ret[0].(*userdm.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,7 +80,7 @@ func (mr *MockUserRepositoryMockRecorder) FindByUserName(arg0, arg1 interface{})
 }
 
 // Store mocks base method
-func (m *MockUserRepository) Store(arg0 context.Context, arg1 *userdm.UserDomain) error {
+func (m *MockUserRepository) Store(arg0 context.Context, arg1 *userdm.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Store", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -94,7 +94,7 @@ func (mr *MockUserRepositoryMockRecorder) Store(arg0, arg1 interface{}) *gomock.
 }
 
 // Update mocks base method
-func (m *MockUserRepository) Update(arg0 context.Context, arg1 *userdm.UserDomain) error {
+func (m *MockUserRepository) Update(arg0 context.Context, arg1 *userdm.User) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Update", arg0, arg1)
 	ret0, _ := ret[0].(error)

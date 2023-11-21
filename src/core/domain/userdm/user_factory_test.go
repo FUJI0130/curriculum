@@ -81,7 +81,7 @@ func TestGenWhenCreate(t *testing.T) {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
 			t.Parallel()
-			_, err := GenWhenCreate("TestName", tt.email, tt.password, tt.profile, []SkillParam{}, []CareerParam{})
+			_, err := GenWhenCreate("TestName", tt.email, tt.password, tt.profile, []Skill{}, []Career{})
 
 			if tt.wantErr {
 				assert.Error(t, err)
