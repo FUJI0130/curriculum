@@ -41,7 +41,8 @@ func (repo *categoryRepositoryImpl) FindByName(ctx context.Context, name string)
 	err := conn.Get(&tempCategory, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.WrapNotFoundError(err, "カテゴリが見つかりません")
+			// カテゴリが見つからなかった場合、nil と sql.ErrNoRows を返す
+			return nil, sql.ErrNoRows
 		}
 		return nil, err
 	}
@@ -52,7 +53,7 @@ func (repo *categoryRepositoryImpl) FindByName(ctx context.Context, name string)
 
 	}
 
-	category, err := categorydm.GenWhenCreateCategory(categoryID, tempCategory.Name, tempCategory.CreatedAt)
+	category, err := categorydm.GenWhenFetch(categoryID, tempCategory.Name, tempCategory.CreatedAt)
 
 	if err != nil {
 		return nil, customerrors.WrapInternalServerError(err, "カテゴリの再構築に失敗しました")
@@ -81,7 +82,7 @@ func (repo *categoryRepositoryImpl) FindByID(ctx context.Context, id string) (*c
 		return nil, customerrors.WrapUnprocessableEntityError(err, "IDのパースに失敗しました")
 	}
 
-	category, err := categorydm.GenWhenCreateCategory(categoryID, tempCategory.Name, tempCategory.CreatedAt)
+	category, err := categorydm.GenWhenFetch(categoryID, tempCategory.Name, tempCategory.CreatedAt)
 
 	if err != nil {
 		return nil, customerrors.WrapInternalServerError(err, "カテゴリの再構築に失敗しました")

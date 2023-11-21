@@ -4,7 +4,7 @@ import "time"
 
 type CreateMentorRecruitmentRequest struct {
 	Title                 string    `json:"title"`
-	CategoryID            string    `json:"category_id"`
+	CategoryName          string    `json:"category_name"`
 	BudgetFrom            int       `json:"budget_from"`
 	BudgetTo              int       `json:"budget_to"`
 	ApplicationPeriodFrom time.Time `json:"application_period_from"`

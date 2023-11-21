@@ -12,16 +12,16 @@ const descriptionMaxlength = 2000
 
 type MentorRecruitment struct {
 	id                  MentorRecruitmentID   `db:"id"`
-	title               string                `db:"name"`
-	categoryID          categorydm.CategoryID `db:"tag_id"`
-	budget              *Budget               // Budget オブジェクト
-	applicationPeriod   *ApplicationPeriod    // ApplicationPeriod オブジェクト
-	consultation_format int                   `db:"consultation_format"`
-	consultation_method int                   `db:"consultation_method"`
-	description         string                `db:"description"`
-	status              int                   `db:"status"`
-	createdAt           sharedvo.CreatedAt    `db:"created_at"`
-	updatedAt           sharedvo.UpdatedAt    `db:"updated_at"`
+	title               string                `db:"title"`
+	categoryID          categorydm.CategoryID `db:"category_id"`
+	budget              *Budget
+	applicationPeriod   *ApplicationPeriod
+	consultation_format int                `db:"consultation_format"`
+	consultation_method int                `db:"consultation_method"`
+	description         string             `db:"description"`
+	status              int                `db:"status"`
+	createdAt           sharedvo.CreatedAt `db:"created_at"`
+	updatedAt           sharedvo.UpdatedAt `db:"updated_at"`
 }
 
 const (

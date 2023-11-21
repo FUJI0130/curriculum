@@ -32,8 +32,9 @@ func main() {
 
 	// メンター募集関連のリポジトリとサービス
 	mentorRecruitmentRepo := rdbimpl.NewMentorRecruitmentRepository()
+	mentorRecruitmentTagRepo := rdbimpl.NewMentorRecruitmentsTagsRepository()
 	categoryRepo := rdbimpl.NewCategoryRepository()
-	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, tagRepo, categoryRepo)
+	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, mentorRecruitmentTagRepo, tagRepo, categoryRepo)
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)

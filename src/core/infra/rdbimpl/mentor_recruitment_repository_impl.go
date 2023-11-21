@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
 	"github.com/FUJI0130/curriculum/src/core/domain/mentorrecruitmentdm"
@@ -18,6 +19,7 @@ func NewMentorRecruitmentRepository() mentorrecruitmentdm.MentorRecruitmentRepos
 }
 
 func (repo *mentorRecruitmentRepositoryImpl) Store(ctx context.Context, mentorRecruitment *mentorrecruitmentdm.MentorRecruitment) error {
+	log.Printf("store start")
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
@@ -41,22 +43,23 @@ func (repo *mentorRecruitmentRepositoryImpl) Store(ctx context.Context, mentorRe
 
 	_, err := conn.Exec(
 		query,
-		mentorRecruitment.ID,
-		mentorRecruitment.Title,
-		mentorRecruitment.CategoryID,
-		mentorRecruitment.BudgetFrom,
-		mentorRecruitment.BudgetTo,
-		mentorRecruitment.ApplicationPeriodFrom,
-		mentorRecruitment.ApplicationPeriodTo,
-		mentorRecruitment.ConsultationFormat,
-		mentorRecruitment.ConsultationMethod,
-		mentorRecruitment.Description,
-		mentorRecruitment.Status,
-		mentorRecruitment.CreatedAt,
-		mentorRecruitment.UpdatedAt,
+		mentorRecruitment.ID().String(),
+		mentorRecruitment.Title(),
+		mentorRecruitment.CategoryID().String(),
+		mentorRecruitment.BudgetFrom(),
+		mentorRecruitment.BudgetTo(),
+		mentorRecruitment.ApplicationPeriodFrom(),
+		mentorRecruitment.ApplicationPeriodTo(),
+		mentorRecruitment.ConsultationFormat(),
+		mentorRecruitment.ConsultationMethod(),
+		mentorRecruitment.Description(),
+		mentorRecruitment.Status(),
+		mentorRecruitment.CreatedAt().DateTime(),
+		mentorRecruitment.UpdatedAt().DateTime(),
 	)
 
 	if err != nil {
+		log.Printf("Error storing mentor recruitment: %v\n", err)
 		return customerrors.WrapInternalServerError(err, "Failed to store mentor recruitment")
 	}
 

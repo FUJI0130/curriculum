@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/mentorrecruitmentdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
@@ -16,13 +17,19 @@ func NewMentorRecruitmentsTagsRepository() mentorrecruitmentdm.MentorRecruitment
 	return &mentorRecruitmentsTagsRepositoryImpl{}
 }
 
-func (repo *mentorRecruitmentsTagsRepositoryImpl) Store(ctx context.Context, mentorRecruitmentID mentorrecruitmentdm.MentorRecruitmentID, tagID tagdm.TagID) error {
+func (repo *mentorRecruitmentsTagsRepositoryImpl) Store(ctx context.Context, mentorRecruitmentTag *mentorrecruitmentdm.MentorRecruitmentTag) error {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
 	}
-	query := "INSERT INTO mentor_recruitments_tags (mentor_recruitment_id, tag_id) VALUES (?, ?)"
-	_, err := conn.Exec(query, mentorRecruitmentID.String(), tagID.String())
+
+	query := "INSERT INTO mentor_recruitments_tags (mentor_recruitment_id, tag_id, created_at) VALUES (?, ?, ?)"
+	_, err := conn.Exec(
+		query,
+		mentorRecruitmentTag.MentorRecruitmentID.String(),
+		mentorRecruitmentTag.TagID.String(),
+		mentorRecruitmentTag.CreatedAt,
+	)
 
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "Failed to store mentor recruitment tag")
@@ -31,16 +38,20 @@ func (repo *mentorRecruitmentsTagsRepositoryImpl) Store(ctx context.Context, men
 	return nil
 }
 
-func (repo *mentorRecruitmentsTagsRepositoryImpl) FindByMentorRecruitmentID(ctx context.Context, mentorRecruitmentID mentorrecruitmentdm.MentorRecruitmentID) ([]tagdm.TagID, error) {
+func (repo *mentorRecruitmentsTagsRepositoryImpl) FindByMentorRecruitmentID(ctx context.Context, mentorRecruitmentID mentorrecruitmentdm.MentorRecruitmentID) ([]*mentorrecruitmentdm.MentorRecruitmentTag, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return nil, errors.New("no transaction found in context")
 	}
 
-	query := "SELECT tag_id FROM mentor_recruitments_tags WHERE mentor_recruitment_id = ?"
-	var tagIDs []string // 一時的にtag_idを格納するためのスライス
+	query := "SELECT mentor_recruitment_id, tag_id, created_at FROM mentor_recruitments_tags WHERE mentor_recruitment_id = ?"
+	var rows []struct {
+		MentorRecruitmentID string
+		TagID               string
+		CreatedAt           time.Time
+	}
 
-	err := conn.Select(&tagIDs, query, mentorRecruitmentID.String())
+	err := conn.Select(&rows, query, mentorRecruitmentID.String())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, customerrors.WrapNotFoundError(err, "Mentor recruitment tags not found")
@@ -48,14 +59,12 @@ func (repo *mentorRecruitmentsTagsRepositoryImpl) FindByMentorRecruitmentID(ctx 
 		return nil, customerrors.WrapInternalServerError(err, "Error querying mentor recruitment tags")
 	}
 
-	// string型のtag_idをTagID型に変換
-	var result []tagdm.TagID
-	for _, idStr := range tagIDs {
-		tagID, err := tagdm.NewTagIDFromString(idStr)
-		if err != nil {
-			return nil, customerrors.WrapUnprocessableEntityError(err, "Error converting tag ID")
-		}
-		result = append(result, tagID)
+	var result []*mentorrecruitmentdm.MentorRecruitmentTag
+	for _, row := range rows {
+		mentorRecruitmentID, _ := mentorrecruitmentdm.NewMentorRecruitmentIDFromString(row.MentorRecruitmentID)
+		tagID, _ := tagdm.NewTagIDFromString(row.TagID)
+
+		result = append(result, mentorrecruitmentdm.NewMentorRecruitmentTag(mentorRecruitmentID, tagID, row.CreatedAt))
 	}
 
 	return result, nil

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
@@ -17,6 +18,9 @@ func NewCreateMentorRecruitmentController(s *mentorapp.CreateMentorRecruitmentAp
 }
 
 func (ctrl *CreateMentorRecruitmentController) Create(c *gin.Context) {
+
+	log.Println("Start Create in CreateMentorRecruitmentController")
+
 	var req mentorapp.CreateMentorRecruitmentRequest
 	if err := c.BindJSON(&req); err != nil {
 		c.Error(customerrors.WrapUnprocessableEntityError(err, "JSON binding error"))
