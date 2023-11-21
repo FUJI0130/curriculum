@@ -2,7 +2,7 @@ package datamodel
 
 import "time"
 
-type Users struct {
+type User struct {
 	ID        string    `db:"id"`
 	Name      string    `db:"name"`
 	Email     string    `db:"email"`
@@ -12,7 +12,7 @@ type Users struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-type Skills struct {
+type Skill struct {
 	ID         string    `db:"id"`
 	TagID      string    `db:"tag_id"`
 	UserID     string    `db:"user_id"`
@@ -21,8 +21,7 @@ type Skills struct {
 	CreatedAt  time.Time `db:"created_at"`
 	UpdatedAt  time.Time `db:"updated_at"`
 }
-
-type Careers struct {
+type Career struct {
 	ID        string    `db:"id"`
 	UserID    string    `db:"user_id"`
 	Detail    string    `db:"detail"`
