@@ -22,14 +22,6 @@ func NewUpdateUserAppService(userRepo userdm.UserRepository, tagRepo tagdm.TagRe
 	}
 }
 
-type UpdateUserRequestData struct {
-	UpdateData struct {
-		Users   UpdateUserRequest     `json:"users"`
-		Skills  []UpdateSkillRequest  `json:"skills"`
-		Careers []UpdateCareerRequest `json:"careers"`
-	} `json:"updateData"`
-}
-
 func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUserRequestData) error {
 	log.Printf("req is : %v\n", req)
 
@@ -39,7 +31,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 	}
 	log.Printf("log checkpoint1")
 
-	updatedUser, err := app.updateUsers(ctx, userDomainDataOnDB.User, &req.UpdateData.Users)
+	updatedUser, err := app.updateUsers(ctx, userDomainDataOnDB, &req.UpdateData.Users)
 	if err != nil {
 		return err
 	}
@@ -56,12 +48,12 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		return err
 	}
 
-	userDomain, err := userdm.GenWhenUpdate(updatedUser, updatedSkills, updatedCareers)
+	user, err := userdm.GenWhenUpdate(updatedUser, updatedSkills, updatedCareers)
 	if err != nil {
 		return err
 	}
 
-	return app.userRepo.Update(ctx, userDomain)
+	return app.userRepo.Update(ctx, user)
 }
 
 func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *userdm.User, req *UpdateUserRequest) (*userdm.User, error) {
@@ -80,83 +72,71 @@ func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *
 	return updatedUser, nil
 }
 
-func (app *UpdateUserAppService) updateSkills(ctx context.Context, userDomain *userdm.UserDomain, skillsReq []UpdateSkillRequest) ([]*userdm.Skill, error) {
-
-	updatedSkills := make([]*userdm.Skill, 0, len(skillsReq))
-	tagNames := make([]string, 0, len(skillsReq))
-	seenSkills := make(map[string]bool)
-
-	for _, s := range skillsReq {
-		if seenSkills[s.TagName] {
-			return nil, customerrors.NewUnprocessableEntityErrorf("Skill with tag name %s is duplicated", s.TagName)
-		}
-		seenSkills[s.TagName] = true
-		tagNames = append(tagNames, s.TagName)
+func (app *UpdateUserAppService) updateSkills(ctx context.Context, user *userdm.User, skillsReq []UpdateSkillRequest) ([]*userdm.Skill, error) {
+	// 既存のスキルのマップを作成
+	existingSkillsMap := make(map[string]userdm.Skill)
+	for _, skill := range user.Skills() {
+		existingSkillsMap[skill.ID().String()] = skill
 	}
 
+	// タグ名のリストとタグ情報の取得
+	tagNames := make([]string, 0, len(skillsReq))
+	for _, s := range skillsReq {
+		tagNames = append(tagNames, s.TagName)
+	}
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 		return nil, err
 	}
-
-	tagsMap := make(map[string]*tagdm.Tag)
+	tagsMap := make(map[string]tagdm.TagID)
 	for _, tag := range tags {
-		tagsMap[tag.Name()] = tag
+		tagsMap[tag.Name()] = tag.ID()
 	}
 
-	for _, tagName := range tagNames {
-		if _, exists := tagsMap[tagName]; !exists {
-			tag, err := tagdm.GenWhenCreateTag(tagName)
-			if err != nil {
-				return nil, err
-			}
-			//N+1
-			if err = app.tagRepo.Store(ctx, tag); err != nil {
-				return nil, err
-			}
-			tagsMap[tagName] = tag
-		}
-	}
-
-	existingSkillsMap := make(map[string]*userdm.Skill)
-	for _, skill := range userDomain.Skills {
-		skillCopy := skill
-		existingSkillsMap[skill.TagID().String()] = skillCopy
-	}
-
+	// 更新するスキルのリストを生成
+	var updatedSkills []*userdm.Skill
 	for _, s := range skillsReq {
-		tagID := tagsMap[s.TagName].ID().String()
-		if skill, exists := existingSkillsMap[tagID]; exists {
-			updatedSkill, err := userdm.GenSkillWhenUpdate(skill.ID().String(), tagID, skill.UserID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
-			if err != nil {
-				return nil, err
-			}
-			updatedSkills = append(updatedSkills, updatedSkill)
-		} else {
-			newSkill, err := userdm.GenSkillWhenCreate(tagID, userDomain.User.ID().String(), s.Evaluation, s.Years, time.Now(), time.Now())
-			if err != nil {
-				return nil, err
-			}
-			updatedSkills = append(updatedSkills, newSkill)
+		tagID, exists := tagsMap[s.TagName]
+		if !exists {
+			return nil, customerrors.NewUnprocessableEntityErrorf("No tag found with name: %s", s.TagName)
 		}
+
+		existingSkill, exists := existingSkillsMap[s.ID]
+		if !exists {
+			return nil, customerrors.NewNotFoundErrorf("Skill not found with ID: %s", s.ID)
+		}
+
+		updatedSkill, err := userdm.GenSkillWhenUpdate(
+			s.ID,
+			tagID.String(),
+			user.ID().String(),
+			s.Evaluation,
+			s.Years,
+			existingSkill.CreatedAt().DateTime(),
+			time.Now(),
+		)
+		if err != nil {
+			return nil, err
+		}
+		updatedSkills = append(updatedSkills, updatedSkill)
 	}
 
 	return updatedSkills, nil
 }
 
-func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *userdm.UserDomain, careersReq []UpdateCareerRequest) ([]*userdm.Career, error) {
+func (app *UpdateUserAppService) updateCareers(ctx context.Context, user *userdm.User, careersReq []UpdateCareerRequest) ([]*userdm.Career, error) {
 
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		return nil, err
 	}
 
-	existingCareers := userDomain.Careers
+	existingCareers := user.Careers()
 
 	existingCareersMap := make(map[string]*userdm.Career)
 	for _, career := range existingCareers {
 		careerCopy := career
-		existingCareersMap[career.ID().String()] = careerCopy
+		existingCareersMap[career.ID().String()] = &careerCopy
 	}
 
 	careersToUpdate := make([]*userdm.Career, 0, len(careersReq))
@@ -172,7 +152,7 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *
 				c.Detail,
 				adFromInJST,
 				adToInJST,
-				userDomain.User.ID().String(),
+				user.ID().String(),
 				existingCareer.CreatedAt().DateTime(),
 				time.Now(),
 			)
@@ -184,7 +164,7 @@ func (app *UpdateUserAppService) updateCareers(ctx context.Context, userDomain *
 				c.Detail,
 				adFromInJST,
 				adToInJST,
-				userDomain.User.ID().String(),
+				user.ID().String(),
 				time.Now(),
 				time.Now(),
 			)

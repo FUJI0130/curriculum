@@ -66,26 +66,33 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 	}
 
-	skillsParams := make([]userdm.SkillParam, len(req.Skills))
+	// スキルオブジェクトのスライスを生成
+	skills := make([]userdm.Skill, len(req.Skills))
 	for i, s := range req.Skills {
-		skillsParams[i] = userdm.SkillParam{
-			TagID:      tagsMap[s.TagName].ID(),
-			TagName:    s.TagName,
-			Evaluation: s.Evaluation,
-			Years:      s.Years,
+		tag, exists := tagsMap[s.TagName]
+		if !exists {
+			return customerrors.NewUnprocessableEntityErrorf("Tag not found for skill: %s", s.TagName)
 		}
+
+		skill, err := userdm.NewSkill(tag.ID(), s.Evaluation, s.Years)
+		if err != nil {
+			return err
+		}
+		skills[i] = *skill
 	}
 
-	careersParams := make([]userdm.CareerParam, len(req.Careers))
+	// キャリアオブジェクトのスライスを生成
+	careers := make([]userdm.Career, len(req.Careers))
 	for i, c := range req.Careers {
-		careersParams[i] = userdm.CareerParam{
-			Detail: c.Detail,
-			AdFrom: c.AdFrom,
-			AdTo:   c.AdTo,
+		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo)
+		if err != nil {
+			return err
 		}
+		careers[i] = *career
 	}
 
-	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skillsParams, careersParams)
+	// ユーザーの生成
+	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skills, careers)
 	if err != nil {
 		return err
 	}

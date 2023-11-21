@@ -17,11 +17,13 @@ type User struct {
 	email     UserEmail          `db:"email"`
 	password  UserPassword       `db:"password"`
 	profile   string             `db:"profile"`
+	skills    []Skill            `db:"skills"`
+	careers   []Career           `db:"careers"`
 	createdAt sharedvo.CreatedAt `db:"created_at"`
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewUser(name string, email string, password string, profile string) (*User, error) {
+func NewUser(name string, email string, password string, profile string, skills []Skill, careers []Career) (*User, error) {
 
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("Username is empty")
@@ -58,6 +60,8 @@ func NewUser(name string, email string, password string, profile string) (*User,
 		email:     userEmail,
 		password:  userPassword,
 		profile:   userProfile,
+		skills:    skills,
+		careers:   careers,
 		createdAt: userCreatedAt,
 		updatedAt: userUpdatedAt,
 	}, nil
@@ -94,6 +98,56 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 		email:     userEmail,
 		password:  userPassword,
 		profile:   userProfile,
+		createdAt: userCreatedAt,
+		updatedAt: userUpdatedAt,
+	}, nil
+}
+
+func ReconstructEntity(id string, name string, email string, password string, profile string, skills []Skill, careers []Career, createdAt time.Time) (*User, error) {
+	// ユーザーIDを文字列から生成
+	userId, err := NewUserIDFromString(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// 名前のバリデーション
+	if name == "" {
+		return nil, customerrors.NewUnprocessableEntityError("name is empty")
+	}
+
+	// メールアドレスのバリデーション
+	userEmail, err := NewUserEmail(email)
+	if err != nil {
+		return nil, err
+	}
+
+	// パスワードのバリデーション
+	userPassword, err := NewUserPassword(password)
+	if err != nil {
+		return nil, err
+	}
+
+	// 作成日時のバリデーション
+	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	if err != nil {
+		return nil, err
+	}
+
+	// 更新日時を現在時刻で生成
+	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(time.Now())
+	if err != nil {
+		return nil, err
+	}
+
+	// User エンティティの再構築
+	return &User{
+		id:        userId,
+		name:      name,
+		email:     userEmail,
+		password:  userPassword,
+		profile:   profile,
+		skills:    skills,
+		careers:   careers,
 		createdAt: userCreatedAt,
 		updatedAt: userUpdatedAt,
 	}, nil
@@ -154,6 +208,13 @@ func (u *User) Password() UserPassword {
 
 func (u *User) Profile() string {
 	return u.profile
+}
+func (u *User) Skills() []Skill {
+	return u.skills
+}
+
+func (u *User) Careers() []Career {
+	return u.careers
 }
 
 func (u *User) CreatedAt() sharedvo.CreatedAt {
