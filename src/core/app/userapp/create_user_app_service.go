@@ -66,7 +66,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		}
 	}
 
-	// スキルオブジェクトのスライスを生成
 	skills := make([]userdm.Skill, len(req.Skills))
 	for i, s := range req.Skills {
 		tag, exists := tagsMap[s.TagName]
@@ -81,7 +80,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		skills[i] = *skill
 	}
 
-	// キャリアオブジェクトのスライスを生成
 	careers := make([]userdm.Career, len(req.Careers))
 	for i, c := range req.Careers {
 		career, err := userdm.NewCareer(c.Detail, c.AdFrom, c.AdTo)
@@ -91,7 +89,6 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 		careers[i] = *career
 	}
 
-	// ユーザーの生成
 	userdomain, err := userdm.GenWhenCreate(req.Name, req.Email, req.Password, req.Profile, skills, careers)
 	if err != nil {
 		return err

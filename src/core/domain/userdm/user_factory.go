@@ -24,23 +24,21 @@ type CareerParam struct {
 }
 
 func GenWhenCreate(name string, email string, password string, profile string, skills []Skill, careers []Career) (*User, error) {
-	// NewUser はスキルとキャリアのパラメータを受け取るようになったので、これらを直接渡す
 	user, err := NewUser(name, email, password, profile, skills, careers)
 	if err != nil {
 		return nil, err
 	}
 
-	// User オブジェクトを直接返す
 	return user, nil
 }
 
 func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillID() // ID文字列からSkillIDを再構築する関数を想定
+	skillId, err := NewSkillID()
 	if err != nil {
 		return nil, err
 	}
 
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
+	tID, err := tagdm.NewTagIDFromString(tagID)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +74,7 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 }
 
 func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerID() // Assuming NewCareerIDFromString function exists
+	careerId, err := NewCareerID()
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +108,8 @@ func GenWhenUpdate(updatedUser *User, updatedSkills []*Skill, updatedCareers []*
 		return nil, errors.New("updated user is nil")
 	}
 
-	// Userオブジェクトのコピーを作成（ディープコピーが必要な場合はそれに応じて調整）
 	newUser := *updatedUser
 
-	// スキル情報の更新（ポインタのスライスから値のスライスへ変換）
 	newSkills := make([]Skill, len(updatedSkills))
 	for i, s := range updatedSkills {
 		if s != nil {
@@ -122,7 +118,6 @@ func GenWhenUpdate(updatedUser *User, updatedSkills []*Skill, updatedCareers []*
 	}
 	newUser.skills = newSkills
 
-	// キャリア情報の更新（同様の変換が必要な場合）
 	newCareers := make([]Career, len(updatedCareers))
 	for i, c := range updatedCareers {
 		if c != nil {
@@ -131,7 +126,6 @@ func GenWhenUpdate(updatedUser *User, updatedSkills []*Skill, updatedCareers []*
 	}
 	newUser.careers = newCareers
 
-	// 更新日時の設定
 	newUser.updatedAt = sharedvo.NewUpdatedAt()
 
 	return &newUser, nil
@@ -175,12 +169,12 @@ func GenUserWhenUpdate(id string, name string, email string, password string, pr
 }
 
 func GenSkillWhenUpdate(id string, tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillIDFromString(id) // ID文字列からSkillIDを再構築する関数を想定
+	skillId, err := NewSkillIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
+	tID, err := tagdm.NewTagIDFromString(tagID)
 	if err != nil {
 		return nil, err
 	}
@@ -216,7 +210,7 @@ func GenSkillWhenUpdate(id string, tagID string, userID string, evaluation uint8
 }
 
 func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
+	careerId, err := NewCareerIDFromString(id)
 	if err != nil {
 		return nil, err
 	}

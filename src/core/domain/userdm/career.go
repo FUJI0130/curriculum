@@ -72,7 +72,7 @@ func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 }
 
 func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
+	careerId, err := NewCareerIDFromString(id)
 	if err != nil {
 		return nil, err
 	}

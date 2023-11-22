@@ -104,42 +104,35 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 }
 
 func ReconstructEntity(id string, name string, email string, password string, profile string, skills []Skill, careers []Career, createdAt time.Time) (*User, error) {
-	// ユーザーIDを文字列から生成
 	userId, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// 名前のバリデーション
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("name is empty")
 	}
 
-	// メールアドレスのバリデーション
 	userEmail, err := NewUserEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	// パスワードのバリデーション
 	userPassword, err := NewUserPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// 作成日時のバリデーション
 	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
 		return nil, err
 	}
 
-	// 更新日時を現在時刻で生成
 	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(time.Now())
 	if err != nil {
 		return nil, err
 	}
 
-	// User エンティティの再構築
 	return &User{
 		id:        userId,
 		name:      name,

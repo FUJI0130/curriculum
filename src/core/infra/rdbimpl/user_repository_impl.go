@@ -53,32 +53,27 @@ func (repo *userRepositoryImpl) Store(ctx context.Context, user *userdm.User) er
 }
 
 func (repo *userRepositoryImpl) FindByUserName(ctx context.Context, name string) (*userdm.User, error) {
-	// ユーザーエンティティを取得
 	conn := ctx.Value("Conn")
 	log.Printf("FindByUserName: conn: %v", conn)
 
-	user, err := repo.findUserByName(ctx, name) // 既存のメソッドをプライベートメソッドに変更
+	user, err := repo.findUserByName(ctx, name)
 	if err != nil {
 		return nil, err
 	}
 
-	// ユーザーIDを使用して関連するスキルを取得
 	skills, err := repo.findSkillsByUserID(ctx, user.ID().String())
 	if err != nil {
 		return nil, err
 	}
 
-	// ユーザーIDを使用して関連するキャリアを取得
 	careers, err := repo.findCareersByUserID(ctx, user.ID().String())
 	if err != nil {
 		return nil, err
 	}
 
-	// GenWhenCreate を使用して User オブジェクトを生成
 	return userdm.ReconstructEntity(user.ID().String(), user.Name(), user.Email().String(), user.Password().String(), user.Profile(), skills, careers, user.CreatedAt().DateTime())
 }
 
-// findUserByName は、名前に基づいてユーザーエンティティを取得するプライベートメソッド
 func (repo *userRepositoryImpl) findUserByName(ctx context.Context, name string) (*userdm.User, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	log.Printf("findUserByName: conn: %v", conn)
@@ -147,7 +142,6 @@ func (repo *userRepositoryImpl) FindByUserID(ctx context.Context, userID string)
 		return nil, err
 	}
 
-	// GenWhenCreate を使用して User オブジェクトを生成
 	return userdm.GenWhenCreate(user.Name(), user.Email().String(), user.Password().String(), user.Profile(), skills, careers)
 }
 
@@ -157,13 +151,11 @@ func (repo *userRepositoryImpl) Update(ctx context.Context, user *userdm.User) e
 		return errors.New("no transaction found in context")
 	}
 
-	// ユーザー情報を更新
 	queryUser := "UPDATE users SET name = ?, email = ?, password = ?, profile = ?, updated_at = ? WHERE id = ?"
 	if _, err := conn.Exec(queryUser, user.Name(), user.Email(), user.Password(), user.Profile(), time.Now(), user.ID().String()); err != nil {
 		return err
 	}
 
-	// スキル情報を更新
 	for _, skill := range user.Skills() {
 		querySkill := "UPDATE skills SET tag_id = ?, evaluation = ?, years = ?, updated_at = ? WHERE id = ?"
 		if _, err := conn.Exec(querySkill, skill.TagID().String(), skill.Evaluation().Value(), skill.Year().Value(), time.Now(), skill.ID().String()); err != nil {
@@ -171,7 +163,6 @@ func (repo *userRepositoryImpl) Update(ctx context.Context, user *userdm.User) e
 		}
 	}
 
-	// キャリア情報を更新
 	for _, career := range user.Careers() {
 		queryCareer := "UPDATE careers SET detail = ?, ad_from = ?, ad_to = ?, updated_at = ? WHERE id = ?"
 		if _, err := conn.Exec(queryCareer, career.Detail(), career.AdFrom(), career.AdTo(), time.Now(), career.ID().String()); err != nil {
@@ -215,14 +206,14 @@ func (repo *userRepositoryImpl) findSkillsByUserID(ctx context.Context, userID s
 	var tempSkills []datamodel.Skill
 	err := conn.Select(&tempSkills, query, userID)
 	if err != nil {
-		return nil, err // You should handle not found error and other errors appropriately
+		return nil, err
 	}
 
 	var skills []userdm.Skill
 	for _, tempSkill := range tempSkills {
 		skill, err := userdm.ReconstructSkill(tempSkill.ID, tempSkill.TagID, tempSkill.Evaluation, tempSkill.Years, tempSkill.CreatedAt, tempSkill.UpdatedAt)
 		if err != nil {
-			return nil, err // Handle the error appropriately
+			return nil, err
 		}
 		skills = append(skills, *skill)
 	}
@@ -240,14 +231,14 @@ func (repo *userRepositoryImpl) findCareersByUserID(ctx context.Context, userID 
 	var tempCareers []datamodel.Career
 	err := conn.Select(&tempCareers, query, userID)
 	if err != nil {
-		return nil, err // You should handle not found error and other errors appropriately
+		return nil, err
 	}
 
 	var careers []userdm.Career
 	for _, tempCareer := range tempCareers {
 		career, err := userdm.ReconstructCareer(tempCareer.ID, tempCareer.Detail, tempCareer.AdFrom, tempCareer.AdTo, tempCareer.CreatedAt, tempCareer.UpdatedAt)
 		if err != nil {
-			return nil, err // Handle the error appropriately
+			return nil, err
 		}
 		careers = append(careers, *career)
 	}

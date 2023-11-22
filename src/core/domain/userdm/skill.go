@@ -51,12 +51,12 @@ func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) 
 }
 
 func ReconstructSkill(id string, tagID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillIDFromString(id) // ID文字列からSkillIDを再構築する関数を想定
+	skillId, err := NewSkillIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
+	tID, err := tagdm.NewTagIDFromString(tagID)
 	if err != nil {
 		return nil, err
 	}
