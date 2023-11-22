@@ -1,6 +1,8 @@
 package mentorapp
 
 import (
+	"context"
+
 	"github.com/FUJI0130/curriculum/src/core/domain/mentorrecruitmentdm"
 )
 
@@ -14,8 +16,8 @@ func NewGetMentorListAppService(mentorRecruitmentRepo mentorrecruitmentdm.Mentor
 	}
 }
 
-func (s *GetMentorListAppService) Execute() ([]mentorrecruitmentdm.MentorRecruitment, error) {
-	mentorRecruitments, err := s.mentorRecruitmentRepo.FindAll()
+func (s *GetMentorListAppService) Execute(ctx context.Context) ([]*mentorrecruitmentdm.MentorRecruitment, error) {
+	mentorRecruitments, err := s.mentorRecruitmentRepo.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}

@@ -10,4 +10,5 @@ import (
 type MentorRecruitmentQueryRepository interface {
 	FindByID(ctx context.Context, id MentorRecruitmentID) (*MentorRecruitment, error)
 	FindByCategoryID(ctx context.Context, categoryID categorydm.CategoryID) ([]*MentorRecruitment, error)
+	FindAll(ctx context.Context) ([]*MentorRecruitment, error)
 }

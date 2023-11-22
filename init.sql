@@ -181,10 +181,12 @@ COLLATE = utf8mb4_0900_ai_ci;
 -- Table `sql_test`.`mentor_recruitments_tags`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sql_test`.`mentor_recruitments_tags` (
+  `id` CHAR(36) NOT NULL,
   `mentor_recruitment_id` CHAR(36) NOT NULL,
   `tag_id` CHAR(36) NOT NULL,
   `created_at` DATETIME NOT NULL,
-  PRIMARY KEY (`mentor_recruitment_id`, `tag_id`),
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,
   INDEX `tags_mentor_recruitments_tags_idx` (`tag_id` ASC) VISIBLE,
   CONSTRAINT `mentor_recruitments_tags_mentor_recruitments`
     FOREIGN KEY (`mentor_recruitment_id`)
@@ -195,6 +197,7 @@ CREATE TABLE IF NOT EXISTS `sql_test`.`mentor_recruitments_tags` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
 COLLATE = utf8mb4_0900_ai_ci;
+
 
 
 -- -----------------------------------------------------

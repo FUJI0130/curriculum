@@ -6,6 +6,7 @@ import (
 
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
 const descriptionMaxlength = 2000
@@ -83,6 +84,65 @@ func NewMentorRecruitment(
 		status:              status,
 		createdAt:           createdAt,
 		updatedAt:           updatedAt,
+	}, nil
+}
+func ReconstructMentorRecruitment(
+	id MentorRecruitmentID,
+	title string,
+	categoryID categorydm.CategoryID,
+	budgetFrom int,
+	budgetTo int,
+	applicationPeriodFrom time.Time,
+	applicationPeriodTo time.Time,
+	consultationFormat int,
+	consultationMethod int,
+	description string,
+	status int,
+	createdAt time.Time,
+	updatedAt time.Time,
+) (*MentorRecruitment, error) {
+	if title == "" {
+		return nil, customerrors.NewUnprocessableEntityError("title is empty")
+	}
+	if len(description) > descriptionMaxlength {
+		return nil, customerrors.NewUnprocessableEntityError("description is too long")
+	}
+	if status != StatusOpen && status != StatusClosed {
+		return nil, customerrors.NewUnprocessableEntityError("invalid status: must be either open (0) or closed (1)")
+	}
+
+	budget, err := NewBudget(budgetFrom, budgetTo)
+	if err != nil {
+		return nil, err
+	}
+
+	applicationPeriod, err := NewApplicationPeriod(applicationPeriodFrom, applicationPeriodTo)
+	if err != nil {
+		return nil, err
+	}
+
+	createdAtVal, err := sharedvo.NewCreatedAtByVal(createdAt)
+	if err != nil {
+		return nil, err
+	}
+
+	updatedAtVal, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return &MentorRecruitment{
+		id:                  id,
+		title:               title,
+		categoryID:          categoryID,
+		budget:              budget,
+		applicationPeriod:   applicationPeriod,
+		consultation_format: consultationFormat,
+		consultation_method: consultationMethod,
+		description:         description,
+		status:              status,
+		createdAt:           createdAtVal,
+		updatedAt:           updatedAtVal,
 	}, nil
 }
 

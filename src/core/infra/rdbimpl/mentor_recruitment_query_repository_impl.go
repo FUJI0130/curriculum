@@ -94,3 +94,42 @@ func (repo *mentorRecruitmentQueryRepositoryImpl) FindByCategoryID(ctx context.C
 
 	return mentorRecruitments, nil
 }
+
+func (repo *mentorRecruitmentQueryRepositoryImpl) FindAll(ctx context.Context) ([]*mentorrecruitmentdm.MentorRecruitment, error) {
+	conn, exists := ctx.Value("Conn").(dbOperator)
+	if !exists {
+		return nil, errors.New("no transaction found in context")
+	}
+
+	query := "SELECT * FROM mentor_recruitments"
+	var tempMentorRecruitments []datamodel.MentorRecruitment
+	err := conn.Select(&tempMentorRecruitments, query)
+	if err != nil {
+		return nil, customerrors.WrapInternalServerError(err, "Error querying all mentor recruitments")
+	}
+
+	var mentorRecruitments []*mentorrecruitmentdm.MentorRecruitment
+	for _, temp := range tempMentorRecruitments {
+		mentorRecruitment, err := mentorrecruitmentdm.ReconstructMentorRecruitment(
+			mentorrecruitmentdm.MentorRecruitmentID(temp.ID),
+			temp.Title,
+			categorydm.CategoryID(temp.CategoryID),
+			temp.BudgetFrom,
+			temp.BudgetTo,
+			temp.ApplicationPeriodFrom,
+			temp.ApplicationPeriodTo,
+			temp.ConsultationFormat,
+			temp.ConsultationMethod,
+			temp.Description,
+			temp.Status,
+			temp.CreatedAt,
+			temp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, customerrors.WrapInternalServerError(err, "Error reconstructing mentor recruitment")
+		}
+		mentorRecruitments = append(mentorRecruitments, mentorRecruitment)
+	}
+
+	return mentorRecruitments, nil
+}

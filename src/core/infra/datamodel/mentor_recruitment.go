@@ -5,7 +5,7 @@ import "time"
 type MentorRecruitment struct {
 	ID                    string    `db:"id"`
 	Title                 string    `db:"name"`
-	CategoryID            string    `db:"tag_id"`
+	CategoryID            string    `db:"category_id"`
 	BudgetFrom            int       `db:"budget_from"`
 	BudgetTo              int       `db:"budget_to"`
 	ApplicationPeriodFrom time.Time `db:"application_period_from"`

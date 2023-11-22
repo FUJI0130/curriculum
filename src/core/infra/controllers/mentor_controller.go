@@ -3,10 +3,11 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+	"github.com/gin-gonic/gin"
 )
 
 type MentorController struct {
@@ -17,20 +18,21 @@ func NewMentorController(getMentorListAppService *mentorapp.GetMentorListAppServ
 	return &MentorController{getMentorListAppService}
 }
 
-func (controller *MentorController) GetMentorList(w http.ResponseWriter, r *http.Request) {
-	mentors, err := controller.getMentorListAppService.Execute()
+func (controller *MentorController) GetMentorList(c *gin.Context) {
+	mentors, err := controller.getMentorListAppService.Execute(c.Request.Context())
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		// エラーに応じて適切なステータスコードを設定
+		if customErr, ok := err.(customerrors.BaseError); ok {
+			c.Status(customErr.StatusCode())
+		} else {
+			c.Status(http.StatusInternalServerError)
+		}
+
+		// エラー情報をレスポンスに含める
+		c.Error(customerrors.WrapInternalServerError(err, "Error executing getMentorListAppService"))
 		return
 	}
 
-	response, err := json.Marshal(mentors)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(response)
+	// 成功した場合、メンターリストをJSON形式で返す
+	c.JSON(http.StatusOK, mentors)
 }
