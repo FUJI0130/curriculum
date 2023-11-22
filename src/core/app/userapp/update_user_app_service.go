@@ -73,52 +73,62 @@ func (app *UpdateUserAppService) updateUsers(ctx context.Context, userDataOnDB *
 }
 
 func (app *UpdateUserAppService) updateSkills(ctx context.Context, user *userdm.User, skillsReq []UpdateSkillRequest) ([]*userdm.Skill, error) {
-	// 既存のスキルのマップを作成
-	existingSkillsMap := make(map[string]userdm.Skill)
-	for _, skill := range user.Skills() {
-		existingSkillsMap[skill.ID().String()] = skill
-	}
-
-	// タグ名のリストとタグ情報の取得
+	updatedSkills := make([]*userdm.Skill, 0, len(skillsReq))
 	tagNames := make([]string, 0, len(skillsReq))
+	seenSkills := make(map[string]bool)
+
 	for _, s := range skillsReq {
+		if seenSkills[s.TagName] {
+			return nil, customerrors.NewUnprocessableEntityErrorf("Skill with tag name %s is duplicated", s.TagName)
+		}
+		seenSkills[s.TagName] = true
 		tagNames = append(tagNames, s.TagName)
 	}
+
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 		return nil, err
 	}
-	tagsMap := make(map[string]tagdm.TagID)
+
+	tagsMap := make(map[string]*tagdm.Tag)
 	for _, tag := range tags {
-		tagsMap[tag.Name()] = tag.ID()
+		tagsMap[tag.Name()] = tag
 	}
 
-	// 更新するスキルのリストを生成
-	var updatedSkills []*userdm.Skill
+	for _, tagName := range tagNames {
+		if _, exists := tagsMap[tagName]; !exists {
+			tag, err := tagdm.GenWhenCreateTag(tagName)
+			if err != nil {
+				return nil, err
+			}
+			if err = app.tagRepo.Store(ctx, tag); err != nil {
+				return nil, err
+			}
+			tagsMap[tagName] = tag
+		}
+	}
+
+	existingSkillsMap := make(map[string]*userdm.Skill)
+	for _, skill := range user.Skills() {
+		skillCopy := skill
+		existingSkillsMap[skill.TagID().String()] = &skillCopy
+	}
+
 	for _, s := range skillsReq {
-		tagID, exists := tagsMap[s.TagName]
-		if !exists {
-			return nil, customerrors.NewUnprocessableEntityErrorf("No tag found with name: %s", s.TagName)
+		tagID := tagsMap[s.TagName].ID().String()
+		if skill, exists := existingSkillsMap[tagID]; exists {
+			updatedSkill, err := userdm.GenSkillWhenUpdate(skill.ID().String(), tagID, user.ID().String(), s.Evaluation, s.Years, skill.CreatedAt().DateTime(), time.Now())
+			if err != nil {
+				return nil, err
+			}
+			updatedSkills = append(updatedSkills, updatedSkill)
+		} else {
+			newSkill, err := userdm.GenSkillWhenCreate(tagID, user.ID().String(), s.Evaluation, s.Years, time.Now(), time.Now())
+			if err != nil {
+				return nil, err
+			}
+			updatedSkills = append(updatedSkills, newSkill)
 		}
-
-		existingSkill, exists := existingSkillsMap[s.ID]
-		if !exists {
-			return nil, customerrors.NewNotFoundErrorf("Skill not found with ID: %s", s.ID)
-		}
-
-		updatedSkill, err := userdm.GenSkillWhenUpdate(
-			s.ID,
-			tagID.String(),
-			user.ID().String(),
-			s.Evaluation,
-			s.Years,
-			existingSkill.CreatedAt().DateTime(),
-			time.Now(),
-		)
-		if err != nil {
-			return nil, err
-		}
-		updatedSkills = append(updatedSkills, updatedSkill)
 	}
 
 	return updatedSkills, nil
