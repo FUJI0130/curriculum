@@ -2,6 +2,7 @@ package userdm_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	mockExistByNameDomainService "github.com/FUJI0130/curriculum/src/core/mock/mock_exist_by_name_domain_service"
@@ -39,20 +40,24 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			wantResult: false,
 			wantErr:    nil,
 		},
+
 		{
-			title:     "Service error",
+			title:     "Service internal error",
 			inputName: mockName,
 			mockFunc: func(mockService *mockExistByNameDomainService.MockExistByNameDomainService) {
-				mockService.EXPECT().Exec(ctx, mockName).Return(false, customerrors.NewNotFoundError("test Service error")).Times(1)
+				internalError := errors.New("internal error")
+				wrappedError := customerrors.WrapInternalServerError(internalError, "An internal error occurred")
+				mockService.EXPECT().Exec(ctx, mockName).Return(false, wrappedError).Times(1)
 			},
 			wantResult: false,
-			wantErr:    customerrors.NewNotFoundError("test Service error"),
+			wantErr:    customerrors.WrapInternalServerError(errors.New("internal error"), "An internal error occurred"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.title, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 			mockService := mockExistByNameDomainService.NewMockExistByNameDomainService(ctrl)
 
 			tt.mockFunc(mockService)
@@ -60,10 +65,16 @@ func TestExistByNameDomainService_Exec(t *testing.T) {
 			result, err := mockService.Exec(ctx, tt.inputName)
 			assert.Equal(t, tt.wantResult, result)
 			if tt.wantErr != nil {
-				assert.EqualError(t, err, tt.wantErr.Error())
+				var internalErr *customerrors.InternalServerErrorType
+				if errors.As(err, &internalErr) {
+					assert.Contains(t, internalErr.Error(), "An internal error occurred")
+				} else {
+					t.Errorf("Expected an internal server error, got %v", err)
+				}
 			} else {
 				assert.NoError(t, err)
 			}
 		})
 	}
+
 }

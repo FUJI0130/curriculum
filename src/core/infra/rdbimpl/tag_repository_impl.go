@@ -4,21 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
+	"github.com/FUJI0130/curriculum/src/core/infra/datamodel"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/jmoiron/sqlx"
 )
 
 type tagRepositoryImpl struct{}
-
-type tagRequest struct {
-	ID        string    `db:"id"`
-	Name      string    `db:"name"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
-}
 
 func NewTagRepository() tagdm.TagRepository {
 	return &tagRepositoryImpl{}
@@ -45,11 +38,11 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 		return nil, errors.New("no transaction found in context")
 	}
 	query := "SELECT * FROM tags WHERE name = ?"
-	var tempTag tagRequest
+	var tempTag datamodel.Tag
 	err := conn.Get(&tempTag, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_impl FindByName")
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -70,7 +63,7 @@ func (repo *tagRepositoryImpl) FindByNames(ctx context.Context, names []string) 
 		return nil, errors.New("no transaction found in context")
 	}
 	query := "SELECT * FROM tags WHERE name IN (?)"
-	var tempTags []tagRequest
+	var tempTags []datamodel.Tag
 	query, args, err := sqlx.In(query, names)
 	if err != nil {
 		return nil, err
@@ -100,11 +93,11 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 		return nil, errors.New("no transaction found in context")
 	}
 	query := "SELECT * FROM tags WHERE id = ?"
-	var tempTag tagRequest
+	var tempTag datamodel.Tag
 	err := conn.Get(&tempTag, query, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_imple  FindByID")
+			return nil, nil
 		}
 		return nil, err
 	}

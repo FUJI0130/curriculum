@@ -12,12 +12,11 @@ type Career struct {
 	detail    string             `db:"detail"`
 	adFrom    time.Time          `db:"ad_from"`
 	adTo      time.Time          `db:"ad_to"`
-	userID    UserID             `db:"user_id"`
 	createdAt sharedvo.CreatedAt `db:"created_at"`
 	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
 }
 
-func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID UserID) (*Career, error) {
+func NewCareer(detail string, adFromSet time.Time, adToSet time.Time) (*Career, error) {
 
 	if detail == "" {
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
@@ -43,7 +42,6 @@ func NewCareer(detail string, adFromSet time.Time, adToSet time.Time, userID Use
 		detail:    detail,
 		adFrom:    adFromSet,
 		adTo:      adToSet,
-		userID:    userID,
 		createdAt: careerCreatedAt,
 		updatedAt: careerUpdatedAt,
 	}, nil
@@ -65,10 +63,6 @@ func (c *Career) AdTo() time.Time {
 	return c.adTo
 }
 
-func (c *Career) UserID() UserID {
-	return c.userID
-}
-
 func (c *Career) CreatedAt() sharedvo.CreatedAt {
 	return c.createdAt
 }
@@ -77,13 +71,8 @@ func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 	return c.updatedAt
 }
 
-func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
+func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, createdAt time.Time, updatedAt time.Time) (*Career, error) {
 	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
-	if err != nil {
-		return nil, err
-	}
-
-	uID, err := NewUserIDFromString(userID) // UserID reconstruction function, as per Skill example
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +92,6 @@ func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Tim
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,
-		userID:    uID,
 		createdAt: careerCreatedAt,
 		updatedAt: careerUpdatedAt,
 	}, nil
