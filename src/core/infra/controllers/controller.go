@@ -8,11 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService, updateUserService *userapp.UpdateUserAppService, createMentorRecruitmentService *mentorapp.CreateMentorRecruitmentAppService) {
+func InitControllers(r *gin.Engine, createUserService *userapp.CreateUserAppService, updateUserService *userapp.UpdateUserAppService, createMentorRecruitmentService *mentorapp.CreateMentorRecruitmentAppService, getMentorListService *mentorapp.GetMentorListAppService) {
 	InitHealthController(r)
 	InitCreateUserController(r, createUserService)
 	InitUpdateUserController(r, updateUserService)
 	log.Println("InitCreateMentorRecruitmentController")
+	InitMentorController(r, getMentorListService)
 	InitCreateMentorRecruitmentController(r, createMentorRecruitmentService)
 }
 
@@ -27,8 +28,8 @@ func InitUpdateUserController(r *gin.Engine, UpdateuserService *userapp.UpdateUs
 }
 
 func InitMentorController(r *gin.Engine, getMentorListAppService *mentorapp.GetMentorListAppService) {
-	// ctrl := NewMentorController(getMentorListAppService)
-	// r.GET("/mentors", ctrl.Fetch)
+	ctrl := NewMentorController(getMentorListAppService)
+	r.GET("/mentor_recruitments", ctrl.GetMentorList)
 }
 func InitCreateMentorRecruitmentController(r *gin.Engine, s *mentorapp.CreateMentorRecruitmentAppService) {
 	log.Println("InitCreateMentorRecruitmentController1")

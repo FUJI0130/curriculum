@@ -31,16 +31,18 @@ func main() {
 	updateUserService := userapp.NewUpdateUserAppService(userRepo, tagRepo)
 
 	// メンター募集関連のリポジトリとサービス
-	mentorRecruitmentRepo := rdbimpl.NewMentorRecruitmentRepository()
+	mentorRecruitmentQueryRepo := rdbimpl.NewMentorRecruitmentQueryRepository()
+	mentorRecruitmentCommandRepo := rdbimpl.NewMentorRecruitmentCommandRepository()
 	mentorRecruitmentTagRepo := rdbimpl.NewMentorRecruitmentsTagsRepository()
 	categoryRepo := rdbimpl.NewCategoryRepository()
-	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, mentorRecruitmentTagRepo, tagRepo, categoryRepo)
+	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentCommandRepo, mentorRecruitmentTagRepo, tagRepo, categoryRepo)
+	getMentorListService := mentorapp.NewGetMentorListAppService(mentorRecruitmentQueryRepo)
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
 	r.Use(middleware.TransactionHandler(db))
 
-	controllers.InitControllers(r, createUserService, updateUserService, createMentorRecruitmentService)
+	controllers.InitControllers(r, createUserService, updateUserService, createMentorRecruitmentService, getMentorListService)
 
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
