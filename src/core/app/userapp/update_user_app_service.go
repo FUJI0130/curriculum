@@ -44,48 +44,56 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 	}
 
 	// スキルの更新
-	var updatedSkills []*userdm.Skill
 	for _, skillReq := range req.UpdateData.Skills {
 		tagID, ok := tagIDMap[skillReq.TagName]
 		if !ok {
 			return customerrors.NewNotFoundErrorf("Tag not found for TagName: %s", skillReq.TagName)
 		}
 
-		// 既存のスキルを探して更新、または新しいスキルを作成
-		found := false
-		for _, existingSkill := range user.Skills() {
-			if existingSkill.TagID().String() == tagID {
-				updatedSkill, err := userdm.ReconstructSkill(existingSkill.ID().String(), tagID, skillReq.Evaluation, skillReq.Years, existingSkill.CreatedAt().DateTime(), time.Now())
-				if err != nil {
+		updated := false
+		for i, skill := range user.Skills() {
+			if skill.TagID().String() == tagID {
+				if err := user.UpdateSkill(i, skill.ID(), tagdm.TagID(tagID), skillReq.Evaluation, skillReq.Years, skill.CreatedAt().DateTime(), time.Now()); err != nil {
 					return err
 				}
-				updatedSkills = append(updatedSkills, updatedSkill)
-				found = true
+				updated = true
 				break
 			}
 		}
-		if !found {
-			// 新しいスキルの作成
+		if !updated {
 			newSkill, err := userdm.NewSkill(tagdm.TagID(tagID), skillReq.Evaluation, skillReq.Years)
 			if err != nil {
 				return err
 			}
-			updatedSkills = append(updatedSkills, newSkill)
+			// user.Skills = append(user.Skills, *newSkill)
+			user.AppendSkill(*newSkill)
 		}
 	}
 
 	// キャリアの更新
-	var updatedCareers []*userdm.Career
 	for _, careerReq := range req.UpdateData.Careers {
-		career, err := userdm.ReconstructCareer(careerReq.ID, careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, time.Now(), time.Now())
-		if err != nil {
-			return err
+		updated := false
+		for i, career := range user.Careers() {
+			if career.ID().String() == careerReq.ID {
+				if err := user.UpdateCareer(i, career.ID(), careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, career.CreatedAt().DateTime(), time.Now()); err != nil {
+					return err
+				}
+				updated = true
+				break
+			}
 		}
-		updatedCareers = append(updatedCareers, career)
+		if !updated {
+			newCareer, err := userdm.NewCareer(careerReq.Detail, careerReq.AdFrom, careerReq.AdTo)
+			if err != nil {
+				return err
+			}
+			// user.Careers = append(user.Careers, *newCareer)
+			user.AppendCareer(*newCareer)
+		}
 	}
 
 	// ユーザーエンティティの更新
-	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, updatedSkills, updatedCareers, time.Now()); err != nil {
+	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, time.Now()); err != nil {
 		return err
 	}
 

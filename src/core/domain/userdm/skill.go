@@ -124,3 +124,46 @@ func (s *Skill) Equal(other *Skill) bool {
 		s.createdAt.Equal(other.createdAt) &&
 		s.updatedAt.Equal(other.updatedAt)
 }
+func (s *Skill) SetID(id SkillID) {
+	s.id = id
+}
+
+func (s *Skill) SetTagID(tagID tagdm.TagID) {
+	s.tagID = tagID
+}
+
+func (s *Skill) SetEvaluation(evaluation uint8) error {
+	eval, err := NewSkillEvaluation(evaluation)
+	if err != nil {
+		return err
+	}
+	s.evaluation = eval
+	return nil
+}
+
+func (s *Skill) SetYears(years uint8) error {
+	y, err := NewSkillYear(years)
+	if err != nil {
+		return err
+	}
+	s.years = y
+	return nil
+}
+
+func (s *Skill) SetCreatedAt(createdAt time.Time) error {
+	created, err := sharedvo.NewCreatedAtByVal(createdAt)
+	if err != nil {
+		return err
+	}
+	s.createdAt = created
+	return nil
+}
+
+func (s *Skill) SetUpdatedAt(updatedAt time.Time) error {
+	updated, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	if err != nil {
+		return err
+	}
+	s.updatedAt = updated
+	return nil
+}

@@ -5,7 +5,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
+	"github.com/cockroachdb/errors"
 )
 
 const nameMaxlength = 256
@@ -183,50 +185,6 @@ func ReconstructUser(id string, name string, email string, password string, prof
 	}, nil
 }
 
-func (u *User) Update(name string, email string, password string, profile string, updateSkills []*Skill, updateCareers []*Career, updatedAt time.Time) error {
-	// 名前の検証
-	if name == "" {
-		return customerrors.NewUnprocessableEntityError("name is empty")
-	}
-
-	// EmailとPasswordの値オブジェクトの生成
-	userEmail, err := NewUserEmail(email)
-	if err != nil {
-		return err
-	}
-
-	userPassword, err := NewUserPassword(password)
-	if err != nil {
-		return err
-	}
-
-	// 更新処理
-	u.name = name
-	u.email = userEmail
-	u.password = userPassword
-	u.profile = profile
-	u.updatedAt, err = sharedvo.NewUpdatedAtByVal(updatedAt) // time.Time を sharedvo.UpdatedAt に変換
-
-	if err != nil {
-		return err
-	}
-
-	// スキルとキャリアの更新
-	var skills []Skill
-	for _, s := range updateSkills {
-		skills = append(skills, *s)
-	}
-	u.skills = skills
-
-	var careers []Career
-	for _, c := range updateCareers {
-		careers = append(careers, *c)
-	}
-	u.careers = careers
-
-	return nil
-}
-
 func (u *User) ID() UserID {
 	return u.id
 }
@@ -260,4 +218,86 @@ func (u *User) CreatedAt() sharedvo.CreatedAt {
 
 func (u *User) UpdatedAt() sharedvo.UpdatedAt {
 	return u.updatedAt
+}
+
+func (u *User) UpdateSkill(index int, newID SkillID, newTagID tagdm.TagID, newEvaluation uint8, newYears uint8, newCreatedAt time.Time, newUpdatedAt time.Time) error {
+	if index < 0 || index >= len(u.skills) {
+		return errors.New("invalid skill index")
+	}
+	skill := &u.skills[index]
+
+	// 各フィールドを更新
+	skill.SetID(newID)
+	skill.SetTagID(newTagID)
+	if err := skill.SetEvaluation(newEvaluation); err != nil {
+		return err
+	}
+	if err := skill.SetYears(newYears); err != nil {
+		return err
+	}
+	if err := skill.SetCreatedAt(newCreatedAt); err != nil {
+		return err
+	}
+	if err := skill.SetUpdatedAt(newUpdatedAt); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *User) UpdateCareer(index int, newID CareerID, newDetail string, newAdFrom time.Time, newAdTo time.Time, newCreatedAt time.Time, newUpdatedAt time.Time) error {
+	if index < 0 || index >= len(u.careers) {
+		return errors.New("invalid career index")
+	}
+	career := &u.careers[index]
+
+	// 各フィールドを更新
+	career.SetID(newID)
+	if err := career.SetDetail(newDetail); err != nil {
+		return err
+	}
+	career.SetAdFrom(newAdFrom)
+	career.SetAdTo(newAdTo)
+	if err := career.SetCreatedAt(newCreatedAt); err != nil {
+		return err
+	}
+	if err := career.SetUpdatedAt(newUpdatedAt); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *User) AppendSkill(skill Skill) {
+	u.skills = append(u.skills, skill)
+}
+func (u *User) AppendCareer(career Career) {
+	u.careers = append(u.careers, career)
+}
+func (u *User) Update(name string, email string, password string, profile string, updatedAt time.Time) error {
+	// 名前の検証
+	if name == "" {
+		return customerrors.NewUnprocessableEntityError("name is empty")
+	}
+
+	// EmailとPasswordの値オブジェクトの生成
+	userEmail, err := NewUserEmail(email)
+	if err != nil {
+		return err
+	}
+
+	userPassword, err := NewUserPassword(password)
+	if err != nil {
+		return err
+	}
+
+	// 更新処理
+	u.name = name
+	u.email = userEmail
+	u.password = userPassword
+	u.profile = profile
+	u.updatedAt, err = sharedvo.NewUpdatedAtByVal(updatedAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -96,3 +96,54 @@ func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Tim
 		updatedAt: careerUpdatedAt,
 	}, nil
 }
+
+func (c *Career) SetID(id CareerID) {
+	c.id = id
+}
+
+func (c *Career) SetDetail(detail string) error {
+	if detail == "" {
+		return customerrors.NewUnprocessableEntityError("Career detail is empty")
+	}
+	c.detail = detail
+	return nil
+}
+
+func (c *Career) SetAdFrom(adFrom time.Time) {
+	c.adFrom = adFrom
+}
+
+func (c *Career) SetAdTo(adTo time.Time) {
+	c.adTo = adTo
+}
+
+func (c *Career) SetCreatedAt(createdAt time.Time) error {
+	created, err := sharedvo.NewCreatedAtByVal(createdAt)
+	if err != nil {
+		return err
+	}
+	c.createdAt = created
+	return nil
+}
+
+func (c *Career) SetUpdatedAt(updatedAt time.Time) error {
+	updated, err := sharedvo.NewUpdatedAtByVal(updatedAt)
+	if err != nil {
+		return err
+	}
+	c.updatedAt = updated
+	return nil
+}
+
+func (c *Career) Equal(other *Career) bool {
+	if other == nil {
+		return false
+	}
+
+	return c.id.Equal(other.id) &&
+		c.detail == other.detail &&
+		c.adFrom == other.adFrom &&
+		c.adTo == other.adTo &&
+		c.createdAt.Equal(other.createdAt) &&
+		c.updatedAt.Equal(other.updatedAt)
+}
