@@ -183,6 +183,50 @@ func ReconstructUser(id string, name string, email string, password string, prof
 	}, nil
 }
 
+func (u *User) Update(name string, email string, password string, profile string, updateSkills []*Skill, updateCareers []*Career, updatedAt time.Time) error {
+	// 名前の検証
+	if name == "" {
+		return customerrors.NewUnprocessableEntityError("name is empty")
+	}
+
+	// EmailとPasswordの値オブジェクトの生成
+	userEmail, err := NewUserEmail(email)
+	if err != nil {
+		return err
+	}
+
+	userPassword, err := NewUserPassword(password)
+	if err != nil {
+		return err
+	}
+
+	// 更新処理
+	u.name = name
+	u.email = userEmail
+	u.password = userPassword
+	u.profile = profile
+	u.updatedAt, err = sharedvo.NewUpdatedAtByVal(updatedAt) // time.Time を sharedvo.UpdatedAt に変換
+
+	if err != nil {
+		return err
+	}
+
+	// スキルとキャリアの更新
+	var skills []Skill
+	for _, s := range updateSkills {
+		skills = append(skills, *s)
+	}
+	u.skills = skills
+
+	var careers []Career
+	for _, c := range updateCareers {
+		careers = append(careers, *c)
+	}
+	u.careers = careers
+
+	return nil
+}
+
 func (u *User) ID() UserID {
 	return u.id
 }

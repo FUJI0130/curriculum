@@ -10,7 +10,6 @@ type UpdateUserRequest struct {
 	Profile  string `json:"profile"`
 }
 type UpdateSkillRequest struct {
-	ID         string `json:"id"`
 	TagName    string `json:"tagName"`
 	Evaluation uint8  `json:"evaluation"`
 	Years      uint8  `json:"years"`

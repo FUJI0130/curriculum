@@ -10,19 +10,6 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
-type SkillParam struct {
-	TagID      tagdm.TagID
-	TagName    string
-	Evaluation uint8
-	Years      uint8
-}
-
-type CareerParam struct {
-	Detail string
-	AdFrom time.Time
-	AdTo   time.Time
-}
-
 func GenWhenCreate(name string, email string, password string, profile string, skills []Skill, careers []Career) (*User, error) {
 	user, err := NewUser(name, email, password, profile, skills, careers)
 	if err != nil {
