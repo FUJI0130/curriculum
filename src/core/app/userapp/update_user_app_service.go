@@ -32,6 +32,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 	for i, skillReq := range req.UpdateData.Skills {
 		tagNames[i] = skillReq.TagName
 	}
+
 	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
 	if err != nil {
 		return err

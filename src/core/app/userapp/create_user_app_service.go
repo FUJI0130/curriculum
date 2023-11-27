@@ -59,6 +59,7 @@ func (app *CreateUserAppService) Exec(ctx context.Context, req *CreateUserReques
 			if err != nil {
 				return err
 			}
+			//N+1
 			if err = app.tagRepo.Store(ctx, tag); err != nil {
 				return err
 			}
