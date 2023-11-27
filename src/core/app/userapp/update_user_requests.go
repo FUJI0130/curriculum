@@ -10,7 +10,8 @@ type UpdateUserRequest struct {
 	Profile  string `json:"profile"`
 }
 type UpdateSkillRequest struct {
-	TagName    string `json:"tagName"`
+	ID         string `json:"id"`
+	TagID      string `json:"tagId"`
 	Evaluation uint8  `json:"evaluation"`
 	Years      uint8  `json:"years"`
 }
@@ -21,6 +22,7 @@ type UpdateCareerRequest struct {
 	AdFrom time.Time `json:"adFrom"`
 	AdTo   time.Time `json:"adTo"`
 }
+
 type UpdateUserRequestData struct {
 	UpdateData struct {
 		Users   UpdateUserRequest     `json:"users"`

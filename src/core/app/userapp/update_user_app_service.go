@@ -27,74 +27,67 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		return customerrors.NewNotFoundErrorf("User not found by UserID: %s", req.UpdateData.Users.ID)
 	}
 
-	// タグ名からtagIDを取得
-	tagNames := make([]string, len(req.UpdateData.Skills))
-	for i, skillReq := range req.UpdateData.Skills {
-		tagNames[i] = skillReq.TagName
-	}
+	var skillsToUpdate []userdm.Skill
+	var careersToUpdate []userdm.Career
+	updatedAt := time.Now() // 更新時刻の初期化
 
-	tags, err := app.tagRepo.FindByNames(ctx, tagNames)
-	if err != nil {
-		return err
-	}
-
-	// タグ名からtagIDのマップを作成
-	tagIDMap := make(map[string]string)
-	for _, tag := range tags {
-		tagIDMap[tag.Name()] = tag.ID().String()
-	}
-
-	// スキルの更新
+	// スキルの更新または新規作成
 	for _, skillReq := range req.UpdateData.Skills {
-		tagID, ok := tagIDMap[skillReq.TagName]
-		if !ok {
-			return customerrors.NewNotFoundErrorf("Tag not found for TagName: %s", skillReq.TagName)
-		}
-
-		updated := false
-		for i, skill := range user.Skills() {
-			if skill.TagID().String() == tagID {
-				if err := user.UpdateSkill(i, skill.ID(), tagdm.TagID(tagID), skillReq.Evaluation, skillReq.Years, skill.CreatedAt().DateTime(), time.Now()); err != nil {
+		found := false
+		for i, existingSkill := range user.Skills() {
+			if existingSkill.ID().String() == skillReq.ID {
+				// 既存のスキルを更新
+				updatedSkill, err := userdm.GenSkillWhenUpdate(skillReq.ID, skillReq.TagID, skillReq.Evaluation, skillReq.Years, existingSkill.CreatedAt().DateTime())
+				if err != nil {
 					return err
 				}
-				updated = true
+				user.Skills()[i] = *updatedSkill
+				skillsToUpdate = append(skillsToUpdate, *updatedSkill)
+				found = true
 				break
 			}
 		}
-		if !updated {
-			newSkill, err := userdm.NewSkill(tagdm.TagID(tagID), skillReq.Evaluation, skillReq.Years)
+		if !found {
+			// 新規スキルの作成
+			newSkill, err := userdm.GenSkillWhenUpdate("", skillReq.TagID, skillReq.Evaluation, skillReq.Years, time.Now())
 			if err != nil {
 				return err
 			}
-			// user.Skills = append(user.Skills, *newSkill)
-			user.AppendSkill(*newSkill)
+			skillsToUpdate = append(skillsToUpdate, *newSkill)
 		}
 	}
 
-	// キャリアの更新
+	// キャリアの更新または新規作成
 	for _, careerReq := range req.UpdateData.Careers {
-		updated := false
-		for i, career := range user.Careers() {
-			if career.ID().String() == careerReq.ID {
-				if err := user.UpdateCareer(i, career.ID(), careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, career.CreatedAt().DateTime(), time.Now()); err != nil {
+		found := false
+		for i, existingCareer := range user.Careers() {
+			if existingCareer.ID().String() == careerReq.ID {
+				// 既存のキャリアを更新
+				updatedCareer, err := userdm.GenCareerWhenUpdate(careerReq.ID, careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, existingCareer.CreatedAt().DateTime())
+				if err != nil {
 					return err
 				}
-				updated = true
+				user.Careers()[i] = *updatedCareer
+				careersToUpdate = append(careersToUpdate, *updatedCareer)
+				found = true
 				break
 			}
 		}
-		if !updated {
-			newCareer, err := userdm.NewCareer(careerReq.Detail, careerReq.AdFrom, careerReq.AdTo)
+		if !found {
+			// 新規キャリアの作成
+			newCareer, err := userdm.GenCareerWhenUpdate("", careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, time.Now())
 			if err != nil {
 				return err
 			}
-			// user.Careers = append(user.Careers, *newCareer)
-			user.AppendCareer(*newCareer)
+			careersToUpdate = append(careersToUpdate, *newCareer)
 		}
 	}
 
-	// ユーザーエンティティの更新
-	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, time.Now()); err != nil {
+	// ユーザーエンティティ全体の更新
+	if len(skillsToUpdate) > 0 || len(careersToUpdate) > 0 {
+		updatedAt = time.Now()
+	}
+	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, skillsToUpdate, careersToUpdate, updatedAt); err != nil {
 		return err
 	}
 

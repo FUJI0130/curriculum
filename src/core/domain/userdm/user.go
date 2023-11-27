@@ -272,7 +272,7 @@ func (u *User) AppendSkill(skill Skill) {
 func (u *User) AppendCareer(career Career) {
 	u.careers = append(u.careers, career)
 }
-func (u *User) Update(name string, email string, password string, profile string, updatedAt time.Time) error {
+func (u *User) Update(name string, email string, password string, profile string, skills []Skill, careers []Career, updatedAt time.Time) error {
 	// 名前の検証
 	if name == "" {
 		return customerrors.NewUnprocessableEntityError("name is empty")
@@ -294,6 +294,8 @@ func (u *User) Update(name string, email string, password string, profile string
 	u.email = userEmail
 	u.password = userPassword
 	u.profile = profile
+	u.skills = skills   // スキルのスライスを更新
+	u.careers = careers // キャリアのスライスを更新
 	u.updatedAt, err = sharedvo.NewUpdatedAtByVal(updatedAt)
 	if err != nil {
 		return err

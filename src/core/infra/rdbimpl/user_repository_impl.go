@@ -163,21 +163,39 @@ func (repo *userRepositoryImpl) Update(ctx context.Context, user *userdm.User) e
 		return errors.New("no transaction found in context")
 	}
 
-	queryUser := "UPDATE users SET name = ?, email = ?, password = ?, profile = ?, updated_at = ? WHERE id = ?"
-	if _, err := conn.Exec(queryUser, user.Name(), user.Email(), user.Password(), user.Profile(), time.Now(), user.ID().String()); err != nil {
+	// ユーザーの更新または追加
+	queryUser := `
+		INSERT INTO users (id, name, email, password, profile, created_at, updated_at) 
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+		name = VALUES(name), email = VALUES(email), password = VALUES(password), profile = VALUES(profile), updated_at = VALUES(updated_at)
+	`
+	if _, err := conn.Exec(queryUser, user.ID().String(), user.Name(), user.Email(), user.Password(), user.Profile(), user.CreatedAt().DateTime(), time.Now()); err != nil {
 		return err
 	}
 
+	// スキルの更新または追加
 	for _, skill := range user.Skills() {
-		querySkill := "UPDATE skills SET tag_id = ?, evaluation = ?, years = ?, updated_at = ? WHERE id = ?"
-		if _, err := conn.Exec(querySkill, skill.TagID().String(), skill.Evaluation().Value(), skill.Year().Value(), time.Now(), skill.ID().String()); err != nil {
+		querySkill := `
+			INSERT INTO skills (id, tag_id, user_id, evaluation, years, created_at, updated_at) 
+			VALUES (?, ?, ?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			tag_id = VALUES(tag_id), evaluation = VALUES(evaluation), years = VALUES(years), updated_at = VALUES(updated_at)
+		`
+		if _, err := conn.Exec(querySkill, skill.ID().String(), skill.TagID().String(), user.ID().String(), skill.Evaluation().Value(), skill.Year().Value(), skill.CreatedAt().DateTime(), time.Now()); err != nil {
 			return err
 		}
 	}
 
+	// キャリアの更新または追加
 	for _, career := range user.Careers() {
-		queryCareer := "UPDATE careers SET detail = ?, ad_from = ?, ad_to = ?, updated_at = ? WHERE id = ?"
-		if _, err := conn.Exec(queryCareer, career.Detail(), career.AdFrom(), career.AdTo(), time.Now(), career.ID().String()); err != nil {
+		queryCareer := `
+			INSERT INTO careers (id, user_id, detail, ad_from, ad_to, created_at, updated_at) 
+			VALUES (?, ?, ?, ?, ?, ?, ?)
+			ON DUPLICATE KEY UPDATE
+			detail = VALUES(detail), ad_from = VALUES(ad_from), ad_to = VALUES(ad_to), updated_at = VALUES(updated_at)
+		`
+		if _, err := conn.Exec(queryCareer, career.ID().String(), user.ID().String(), career.Detail(), career.AdFrom(), career.AdTo(), career.CreatedAt().DateTime(), time.Now()); err != nil {
 			return err
 		}
 	}
