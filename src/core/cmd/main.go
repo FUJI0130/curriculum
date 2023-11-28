@@ -7,9 +7,9 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
-	"github.com/FUJI0130/curriculum/src/core/infra/controllers"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
+	"github.com/FUJI0130/curriculum/src/core/infra/router"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -33,7 +33,8 @@ func main() {
 	r.Use(middleware.ErrorHandler)
 	r.Use(middleware.TransactionHandler(db))
 
-	controllers.InitControllers(r, createUserService, updateUserService)
+	// controllers.InitControllers(r, createUserService, updateUserService)
+	router.InitUserRoutes(r, createUserService, updateUserService)
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
 }
