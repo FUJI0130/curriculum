@@ -14,7 +14,13 @@ func NewCareerID() (CareerID, error) {
 	}
 	return CareerID(careerID.String()), nil
 }
-
+func NewCareerIDFromString(idStr string) (CareerID, error) {
+	_, err := uuid.Parse(idStr)
+	if err != nil {
+		return "", customerrors.WrapUnprocessableEntityError(err, "CareerID is invalid")
+	}
+	return CareerID(idStr), nil
+}
 func (id CareerID) String() string {
 	return string(id)
 }
