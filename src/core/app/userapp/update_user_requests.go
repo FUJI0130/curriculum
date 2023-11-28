@@ -11,7 +11,7 @@ type UpdateUserRequest struct {
 }
 type UpdateSkillRequest struct {
 	ID         string `json:"id"`
-	TagID      string `json:"tagId"`
+	TagID      string `json:"tag_id"`
 	Evaluation uint8  `json:"evaluation"`
 	Years      uint8  `json:"years"`
 }
