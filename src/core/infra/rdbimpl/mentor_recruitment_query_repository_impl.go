@@ -3,6 +3,7 @@ package rdbimpl
 import (
 	"context"
 	"database/sql"
+	"log"
 
 	"github.com/cockroachdb/errors"
 
@@ -98,6 +99,7 @@ func (repo *mentorRecruitmentQueryRepositoryImpl) FindByCategoryID(ctx context.C
 func (repo *mentorRecruitmentQueryRepositoryImpl) FindAll(ctx context.Context) ([]*mentorrecruitmentdm.MentorRecruitment, error) {
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
+		log.Println("FindAll error: No transaction found in context")
 		return nil, errors.New("no transaction found in context")
 	}
 
@@ -105,6 +107,8 @@ func (repo *mentorRecruitmentQueryRepositoryImpl) FindAll(ctx context.Context) (
 	var tempMentorRecruitments []datamodel.MentorRecruitment
 	err := conn.Select(&tempMentorRecruitments, query)
 	if err != nil {
+		log.Printf("FindAll error: Error querying all mentor recruitments - %v\n", err)
+
 		return nil, customerrors.WrapInternalServerError(err, "Error querying all mentor recruitments")
 	}
 
@@ -126,6 +130,8 @@ func (repo *mentorRecruitmentQueryRepositoryImpl) FindAll(ctx context.Context) (
 			temp.UpdatedAt,
 		)
 		if err != nil {
+			log.Printf("FindAll error: Error reconstructing mentor recruitment - %v\n", err)
+
 			return nil, customerrors.WrapInternalServerError(err, "Error reconstructing mentor recruitment")
 		}
 		mentorRecruitments = append(mentorRecruitments, mentorRecruitment)
