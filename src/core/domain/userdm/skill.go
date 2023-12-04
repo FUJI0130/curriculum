@@ -117,10 +117,5 @@ func (s *Skill) Equal(other *Skill) bool {
 		return false
 	}
 
-	return s.id.Equal(other.id) &&
-		s.tagID.Equal(other.tagID) &&
-		s.evaluation == other.evaluation &&
-		s.years == other.years &&
-		s.createdAt.Equal(other.createdAt) &&
-		s.updatedAt.Equal(other.updatedAt)
+	return s.id.Equal(other.id)
 }

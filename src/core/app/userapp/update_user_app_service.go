@@ -49,7 +49,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		}
 		if !found {
 			// 新規スキルの作成
-			newSkill, err := userdm.GenSkillWhenCreate(skillReq.TagID, user.ID().String(), skillReq.Evaluation, skillReq.Years, time.Now(), time.Now())
+			newSkill, err := userdm.GenSkillWhenCreate(skillReq.TagID, user.ID().String(), skillReq.Evaluation, skillReq.Years)
 			if err != nil {
 				return err
 			}
@@ -75,7 +75,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		}
 		if !found {
 			// 新規キャリアの作成
-			newCareer, err := userdm.GenCareerWhenUpdate("", careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, time.Now())
+			newCareer, err := userdm.GenCareerWhenCreate(careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, user.ID().String())
 			if err != nil {
 				return err
 			}

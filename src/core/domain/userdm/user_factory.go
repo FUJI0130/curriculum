@@ -17,7 +17,7 @@ func GenWhenCreate(name string, email string, password string, profile string, s
 	return user, nil
 }
 
-func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
+func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8) (*Skill, error) {
 	skillID, err := NewSkillID()
 	if err != nil {
 		return nil, err
@@ -38,15 +38,9 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 		return nil, err
 	}
 
-	skillCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return nil, err
-	}
+	skillCreatedAt := sharedvo.NewCreatedAt()
 
-	skillUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	skillUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &Skill{
 		id:         skillID,
@@ -58,7 +52,7 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 	}, nil
 }
 
-func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
+func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string) (*Career, error) {
 	careerID, err := NewCareerID()
 	if err != nil {
 		return nil, err
@@ -68,15 +62,9 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
 	}
 
-	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return nil, err
-	}
+	careerCreatedAt := sharedvo.NewCreatedAt()
 
-	careerUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	careerUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &Career{
 		id:        careerID,
