@@ -49,7 +49,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		}
 		if !found {
 			// 新規スキルの作成
-			newSkill, err := userdm.GenSkillWhenUpdate("", skillReq.TagID, skillReq.Evaluation, skillReq.Years, time.Now())
+			newSkill, err := userdm.GenSkillWhenCreate(skillReq.TagID, user.ID().String(), skillReq.Evaluation, skillReq.Years, time.Now(), time.Now())
 			if err != nil {
 				return err
 			}

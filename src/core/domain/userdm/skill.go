@@ -17,7 +17,7 @@ type Skill struct {
 }
 
 func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) {
-	skillId, err := NewSkillID()
+	skillID, err := NewSkillID()
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) 
 		return nil, err
 	}
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tagID,
 		evaluation: eval,
 		years:      y,
@@ -51,7 +51,7 @@ func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) 
 }
 
 func ReconstructSkill(id string, tagID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillIDFromString(id)
+	skillID, err := NewSkillIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func ReconstructSkill(id string, tagID string, evaluation uint8, years uint8, cr
 	}
 
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tID,
 		evaluation: eval,
 		years:      y,
@@ -123,47 +123,4 @@ func (s *Skill) Equal(other *Skill) bool {
 		s.years == other.years &&
 		s.createdAt.Equal(other.createdAt) &&
 		s.updatedAt.Equal(other.updatedAt)
-}
-func (s *Skill) SetID(id SkillID) {
-	s.id = id
-}
-
-func (s *Skill) SetTagID(tagID tagdm.TagID) {
-	s.tagID = tagID
-}
-
-func (s *Skill) SetEvaluation(evaluation uint8) error {
-	eval, err := NewSkillEvaluation(evaluation)
-	if err != nil {
-		return err
-	}
-	s.evaluation = eval
-	return nil
-}
-
-func (s *Skill) SetYears(years uint8) error {
-	y, err := NewSkillYear(years)
-	if err != nil {
-		return err
-	}
-	s.years = y
-	return nil
-}
-
-func (s *Skill) SetCreatedAt(createdAt time.Time) error {
-	created, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return err
-	}
-	s.createdAt = created
-	return nil
-}
-
-func (s *Skill) SetUpdatedAt(updatedAt time.Time) error {
-	updated, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return err
-	}
-	s.updatedAt = updated
-	return nil
 }

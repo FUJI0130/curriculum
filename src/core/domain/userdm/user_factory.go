@@ -18,7 +18,7 @@ func GenWhenCreate(name string, email string, password string, profile string, s
 }
 
 func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillID()
+	skillID, err := NewSkillID()
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 	}
 
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tID,
 		evaluation: eval,
 		years:      y,
@@ -59,7 +59,7 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 }
 
 func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerID()
+	careerID, err := NewCareerID()
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 	}
 
 	return &Career{
-		id:        careerId,
+		id:        careerID,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,
@@ -88,25 +88,12 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 	}, nil
 }
 
-func GenSkillWhenUpdate(id string, tagIdStr string, evaluation uint8, years uint8, createdAtVal time.Time) (*Skill, error) {
-	var skillId SkillID
+func GenSkillWhenUpdate(id string, tagIDStr string, evaluation uint8, years uint8, createdAtVal time.Time) (*Skill, error) {
+	var skillID SkillID
 	var err error
 
-	// SkillIDの生成またはパース
-	if id != "" {
-		skillId, err = NewSkillIDFromString(id)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		skillId, err = NewSkillID()
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	// TagIDの生成
-	tagId, err := tagdm.NewTagIDFromString(tagIdStr)
+	tagID, err := tagdm.NewTagIDFromString(tagIDStr)
 	if err != nil {
 		return nil, err
 	}
@@ -130,8 +117,8 @@ func GenSkillWhenUpdate(id string, tagIdStr string, evaluation uint8, years uint
 	skillUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Skill{
-		id:         skillId,
-		tagID:      tagId,
+		id:         skillID,
+		tagID:      tagID,
 		evaluation: eval,
 		years:      y,
 		createdAt:  skillCreatedAt,
@@ -140,20 +127,8 @@ func GenSkillWhenUpdate(id string, tagIdStr string, evaluation uint8, years uint
 }
 
 func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.Time, createdAtVal time.Time) (*Career, error) {
-	var careerId CareerID
+	var careerID CareerID
 	var err error
-
-	if id != "" {
-		careerId, err = NewCareerIDFromString(id)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		careerId, err = NewCareerID()
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	if detail == "" {
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
@@ -167,7 +142,7 @@ func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.T
 	careerUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Career{
-		id:        careerId,
+		id:        careerID,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,

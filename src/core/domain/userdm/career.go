@@ -72,7 +72,7 @@ func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 }
 
 func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerIDFromString(id)
+	careerID, err := NewCareerIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -88,51 +88,13 @@ func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Tim
 	}
 
 	return &Career{
-		id:        careerId,
+		id:        careerID,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,
 		createdAt: careerCreatedAt,
 		updatedAt: careerUpdatedAt,
 	}, nil
-}
-
-func (c *Career) SetID(id CareerID) {
-	c.id = id
-}
-
-func (c *Career) SetDetail(detail string) error {
-	if detail == "" {
-		return customerrors.NewUnprocessableEntityError("Career detail is empty")
-	}
-	c.detail = detail
-	return nil
-}
-
-func (c *Career) SetAdFrom(adFrom time.Time) {
-	c.adFrom = adFrom
-}
-
-func (c *Career) SetAdTo(adTo time.Time) {
-	c.adTo = adTo
-}
-
-func (c *Career) SetCreatedAt(createdAt time.Time) error {
-	created, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return err
-	}
-	c.createdAt = created
-	return nil
-}
-
-func (c *Career) SetUpdatedAt(updatedAt time.Time) error {
-	updated, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return err
-	}
-	c.updatedAt = updated
-	return nil
 }
 
 func (c *Career) Equal(other *Career) bool {

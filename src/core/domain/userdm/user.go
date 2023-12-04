@@ -5,9 +5,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
-	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
-	"github.com/cockroachdb/errors"
 )
 
 const nameMaxlength = 256
@@ -31,7 +29,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 		return nil, customerrors.NewUnprocessableEntityError("Username is empty")
 	}
 
-	userId, err := NewUserID()
+	userID, err := NewUserID()
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +55,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 	userUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -70,7 +68,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 }
 
 func TestNewUser(id string, name string, email string) (*User, error) {
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +93,7 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 	userUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -106,7 +104,7 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 }
 
 func ReconstructEntity(id string, name string, email string, password string, profile string, skills []Skill, careers []Career, createdAt time.Time) (*User, error) {
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +134,7 @@ func ReconstructEntity(id string, name string, email string, password string, pr
 	}
 
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -149,7 +147,7 @@ func ReconstructEntity(id string, name string, email string, password string, pr
 }
 
 func ReconstructUser(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -175,7 +173,7 @@ func ReconstructUser(id string, name string, email string, password string, prof
 		return nil, err
 	}
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -218,52 +216,6 @@ func (u *User) CreatedAt() sharedvo.CreatedAt {
 
 func (u *User) UpdatedAt() sharedvo.UpdatedAt {
 	return u.updatedAt
-}
-
-func (u *User) UpdateSkill(index int, newID SkillID, newTagID tagdm.TagID, newEvaluation uint8, newYears uint8, newCreatedAt time.Time, newUpdatedAt time.Time) error {
-	if index < 0 || index >= len(u.skills) {
-		return errors.New("invalid skill index")
-	}
-	skill := &u.skills[index]
-
-	// 各フィールドを更新
-	skill.SetID(newID)
-	skill.SetTagID(newTagID)
-	if err := skill.SetEvaluation(newEvaluation); err != nil {
-		return err
-	}
-	if err := skill.SetYears(newYears); err != nil {
-		return err
-	}
-	if err := skill.SetCreatedAt(newCreatedAt); err != nil {
-		return err
-	}
-	if err := skill.SetUpdatedAt(newUpdatedAt); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *User) UpdateCareer(index int, newID CareerID, newDetail string, newAdFrom time.Time, newAdTo time.Time, newCreatedAt time.Time, newUpdatedAt time.Time) error {
-	if index < 0 || index >= len(u.careers) {
-		return errors.New("invalid career index")
-	}
-	career := &u.careers[index]
-
-	// 各フィールドを更新
-	career.SetID(newID)
-	if err := career.SetDetail(newDetail); err != nil {
-		return err
-	}
-	career.SetAdFrom(newAdFrom)
-	career.SetAdTo(newAdTo)
-	if err := career.SetCreatedAt(newCreatedAt); err != nil {
-		return err
-	}
-	if err := career.SetUpdatedAt(newUpdatedAt); err != nil {
-		return err
-	}
-	return nil
 }
 
 func (u *User) AppendSkill(skill Skill) {
