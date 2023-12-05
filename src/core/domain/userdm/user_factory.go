@@ -76,15 +76,7 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 	}, nil
 }
 
-func GenSkillWhenUpdate(id string, tagIDStr string, evaluation uint8, years uint8, createdAtVal time.Time) (*Skill, error) {
-	var skillID SkillID
-	var err error
-
-	// TagIDの生成
-	tagID, err := tagdm.NewTagIDFromString(tagIDStr)
-	if err != nil {
-		return nil, err
-	}
+func GenSkillWhenUpdate(id SkillID, tagID tagdm.TagID, evaluation uint8, years uint8, createdAtVal time.Time) (*Skill, error) {
 
 	// その他の値の設定
 	eval, err := NewSkillEvaluation(evaluation)
@@ -105,7 +97,7 @@ func GenSkillWhenUpdate(id string, tagIDStr string, evaluation uint8, years uint
 	skillUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Skill{
-		id:         skillID,
+		id:         id,
 		tagID:      tagID,
 		evaluation: eval,
 		years:      y,
@@ -114,9 +106,7 @@ func GenSkillWhenUpdate(id string, tagIDStr string, evaluation uint8, years uint
 	}, nil
 }
 
-func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.Time, createdAtVal time.Time) (*Career, error) {
-	var careerID CareerID
-	var err error
+func GenCareerWhenUpdate(id CareerID, detail string, adFrom time.Time, adTo time.Time, createdAtVal time.Time) (*Career, error) {
 
 	if detail == "" {
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
@@ -130,7 +120,7 @@ func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.T
 	careerUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Career{
-		id:        careerID,
+		id:        id,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,

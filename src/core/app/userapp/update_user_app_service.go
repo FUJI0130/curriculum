@@ -37,7 +37,15 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		for i, existingSkill := range user.Skills() {
 			if existingSkill.ID().String() == skillReq.ID {
 				// 既存のスキルを更新
-				updatedSkill, err := userdm.GenSkillWhenUpdate(skillReq.ID, skillReq.TagID, skillReq.Evaluation, skillReq.Years, existingSkill.CreatedAt().DateTime())
+				convSkillID, err := convertReqToSkillID(&skillReq)
+				if err != nil {
+					return err
+				}
+				convTagID, err := convertReqToTagID(&skillReq)
+				if err != nil {
+					return err
+				}
+				updatedSkill, err := userdm.GenSkillWhenUpdate(*convSkillID, *convTagID, skillReq.Evaluation, skillReq.Years, existingSkill.CreatedAt().DateTime())
 				if err != nil {
 					return err
 				}
@@ -63,7 +71,12 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		for i, existingCareer := range user.Careers() {
 			if existingCareer.ID().String() == careerReq.ID {
 				// 既存のキャリアを更新
-				updatedCareer, err := userdm.GenCareerWhenUpdate(careerReq.ID, careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, existingCareer.CreatedAt().DateTime())
+				convCareerID, err := convertReqToCareerID(&careerReq)
+				if err != nil {
+					return err
+				}
+
+				updatedCareer, err := userdm.GenCareerWhenUpdate(*convCareerID, careerReq.Detail, careerReq.AdFrom, careerReq.AdTo, existingCareer.CreatedAt().DateTime())
 				if err != nil {
 					return err
 				}
@@ -97,4 +110,35 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 
 func toUTCAndTruncate(t time.Time) time.Time {
 	return t.UTC().Truncate(time.Second)
+}
+
+// リクエストからskillIDとtagIDのvalueobjectを生成するプライベート関数
+func convertReqToSkillID(req *UpdateSkillRequest) (*userdm.SkillID, error) {
+
+	var skillID userdm.SkillID
+	skillID, err := userdm.NewSkillIDFromString(req.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &skillID, nil
+
+}
+func convertReqToTagID(req *UpdateSkillRequest) (*tagdm.TagID, error) {
+	var tagID tagdm.TagID
+	tagID, err := tagdm.NewTagIDFromString(req.TagID)
+	if err != nil {
+		return nil, err
+	}
+	return &tagID, nil
+}
+
+// リクエストからcareerIDのvalueobjectを生成するプライベート関数
+func convertReqToCareerID(req *UpdateCareerRequest) (*userdm.CareerID, error) {
+	var careerID userdm.CareerID
+	careerID, err := userdm.NewCareerIDFromString(req.ID)
+	if err != nil {
+		return nil, err
+	}
+	return &careerID, nil
 }
