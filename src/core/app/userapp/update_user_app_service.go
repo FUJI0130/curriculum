@@ -27,9 +27,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		return customerrors.NewNotFoundErrorf("User not found by UserID: %s", req.UpdateData.Users.ID)
 	}
 
-	// tagNames := make([]string, 0, len(req.Skills))
 	skillsToUpdate := make([]userdm.Skill, 0, len(req.UpdateData.Skills))
-	// var careersToUpdate []userdm.Career
 	careersToUpdate := make([]userdm.Career, 0, len(req.UpdateData.Careers))
 
 	// スキルの更新または新規作成
