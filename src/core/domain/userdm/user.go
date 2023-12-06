@@ -218,16 +218,13 @@ func (u *User) UpdatedAt() sharedvo.UpdatedAt {
 	return u.updatedAt
 }
 
-func (u *User) AppendSkill(skill Skill) {
-	u.skills = append(u.skills, skill)
-}
-func (u *User) AppendCareer(career Career) {
-	u.careers = append(u.careers, career)
-}
-func (u *User) Update(name string, email string, password string, profile string, skills []Skill, careers []Career, updatedAt time.Time) error {
+func (u *User) Update(name string, email string, password string, profile string, skills []Skill, careers []Career) error {
 	// 名前の検証
 	if name == "" {
 		return customerrors.NewUnprocessableEntityError("name is empty")
+	}
+	if utf8.RuneCountInString(name) > nameMaxlength {
+		return customerrors.NewUnprocessableEntityError("name is too long")
 	}
 
 	// EmailとPasswordの値オブジェクトの生成
@@ -245,10 +242,19 @@ func (u *User) Update(name string, email string, password string, profile string
 	u.name = name
 	u.email = userEmail
 	u.password = userPassword
+
+	// プロフィールの検証
+	if profile == "" {
+		return customerrors.NewUnprocessableEntityError("UserProfile is empty")
+	}
+	if utf8.RuneCountInString(profile) > profileMaxlength {
+		return customerrors.NewUnprocessableEntityError("UserProfile is too long")
+	}
+
 	u.profile = profile
 	u.skills = skills   // スキルのスライスを更新
 	u.careers = careers // キャリアのスライスを更新
-	u.updatedAt, err = sharedvo.NewUpdatedAtByVal(updatedAt)
+	u.updatedAt = sharedvo.NewUpdatedAt()
 	if err != nil {
 		return err
 	}

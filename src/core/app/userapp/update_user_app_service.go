@@ -27,9 +27,10 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		return customerrors.NewNotFoundErrorf("User not found by UserID: %s", req.UpdateData.Users.ID)
 	}
 
-	var skillsToUpdate []userdm.Skill
-	var careersToUpdate []userdm.Career
-	updatedAt := time.Now() // 更新時刻の初期化
+	// tagNames := make([]string, 0, len(req.Skills))
+	skillsToUpdate := make([]userdm.Skill, 0, len(req.UpdateData.Skills))
+	// var careersToUpdate []userdm.Career
+	careersToUpdate := make([]userdm.Career, 0, len(req.UpdateData.Careers))
 
 	// スキルの更新または新規作成
 	for _, skillReq := range req.UpdateData.Skills {
@@ -37,11 +38,11 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		for i, existingSkill := range user.Skills() {
 			if existingSkill.ID().String() == skillReq.ID {
 				// 既存のスキルを更新
-				convSkillID, err := convertReqToSkillID(&skillReq)
+				convSkillID, err := convReqToSkillID(&skillReq)
 				if err != nil {
 					return err
 				}
-				convTagID, err := convertReqToTagID(&skillReq)
+				convTagID, err := convReqToTagID(&skillReq)
 				if err != nil {
 					return err
 				}
@@ -71,7 +72,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 		for i, existingCareer := range user.Careers() {
 			if existingCareer.ID().String() == careerReq.ID {
 				// 既存のキャリアを更新
-				convCareerID, err := convertReqToCareerID(&careerReq)
+				convCareerID, err := convReqToCareerID(&careerReq)
 				if err != nil {
 					return err
 				}
@@ -97,10 +98,7 @@ func (app *UpdateUserAppService) ExecUpdate(ctx context.Context, req *UpdateUser
 	}
 
 	// ユーザーエンティティ全体の更新
-	if len(skillsToUpdate) > 0 || len(careersToUpdate) > 0 {
-		updatedAt = time.Now()
-	}
-	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, skillsToUpdate, careersToUpdate, updatedAt); err != nil {
+	if err := user.Update(req.UpdateData.Users.Name, req.UpdateData.Users.Email, req.UpdateData.Users.Password, req.UpdateData.Users.Profile, skillsToUpdate, careersToUpdate); err != nil {
 		return err
 	}
 
@@ -113,7 +111,7 @@ func toUTCAndTruncate(t time.Time) time.Time {
 }
 
 // リクエストからskillIDとtagIDのvalueobjectを生成するプライベート関数
-func convertReqToSkillID(req *UpdateSkillRequest) (*userdm.SkillID, error) {
+func convReqToSkillID(req *UpdateSkillRequest) (*userdm.SkillID, error) {
 
 	var skillID userdm.SkillID
 	skillID, err := userdm.NewSkillIDFromString(req.ID)
@@ -124,7 +122,7 @@ func convertReqToSkillID(req *UpdateSkillRequest) (*userdm.SkillID, error) {
 	return &skillID, nil
 
 }
-func convertReqToTagID(req *UpdateSkillRequest) (*tagdm.TagID, error) {
+func convReqToTagID(req *UpdateSkillRequest) (*tagdm.TagID, error) {
 	var tagID tagdm.TagID
 	tagID, err := tagdm.NewTagIDFromString(req.TagID)
 	if err != nil {
@@ -134,7 +132,7 @@ func convertReqToTagID(req *UpdateSkillRequest) (*tagdm.TagID, error) {
 }
 
 // リクエストからcareerIDのvalueobjectを生成するプライベート関数
-func convertReqToCareerID(req *UpdateCareerRequest) (*userdm.CareerID, error) {
+func convReqToCareerID(req *UpdateCareerRequest) (*userdm.CareerID, error) {
 	var careerID userdm.CareerID
 	careerID, err := userdm.NewCareerIDFromString(req.ID)
 	if err != nil {
