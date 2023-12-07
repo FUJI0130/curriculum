@@ -43,9 +43,6 @@ func TestNewSkill(t *testing.T) {
 			dummyTagID, err := tagdm.NewTagID()
 			assert.NoError(t, err)
 
-			// dummyCreatedAt := time.Now()
-			// dummyUpdatedAt := time.Now()
-
 			_, err = userdm.NewSkill(dummyTagID, tt.evaluation, tt.years)
 
 			if tt.wantErr {

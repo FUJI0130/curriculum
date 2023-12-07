@@ -72,7 +72,7 @@ func (c *Career) UpdatedAt() sharedvo.UpdatedAt {
 }
 
 func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Time, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
+	careerID, err := NewCareerIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -88,11 +88,24 @@ func ReconstructCareer(id string, detail string, adFrom time.Time, adTo time.Tim
 	}
 
 	return &Career{
-		id:        careerId,
+		id:        careerID,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,
 		createdAt: careerCreatedAt,
 		updatedAt: careerUpdatedAt,
 	}, nil
+}
+
+func (c *Career) Equal(other *Career) bool {
+	if other == nil {
+		return false
+	}
+
+	return c.id.Equal(other.id) &&
+		c.detail == other.detail &&
+		c.adFrom == other.adFrom &&
+		c.adTo == other.adTo &&
+		c.createdAt.Equal(other.createdAt) &&
+		c.updatedAt.Equal(other.updatedAt)
 }

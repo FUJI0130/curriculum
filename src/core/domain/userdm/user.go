@@ -29,7 +29,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 		return nil, customerrors.NewUnprocessableEntityError("Username is empty")
 	}
 
-	userId, err := NewUserID()
+	userID, err := NewUserID()
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 	userUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -68,7 +68,7 @@ func NewUser(name string, email string, password string, profile string, skills 
 }
 
 func TestNewUser(id string, name string, email string) (*User, error) {
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 	userUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -104,44 +104,37 @@ func TestNewUser(id string, name string, email string) (*User, error) {
 }
 
 func ReconstructEntity(id string, name string, email string, password string, profile string, skills []Skill, careers []Career, createdAt time.Time) (*User, error) {
-	// ユーザーIDを文字列から生成
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	// 名前のバリデーション
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("name is empty")
 	}
 
-	// メールアドレスのバリデーション
 	userEmail, err := NewUserEmail(email)
 	if err != nil {
 		return nil, err
 	}
 
-	// パスワードのバリデーション
 	userPassword, err := NewUserPassword(password)
 	if err != nil {
 		return nil, err
 	}
 
-	// 作成日時のバリデーション
 	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
 	if err != nil {
 		return nil, err
 	}
 
-	// 更新日時を現在時刻で生成
 	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(time.Now())
 	if err != nil {
 		return nil, err
 	}
 
-	// User エンティティの再構築
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -154,7 +147,7 @@ func ReconstructEntity(id string, name string, email string, password string, pr
 }
 
 func ReconstructUser(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
-	userId, err := NewUserIDFromString(id)
+	userID, err := NewUserIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +173,7 @@ func ReconstructUser(id string, name string, email string, password string, prof
 		return nil, err
 	}
 	return &User{
-		id:        userId,
+		id:        userID,
 		name:      name,
 		email:     userEmail,
 		password:  userPassword,
@@ -223,4 +216,48 @@ func (u *User) CreatedAt() sharedvo.CreatedAt {
 
 func (u *User) UpdatedAt() sharedvo.UpdatedAt {
 	return u.updatedAt
+}
+
+func (u *User) Update(name string, email string, password string, profile string, skills []Skill, careers []Career) error {
+	// 名前の検証
+	if name == "" {
+		return customerrors.NewUnprocessableEntityError("name is empty")
+	}
+	if utf8.RuneCountInString(name) > nameMaxlength {
+		return customerrors.NewUnprocessableEntityError("name is too long")
+	}
+
+	// EmailとPasswordの値オブジェクトの生成
+	userEmail, err := NewUserEmail(email)
+	if err != nil {
+		return err
+	}
+
+	userPassword, err := NewUserPassword(password)
+	if err != nil {
+		return err
+	}
+
+	// 更新処理
+	u.name = name
+	u.email = userEmail
+	u.password = userPassword
+
+	// プロフィールの検証
+	if profile == "" {
+		return customerrors.NewUnprocessableEntityError("UserProfile is empty")
+	}
+	if utf8.RuneCountInString(profile) > profileMaxlength {
+		return customerrors.NewUnprocessableEntityError("UserProfile is too long")
+	}
+
+	u.profile = profile
+	u.skills = skills   // スキルのスライスを更新
+	u.careers = careers // キャリアのスライスを更新
+	u.updatedAt = sharedvo.NewUpdatedAt()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

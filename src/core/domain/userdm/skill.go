@@ -17,7 +17,7 @@ type Skill struct {
 }
 
 func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) {
-	skillId, err := NewSkillID()
+	skillID, err := NewSkillID()
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) 
 		return nil, err
 	}
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tagID,
 		evaluation: eval,
 		years:      y,
@@ -51,12 +51,12 @@ func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) 
 }
 
 func ReconstructSkill(id string, tagID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillIDFromString(id) // ID文字列からSkillIDを再構築する関数を想定
+	skillID, err := NewSkillIDFromString(id)
 	if err != nil {
 		return nil, err
 	}
 
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
+	tID, err := tagdm.NewTagIDFromString(tagID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func ReconstructSkill(id string, tagID string, evaluation uint8, years uint8, cr
 	}
 
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tID,
 		evaluation: eval,
 		years:      y,
@@ -117,10 +117,5 @@ func (s *Skill) Equal(other *Skill) bool {
 		return false
 	}
 
-	return s.id.Equal(other.id) &&
-		s.tagID.Equal(other.tagID) &&
-		s.evaluation == other.evaluation &&
-		s.years == other.years &&
-		s.createdAt.Equal(other.createdAt) &&
-		s.updatedAt.Equal(other.updatedAt)
+	return s.id.Equal(other.id)
 }

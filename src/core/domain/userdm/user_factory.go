@@ -3,44 +3,27 @@ package userdm
 import (
 	"time"
 
-	"github.com/cockroachdb/errors"
-
 	"github.com/FUJI0130/curriculum/src/core/domain/shared/sharedvo"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 )
 
-type SkillParam struct {
-	TagID      tagdm.TagID
-	TagName    string
-	Evaluation uint8
-	Years      uint8
-}
-
-type CareerParam struct {
-	Detail string
-	AdFrom time.Time
-	AdTo   time.Time
-}
-
 func GenWhenCreate(name string, email string, password string, profile string, skills []Skill, careers []Career) (*User, error) {
-	// NewUser はスキルとキャリアのパラメータを受け取るようになったので、これらを直接渡す
 	user, err := NewUser(name, email, password, profile, skills, careers)
 	if err != nil {
 		return nil, err
 	}
 
-	// User オブジェクトを直接返す
 	return user, nil
 }
 
-func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillID() // ID文字列からSkillIDを再構築する関数を想定
+func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uint8) (*Skill, error) {
+	skillID, err := NewSkillID()
 	if err != nil {
 		return nil, err
 	}
 
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
+	tID, err := tagdm.NewTagIDFromString(tagID)
 	if err != nil {
 		return nil, err
 	}
@@ -55,18 +38,12 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 		return nil, err
 	}
 
-	skillCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return nil, err
-	}
+	skillCreatedAt := sharedvo.NewCreatedAt()
 
-	skillUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	skillUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &Skill{
-		id:         skillId,
+		id:         skillID,
 		tagID:      tID,
 		evaluation: eval,
 		years:      y,
@@ -75,8 +52,8 @@ func GenSkillWhenCreate(tagID string, userID string, evaluation uint8, years uin
 	}, nil
 }
 
-func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerID() // Assuming NewCareerIDFromString function exists
+func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID string) (*Career, error) {
+	careerID, err := NewCareerID()
 	if err != nil {
 		return nil, err
 	}
@@ -85,18 +62,12 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
 	}
 
-	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return nil, err
-	}
+	careerCreatedAt := sharedvo.NewCreatedAt()
 
-	careerUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	careerUpdatedAt := sharedvo.NewUpdatedAt()
 
 	return &Career{
-		id:        careerId,
+		id:        careerID,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,
@@ -105,86 +76,9 @@ func GenCareerWhenCreate(detail string, adFrom time.Time, adTo time.Time, userID
 	}, nil
 }
 
-func GenWhenUpdate(updatedUser *User, updatedSkills []*Skill, updatedCareers []*Career) (*User, error) {
-	if updatedUser == nil {
-		return nil, errors.New("updated user is nil")
-	}
+func GenSkillWhenUpdate(id SkillID, tagID tagdm.TagID, evaluation uint8, years uint8, createdAtVal time.Time) (*Skill, error) {
 
-	// Userオブジェクトのコピーを作成（ディープコピーが必要な場合はそれに応じて調整）
-	newUser := *updatedUser
-
-	// スキル情報の更新（ポインタのスライスから値のスライスへ変換）
-	newSkills := make([]Skill, len(updatedSkills))
-	for i, s := range updatedSkills {
-		if s != nil {
-			newSkills[i] = *s
-		}
-	}
-	newUser.skills = newSkills
-
-	// キャリア情報の更新（同様の変換が必要な場合）
-	newCareers := make([]Career, len(updatedCareers))
-	for i, c := range updatedCareers {
-		if c != nil {
-			newCareers[i] = *c
-		}
-	}
-	newUser.careers = newCareers
-
-	// 更新日時の設定
-	newUser.updatedAt = sharedvo.NewUpdatedAt()
-
-	return &newUser, nil
-}
-
-func GenUserWhenUpdate(id string, name string, email string, password string, profile string, createdAt time.Time) (*User, error) {
-	userId, err := NewUserIDFromString(id)
-	if err != nil {
-		return nil, err
-	}
-	if name == "" {
-		return nil, customerrors.NewUnprocessableEntityError("name is empty")
-	}
-	userEmail, err := NewUserEmail(email)
-	if err != nil {
-		return nil, err
-	}
-
-	userPassword, err := NewUserPassword(password)
-	if err != nil {
-		return nil, err
-	}
-	userCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
-	if err != nil {
-		return nil, err
-	}
-
-	userUpdatedAt, err := sharedvo.NewUpdatedAtByVal(time.Now())
-	if err != nil {
-		return nil, err
-	}
-	return &User{
-		id:        userId,
-		name:      name,
-		email:     userEmail,
-		password:  userPassword,
-		profile:   profile,
-		createdAt: userCreatedAt,
-		updatedAt: userUpdatedAt,
-	}, nil
-}
-
-func GenSkillWhenUpdate(id string, tagID string, userID string, evaluation uint8, years uint8, createdAt time.Time, updatedAt time.Time) (*Skill, error) {
-	skillId, err := NewSkillIDFromString(id) // ID文字列からSkillIDを再構築する関数を想定
-	if err != nil {
-		return nil, err
-	}
-
-	tID, err := tagdm.NewTagIDFromString(tagID) // TagIDを再構築する関数を想定
-	if err != nil {
-		return nil, err
-	}
-
+	// その他の値の設定
 	eval, err := NewSkillEvaluation(evaluation)
 	if err != nil {
 		return nil, err
@@ -195,19 +89,16 @@ func GenSkillWhenUpdate(id string, tagID string, userID string, evaluation uint8
 		return nil, err
 	}
 
-	skillCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	skillCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAtVal)
 	if err != nil {
 		return nil, err
 	}
 
-	skillUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	skillUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Skill{
-		id:         skillId,
-		tagID:      tID,
+		id:         id,
+		tagID:      tagID,
 		evaluation: eval,
 		years:      y,
 		createdAt:  skillCreatedAt,
@@ -215,28 +106,21 @@ func GenSkillWhenUpdate(id string, tagID string, userID string, evaluation uint8
 	}, nil
 }
 
-func GenCareerWhenUpdate(id string, detail string, adFrom time.Time, adTo time.Time, userID string, createdAt time.Time, updatedAt time.Time) (*Career, error) {
-	careerId, err := NewCareerIDFromString(id) // Assuming NewCareerIDFromString function exists
-	if err != nil {
-		return nil, err
-	}
+func GenCareerWhenUpdate(id CareerID, detail string, adFrom time.Time, adTo time.Time, createdAtVal time.Time) (*Career, error) {
 
 	if detail == "" {
 		return nil, customerrors.NewUnprocessableEntityError("Career Detail is empty")
 	}
 
-	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAt)
+	careerCreatedAt, err := sharedvo.NewCreatedAtByVal(createdAtVal)
 	if err != nil {
 		return nil, err
 	}
 
-	careerUpdatedAt, err := sharedvo.NewUpdatedAtByVal(updatedAt)
-	if err != nil {
-		return nil, err
-	}
+	careerUpdatedAt := sharedvo.NewUpdatedAt() // 現在の時刻を使用
 
 	return &Career{
-		id:        careerId,
+		id:        id,
 		detail:    detail,
 		adFrom:    adFrom,
 		adTo:      adTo,

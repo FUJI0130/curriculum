@@ -125,7 +125,7 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.title, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 
 			ctrl := gomock.NewController(t)
 			mockUserRepo := mockUser.NewMockUserRepository(ctrl)
@@ -139,10 +139,8 @@ func TestCreateUserAppService_Exec(t *testing.T) {
 				var unprocessableEntityErr *customerrors.UnprocessableEntityErrorType
 				if errors.As(err, &unprocessableEntityErr) {
 					if strings.Contains(unprocessableEntityErr.Error(), "UserName isExist") {
-						// ユーザー名が存在する場合のエラーメッセージの検証
 						assert.Contains(t, unprocessableEntityErr.Error(), "Create_user_app_service  Exec UserName isExist")
 					} else if strings.Contains(unprocessableEntityErr.Error(), "Skill with tag name") {
-						// スキルタグの重複に関するエラーメッセージの検証
 						assert.Contains(t, unprocessableEntityErr.Error(), "Skill with tag name")
 					} else {
 						t.Errorf("Unexpected unprocessable entity error message: %v", unprocessableEntityErr.Error())
