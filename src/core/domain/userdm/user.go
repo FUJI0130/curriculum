@@ -12,15 +12,15 @@ const nameMaxlength = 256
 const profileMaxlength = 256
 
 type User struct {
-	id        UserID             `db:"id"`
-	name      string             `db:"name"`
-	email     UserEmail          `db:"email"`
-	password  UserPassword       `db:"password"`
-	profile   string             `db:"profile"`
-	skills    []Skill            `db:"skills"`
-	careers   []Career           `db:"careers"`
-	createdAt sharedvo.CreatedAt `db:"created_at"`
-	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
+	id        UserID
+	name      string
+	email     UserEmail
+	password  UserPassword
+	profile   string
+	skills    []Skill
+	careers   []Career
+	createdAt sharedvo.CreatedAt
+	updatedAt sharedvo.UpdatedAt
 }
 
 func NewUser(name string, email string, password string, profile string, skills []Skill, careers []Career) (*User, error) {

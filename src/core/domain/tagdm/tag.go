@@ -8,10 +8,10 @@ import (
 )
 
 type Tag struct {
-	id        TagID              `db:"id"`
-	name      string             `db:"name"`
-	createdAt sharedvo.CreatedAt `db:"created_at"`
-	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
+	id        TagID
+	name      string
+	createdAt sharedvo.CreatedAt
+	updatedAt sharedvo.UpdatedAt
 }
 
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {

@@ -14,13 +14,13 @@ func GenWhenCreate(
 	title string,
 	categoryID categorydm.CategoryID,
 	budgetFrom,
-	budgetTo int,
+	budgetTo uint32,
 	applicationPeriodFrom,
 	applicationPeriodTo time.Time,
 	consultationFormat,
-	consultationMethod int,
+	consultationMethod uint8,
 	description string,
-	status int,
+	status uint8,
 	createdAt, updatedAt time.Time) (*MentorRecruitment, error) {
 	if title == "" {
 		return nil, customerrors.NewUnprocessableEntityError("title is empty")

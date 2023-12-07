@@ -11,17 +11,17 @@ import (
 const descriptionMaxlength = 2000
 
 type MentorRecruitment struct {
-	id                  MentorRecruitmentID   `db:"id"`
-	title               string                `db:"title"`
-	categoryID          categorydm.CategoryID `db:"category_id"`
+	id                  MentorRecruitmentID
+	title               string
+	categoryID          categorydm.CategoryID
 	budget              *Budget
 	applicationPeriod   *ApplicationPeriod
-	consultation_format int                `db:"consultation_format"`
-	consultation_method int                `db:"consultation_method"`
-	description         string             `db:"description"`
-	status              int                `db:"status"`
-	createdAt           sharedvo.CreatedAt `db:"created_at"`
-	updatedAt           sharedvo.UpdatedAt `db:"updated_at"`
+	consultation_format uint8
+	consultation_method uint8
+	description         string
+	status              uint8
+	createdAt           sharedvo.CreatedAt
+	updatedAt           sharedvo.UpdatedAt
 }
 
 const (
@@ -32,14 +32,14 @@ const (
 func NewMentorRecruitment(
 	title string,
 	categoryID categorydm.CategoryID,
-	budgetFrom int,
-	budgetTo int,
+	budgetFrom uint32,
+	budgetTo uint32,
 	applicationPeriodFrom time.Time,
 	applicationPeriodTo time.Time,
-	consultationFormat int,
-	consultationMethod int,
+	consultationFormat uint8,
+	consultationMethod uint8,
 	description string,
-	status int,
+	status uint8,
 ) (*MentorRecruitment, error) {
 
 	if title == "" {
@@ -99,14 +99,14 @@ func (mr *MentorRecruitment) CategoryID() categorydm.CategoryID {
 	return mr.categoryID
 }
 
-func (mr *MentorRecruitment) BudgetFrom() int {
+func (mr *MentorRecruitment) BudgetFrom() uint32 {
 	if mr.budget != nil {
 		return mr.budget.From()
 	}
 	return 0 // または適切なデフォルト値、あるいはエラーを返す
 }
 
-func (mr *MentorRecruitment) BudgetTo() int {
+func (mr *MentorRecruitment) BudgetTo() uint32 {
 	if mr.budget != nil {
 		return mr.budget.To()
 	}
@@ -127,11 +127,11 @@ func (mr *MentorRecruitment) ApplicationPeriodTo() time.Time {
 	return time.Time{} // または適切なデフォルト値、あるいはエラーを返す
 }
 
-func (mr *MentorRecruitment) ConsultationFormat() int {
+func (mr *MentorRecruitment) ConsultationFormat() uint8 {
 	return mr.consultation_format
 }
 
-func (mr *MentorRecruitment) ConsultationMethod() int {
+func (mr *MentorRecruitment) ConsultationMethod() uint8 {
 	return mr.consultation_method
 }
 
@@ -139,7 +139,7 @@ func (mr *MentorRecruitment) Description() string {
 	return mr.description
 }
 
-func (mr *MentorRecruitment) Status() int {
+func (mr *MentorRecruitment) Status() uint8 {
 	return mr.status
 }
 
