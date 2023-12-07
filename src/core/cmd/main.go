@@ -42,6 +42,7 @@ func main() {
 
 	// controllers.InitControllers(r, createUserService, updateUserService)
 	router.InitUserRoutes(r, createUserService, updateUserService)
+	router.InitCreateMentorRecruitmentController(r, createMentorRecruitmentService)
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
 }

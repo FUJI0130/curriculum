@@ -63,7 +63,7 @@ func NewMentorRecruitment(
 		return nil, err
 	}
 
-	mentorRecruitmentId, err := NewMentorRecruitmentID()
+	mentorRecruitmentID, err := NewMentorRecruitmentID()
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func NewMentorRecruitment(
 	updatedAt := sharedvo.NewUpdatedAt()
 
 	return &MentorRecruitment{
-		id:                  mentorRecruitmentId,
+		id:                  mentorRecruitmentID,
 		title:               title,
 		categoryID:          categoryID,
 		budget:              budget,

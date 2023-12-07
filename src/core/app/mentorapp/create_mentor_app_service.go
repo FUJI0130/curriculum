@@ -3,7 +3,6 @@ package mentorapp
 import (
 	"context"
 	"database/sql"
-	"log"
 	"time"
 
 	"github.com/cockroachdb/errors"
@@ -36,36 +35,24 @@ func NewCreateMentorRecruitmentAppService(
 }
 
 func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *CreateMentorRecruitmentRequest) (err error) {
-	log.Println("Start Exec in CreateMentorRecruitmentAppService")
 
-	// カテゴリの確認
-	log.Println("Checking category:", req.CategoryName)
 	category, err := app.categoryRepo.FindByName(ctx, req.CategoryName)
 
-	// sql.ErrNoRows が返された場合、新しいカテゴリを作成
 	if errors.Is(err, sql.ErrNoRows) {
-		log.Println("Category not found, creating new category:", req.CategoryName)
 		newCategory, err := categorydm.GenWhenCreate(req.CategoryName)
 		if err != nil {
-			log.Println("Error creating new category:", err)
 			return customerrors.WrapInternalServerError(err, "新しいカテゴリの作成に失敗しました")
 		}
 
-		// 新しいカテゴリを保存
 		if err = app.categoryRepo.Store(ctx, newCategory); err != nil {
-			log.Println("Error storing new category:", err)
 			return err
 		}
 		category = newCategory
 	} else if err != nil {
-		// 他のエラーの場合
-		log.Println("Error finding category:", err)
 		return err
 	}
 
-	// タグの処理
-	log.Println("Processing tags:", req.TagNames)
-	tagIds := make([]string, 0, len(req.TagNames))
+	tagIDs := make([]string, 0, len(req.TagNames))
 	for _, tagName := range req.TagNames {
 		tag, err := app.tagRepo.FindByName(ctx, tagName)
 		if err != nil {
@@ -76,20 +63,17 @@ func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *Cre
 			if err != nil {
 				return err
 			}
+			//N+1
 			if err = app.tagRepo.Store(ctx, newTag); err != nil {
 				return err
 			}
-			tagIds = append(tagIds, newTag.ID().String())
+			tagIDs = append(tagIDs, newTag.ID().String())
 		} else {
-			tagIds = append(tagIds, tag.ID().String())
+			tagIDs = append(tagIDs, tag.ID().String())
 		}
 	}
 
-	// メンター募集の作成
-
-	log.Println("Creating mentor recruitment")
 	mentorRecruitment, err := mentorrecruitmentdm.NewMentorRecruitment(
-		// メンター募集の詳細情報
 		req.Title,
 		category.ID(),
 		req.BudgetFrom,
@@ -105,17 +89,12 @@ func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *Cre
 		return err
 	}
 
-	// メンター募集の内容をログに出力
-	log.Printf("Mentor Recruitment to store: %+v\n", mentorRecruitment)
-
-	// メンター募集の保存
 	err = app.mentorRecruitmentRepo.Store(ctx, mentorRecruitment)
 	if err != nil {
 		return err
 	}
 
-	// 中間テーブルの更新
-	for _, tagIDStr := range tagIds {
+	for _, tagIDStr := range tagIDs {
 		tagID, err := tagdm.NewTagIDFromString(tagIDStr)
 		if err != nil {
 			return customerrors.WrapUnprocessableEntityError(err, "Invalid tag ID format")
