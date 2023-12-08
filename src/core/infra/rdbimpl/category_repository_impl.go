@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
 	"github.com/FUJI0130/curriculum/src/core/infra/datamodel"
@@ -41,12 +42,10 @@ func (repo *categoryRepositoryImpl) FindByName(ctx context.Context, name string)
 	err := conn.Get(&tempCategory, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			// カテゴリが見つからなかった場合、nil と sql.ErrNoRows を返す
-			return nil, sql.ErrNoRows
+			return nil, customerrors.NewNotFoundError("カテゴリが見つかりません")
 		}
 		return nil, err
 	}
-
 	categoryID, err := categorydm.NewCategoryIDFromString(tempCategory.ID)
 	if err != nil {
 		return nil, customerrors.WrapUnprocessableEntityError(err, "IDのパースに失敗しました")
@@ -82,7 +81,7 @@ func (repo *categoryRepositoryImpl) FindByID(ctx context.Context, id string) (*c
 		return nil, customerrors.WrapUnprocessableEntityError(err, "IDのパースに失敗しました")
 	}
 
-	category, err := categorydm.GenWhenFetch(categoryID, tempCategory.Name, tempCategory.CreatedAt)
+	category, err := categorydm.ReconstructCategory(categoryID, tempCategory.Name, tempCategory.CreatedAt, time.Now())
 
 	if err != nil {
 		return nil, customerrors.WrapInternalServerError(err, "カテゴリの再構築に失敗しました")

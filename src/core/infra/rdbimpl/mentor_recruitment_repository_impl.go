@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
 	"github.com/FUJI0130/curriculum/src/core/domain/mentorrecruitmentdm"
@@ -19,7 +18,6 @@ func NewMentorRecruitmentRepository() mentorrecruitmentdm.MentorRecruitmentRepos
 }
 
 func (repo *mentorRecruitmentRepositoryImpl) Store(ctx context.Context, mentorRecruitment *mentorrecruitmentdm.MentorRecruitment) error {
-	log.Printf("store start")
 	conn, exists := ctx.Value("Conn").(dbOperator)
 	if !exists {
 		return errors.New("no transaction found in context")
@@ -59,7 +57,6 @@ func (repo *mentorRecruitmentRepositoryImpl) Store(ctx context.Context, mentorRe
 	)
 
 	if err != nil {
-		log.Printf("Error storing mentor recruitment: %v\n", err)
 		return customerrors.WrapInternalServerError(err, "Failed to store mentor recruitment")
 	}
 

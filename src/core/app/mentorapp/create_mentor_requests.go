@@ -4,7 +4,7 @@ import "time"
 
 type CreateMentorRecruitmentRequest struct {
 	Title                 string    `json:"title"`
-	CategoryName          string    `json:"category_name"`
+	CategoryID            string    `json:"category_id"`
 	BudgetFrom            uint32    `json:"budget_from"`
 	BudgetTo              uint32    `json:"budget_to"`
 	ApplicationPeriodFrom time.Time `json:"application_period_from"`
@@ -13,5 +13,5 @@ type CreateMentorRecruitmentRequest struct {
 	ConsultationMethod    uint8     `json:"consultation_method"`
 	Description           string    `json:"description"`
 	Status                uint8     `json:"status"`
-	TagNames              []string  `json:"tag_names"`
+	TagIDs                []string  `json:"tag_ids"`
 }
