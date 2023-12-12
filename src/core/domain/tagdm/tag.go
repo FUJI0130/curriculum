@@ -8,12 +8,38 @@ import (
 )
 
 type Tag struct {
-	id        TagID              `db:"id"`
-	name      string             `db:"name"`
-	createdAt sharedvo.CreatedAt `db:"created_at"`
-	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
+	id        TagID
+	name      string
+	createdAt sharedvo.CreatedAt
+	updatedAt sharedvo.UpdatedAt
 }
 
+const tagNameMaxLength = 50 // タグ名の最大文字数を定義
+
+func NewTag(name string) (*Tag, error) {
+	if name == "" {
+		return nil, customerrors.NewUnprocessableEntityError("tag name is empty")
+	}
+
+	if len(name) > tagNameMaxLength {
+		return nil, customerrors.NewUnprocessableEntityError("tag name is too long")
+	}
+
+	tagID, err := NewTagID() // 新しいタグIDを生成
+	if err != nil {
+		return nil, customerrors.WrapInternalServerError(err, "failed to generate new tag ID")
+	}
+
+	createdAt := sharedvo.NewCreatedAt()
+	updatedAt := sharedvo.NewUpdatedAt()
+
+	return &Tag{
+		id:        tagID,
+		name:      name,
+		createdAt: createdAt,
+		updatedAt: updatedAt,
+	}, nil
+}
 func ReconstructTag(id TagID, name string, createdAt time.Time, updatedAt time.Time) (*Tag, error) {
 	if name == "" {
 		return nil, customerrors.NewUnprocessableEntityError("name is empty")

@@ -42,7 +42,7 @@ func (repo *tagRepositoryImpl) FindByName(ctx context.Context, name string) (*ta
 	err := conn.Get(&tempTag, query, name)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_impl FindByName")
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (repo *tagRepositoryImpl) FindByID(ctx context.Context, id string) (*tagdm.
 	err := conn.Get(&tempTag, query, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, customerrors.WrapNotFoundError(err, "Tag Repository_imple  FindByID")
+			return nil, nil
 		}
 		return nil, err
 	}

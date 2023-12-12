@@ -8,12 +8,12 @@ import (
 )
 
 type Career struct {
-	id        CareerID           `db:"id"`
-	detail    string             `db:"detail"`
-	adFrom    time.Time          `db:"ad_from"`
-	adTo      time.Time          `db:"ad_to"`
-	createdAt sharedvo.CreatedAt `db:"created_at"`
-	updatedAt sharedvo.UpdatedAt `db:"updated_at"`
+	id        CareerID
+	detail    string
+	adFrom    time.Time
+	adTo      time.Time
+	createdAt sharedvo.CreatedAt
+	updatedAt sharedvo.UpdatedAt
 }
 
 func NewCareer(detail string, adFromSet time.Time, adToSet time.Time) (*Career, error) {

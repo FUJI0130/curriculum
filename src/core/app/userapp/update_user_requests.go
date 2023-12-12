@@ -22,7 +22,6 @@ type UpdateCareerRequest struct {
 	AdFrom time.Time `json:"adFrom"`
 	AdTo   time.Time `json:"adTo"`
 }
-
 type UpdateUserRequestData struct {
 	UpdateData struct {
 		Users   UpdateUserRequest     `json:"users"`

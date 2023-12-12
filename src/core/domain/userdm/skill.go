@@ -8,12 +8,12 @@ import (
 )
 
 type Skill struct {
-	id         SkillID            `db:"id"`
-	tagID      tagdm.TagID        `db:"tag_id"`
-	evaluation SkillEvaluation    `db:"evaluation"`
-	years      SkillYear          `db:"years"`
-	createdAt  sharedvo.CreatedAt `db:"created_at"`
-	updatedAt  sharedvo.UpdatedAt `db:"updated_at"`
+	id         SkillID
+	tagID      tagdm.TagID
+	evaluation SkillEvaluation
+	years      SkillYear
+	createdAt  sharedvo.CreatedAt
+	updatedAt  sharedvo.UpdatedAt
 }
 
 func NewSkill(tagID tagdm.TagID, evaluation uint8, years uint8) (*Skill, error) {

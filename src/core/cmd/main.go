@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
@@ -29,12 +31,22 @@ func main() {
 	createUserService := userapp.NewCreateUserAppService(userRepo, tagRepo, existService)
 	updateUserService := userapp.NewUpdateUserAppService(userRepo, tagRepo)
 
+	// メンター募集関連のリポジトリとサービス
+	mentorRecruitmentRepo := rdbimpl.NewMentorRecruitmentRepository()
+	mentorRecruitmentTagRepo := rdbimpl.NewMentorRecruitmentsTagsRepository()
+	categoryRepo := rdbimpl.NewCategoryRepository()
+
+	tagDomainService := tagdm.NewTagDomainService(tagRepo) // タグリポジトリを使用してタグドメインサービスを作成
+
+	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, mentorRecruitmentTagRepo, categoryRepo, tagDomainService) // タグドメインサービスを引数として追加
+
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)
 	r.Use(middleware.TransactionHandler(db))
 
 	// controllers.InitControllers(r, createUserService, updateUserService)
 	router.InitUserRoutes(r, createUserService, updateUserService)
+	router.InitCreateMentorRecruitmentController(r, createMentorRecruitmentService)
 	log.Println("Starting server on port:", config.Env.AppPort)
 	r.Run(":" + config.Env.AppPort)
 }
