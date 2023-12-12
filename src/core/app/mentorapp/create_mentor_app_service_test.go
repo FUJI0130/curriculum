@@ -2,193 +2,234 @@ package mentorapp_test
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
 	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
 	"github.com/FUJI0130/curriculum/src/core/domain/categorydm"
-	"github.com/FUJI0130/curriculum/src/core/domain/mentorrecruitmentdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	mockCategory "github.com/FUJI0130/curriculum/src/core/mock/mock_category"
 	mockMentorRecruitmentTag "github.com/FUJI0130/curriculum/src/core/mock/mock_mentor_recruitment_tag"
 	mockMentorRecruitment "github.com/FUJI0130/curriculum/src/core/mock/mock_mentorrecruitment"
-	mockTag "github.com/FUJI0130/curriculum/src/core/mock/mock_tag"
+	mockTagdm "github.com/FUJI0130/curriculum/src/core/mock/mock_tagdm"
+	"github.com/FUJI0130/curriculum/src/core/support/customerrors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
-// Define more test cases as needed
-func TestCreateMentorRecruitmentAppService_Exec(t *testing.T) {
-	ctx := context.TODO()
-	mockCategoryName := "Test Category"
+func TestCreateMentorRecruitmentAppService_Exec_CategoryNotFound(t *testing.T) {
+	mockCategoryID := "12345678-1234-56ab-7c89-1011d2e34fgh"
+	mockNewTagName := "NewTag"
+	mockExistingTagID := "e5431b9c-6212-4874-ac10-cc6209c96246"
+	mockTagID := "12345678-1234-56ab-7c89-1011d2e34fgh"
 
 	tests := []struct {
-		title    string
-		input    *mentorapp.CreateMentorRecruitmentRequest
-		mockFunc func(mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository, mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository, mockTagRepo *mockTag.MockTagRepository, mockCategoryRepo *mockCategory.MockCategoryRepository)
-		wantErr  error
+		name      string
+		request   *mentorapp.CreateMentorRecruitmentRequest
+		mockSetup func(
+			mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository,
+			mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository,
+			mockCategoryRepo *mockCategory.MockCategoryRepository,
+			mockTagDomainService *mockTagdm.MockTagDomainService,
+		)
+		wantErr error
 	}{
-
 		{
-			title: "カテゴリが存在しない場合のメンター募集作成と保存",
-			input: &mentorapp.CreateMentorRecruitmentRequest{
-				Title:                 "テストメンター募集",
-				CategoryName:          mockCategoryName,
+			name: "CategoryNotFound",
+			request: &mentorapp.CreateMentorRecruitmentRequest{
+				Title:                 "Test Mentor Recruitment",
+				CategoryID:            mockCategoryID,
 				BudgetFrom:            10000,
 				BudgetTo:              50000,
 				ApplicationPeriodFrom: time.Now(),
-				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0), // 1ヶ月後
+				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0),
 				ConsultationFormat:    1,
 				ConsultationMethod:    1,
-				Description:           "メンター募集の詳細説明",
+				Description:           "Detailed description of the mentor recruitment",
 				Status:                1,
 				TagNames:              []string{"Tag1", "Tag2"},
 			},
-			mockFunc: func(mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository, mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository, mockTagRepo *mockTag.MockTagRepository, mockCategoryRepo *mockCategory.MockCategoryRepository) {
-				// カテゴリが存在しないことをモック（sql.ErrNoRows を返すように変更）
-				mockCategoryRepo.EXPECT().FindByName(gomock.Any(), mockCategoryName).Return(nil, sql.ErrNoRows)
-
-				// 新しいカテゴリの保存をモック
-				mockCategoryRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
-
-				// タグの処理に関するモック設定
-				mockTagRepo.EXPECT().FindByName(gomock.Any(), gomock.Any()).Return(nil, nil).AnyTimes()
-				mockTagRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-
-				// メンター募集の保存をモック
-				mockMentorRecruitmentRepo.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
-
-				// 中間テーブルの更新をモック
-				mockMentorRecruitmentTagRepo.EXPECT().
-					Store(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, mentorRecruitmentTag *mentorrecruitmentdm.MentorRecruitmentTag) error {
-						assert.NotNil(t, mentorRecruitmentTag)
-						return nil
-					}).AnyTimes()
+			mockSetup: func(
+				mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository,
+				mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository,
+				mockCategoryRepo *mockCategory.MockCategoryRepository,
+				mockTagDomainService *mockTagdm.MockTagDomainService,
+			) {
+				// Setup mock for category not found
+				mockCategoryRepo.EXPECT().
+					FindByID(gomock.Any(), mockCategoryID).
+					Return(nil, customerrors.NewNotFoundError("カテゴリが見つかりません")).
+					Times(1)
 			},
-			wantErr: nil,
+			wantErr: customerrors.NewNotFoundError("カテゴリが見つかりません"),
 		},
 		{
-			title: "タグが存在しない場合の新しいタグの生成と保存",
-			input: &mentorapp.CreateMentorRecruitmentRequest{
-				Title:                 "新規メンター募集",
-				CategoryName:          mockCategoryName,
+			name: "NewTagCreationAndSave",
+			request: &mentorapp.CreateMentorRecruitmentRequest{
+				Title:                 "New Mentor Recruitment",
+				CategoryID:            mockCategoryID,
 				BudgetFrom:            10000,
 				BudgetTo:              50000,
 				ApplicationPeriodFrom: time.Now(),
-				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0), // 1ヶ月後
+				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0),
 				ConsultationFormat:    1,
 				ConsultationMethod:    1,
-				Description:           "メンター募集の詳細説明",
+				Description:           "Detailed description of the mentor recruitment",
 				Status:                1,
-				TagNames:              []string{"New Tag"},
+				TagIDs:                []string{""}, // 空のTagIDを設定
+				TagNames:              []string{mockNewTagName},
 			},
-			mockFunc: func(mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository, mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository, mockTagRepo *mockTag.MockTagRepository, mockCategoryRepo *mockCategory.MockCategoryRepository) {
+			mockSetup: func(
+				mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository,
+				mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository,
+				mockCategoryRepo *mockCategory.MockCategoryRepository,
+				mockTagDomainService *mockTagdm.MockTagDomainService,
+			) {
 				// カテゴリが存在することをモック
-				mockCategoryRepo.EXPECT().FindByName(ctx, mockCategoryName).Return(&categorydm.Category{}, nil)
+				mockCategoryRepo.EXPECT().
+					FindByID(gomock.Any(), mockCategoryID).
+					Return(&categorydm.Category{}, nil).
+					Times(1)
 
-				// タグが存在しないことをモック
-				mockTagRepo.EXPECT().FindByName(ctx, "New Tag").Return(nil, nil)
-				// 新しいタグの保存をモック
-				mockTagRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil)
+				// 新規タグの生成をモック
+				mockTagDomainService.EXPECT().
+					ProcessTag(gomock.Any(), gomock.Eq(""), gomock.Eq(mockNewTagName)).
+					Return(&tagdm.Tag{}, nil).
+					Times(1)
 
 				// メンター募集の保存をモック
-				mockMentorRecruitmentRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil)
+				mockMentorRecruitmentRepo.EXPECT().
+					Store(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+
 				// 中間テーブルの更新をモック
 				mockMentorRecruitmentTagRepo.EXPECT().
 					Store(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, mentorRecruitmentTag *mentorrecruitmentdm.MentorRecruitmentTag) error {
-						assert.NotNil(t, mentorRecruitmentTag)
-						return nil
-					}).AnyTimes()
+					Return(nil).
+					AnyTimes()
 			},
 			wantErr: nil,
 		},
 		{
-			title: "既存のタグを使用するケース",
-			input: &mentorapp.CreateMentorRecruitmentRequest{
-				Title:                 "既存タグ使用のメンター募集",
-				CategoryName:          mockCategoryName,
-				BudgetFrom:            20000,
-				BudgetTo:              40000,
+			name: "ExistingTagUse",
+			request: &mentorapp.CreateMentorRecruitmentRequest{
+				Title:                 "New Mentor Recruitment",
+				CategoryID:            mockCategoryID,
+				BudgetFrom:            10000,
+				BudgetTo:              50000,
 				ApplicationPeriodFrom: time.Now(),
-				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0), // 1ヶ月後
-				ConsultationFormat:    2,
-				ConsultationMethod:    2,
-				Description:           "既存タグを使用するメンター募集の説明",
+				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0),
+				ConsultationFormat:    1,
+				ConsultationMethod:    1,
+				Description:           "Detailed description of the mentor recruitment",
 				Status:                1,
-				TagNames:              []string{"Existing Tag"},
+				TagIDs:                []string{mockExistingTagID}, // 既存のタグIDを設定
+				TagNames:              []string{},
 			},
-			mockFunc: func(mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository, mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository, mockTagRepo *mockTag.MockTagRepository, mockCategoryRepo *mockCategory.MockCategoryRepository) {
-				// カテゴリと既存のタグが存在することをモック
-				mockCategoryRepo.EXPECT().FindByName(ctx, mockCategoryName).Return(&categorydm.Category{}, nil)
-				existingTag, _ := tagdm.GenWhenCreateTag("Existing Tag")
-				mockTagRepo.EXPECT().FindByName(ctx, "Existing Tag").Return(existingTag, nil)
+			mockSetup: func(
+				mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository,
+				mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository,
+				mockCategoryRepo *mockCategory.MockCategoryRepository,
+				mockTagDomainService *mockTagdm.MockTagDomainService,
+			) {
+				// カテゴリが存在することをモック
+				mockCategoryRepo.EXPECT().
+					FindByID(gomock.Any(), mockCategoryID).
+					Return(&categorydm.Category{}, nil).
+					Times(1)
+
+				// 既存のタグが取得されることをモック
+				mockTagDomainService.EXPECT().
+					ProcessTag(gomock.Any(), gomock.Eq(mockExistingTagID), gomock.Any()).
+					Return(&tagdm.Tag{}, nil).
+					Times(1)
 
 				// メンター募集の保存をモック
-				mockMentorRecruitmentRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil)
+				mockMentorRecruitmentRepo.EXPECT().
+					Store(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+
 				// 中間テーブルの更新をモック
 				mockMentorRecruitmentTagRepo.EXPECT().
 					Store(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, mentorRecruitmentTag *mentorrecruitmentdm.MentorRecruitmentTag) error {
-						assert.NotNil(t, mentorRecruitmentTag)
-						return nil
-					}).AnyTimes()
+					Return(nil).
+					AnyTimes()
 			},
 			wantErr: nil,
 		},
 		{
-			title: "メンター募集の正常な作成と保存",
-			input: &mentorapp.CreateMentorRecruitmentRequest{
-				Title:                 "新しいメンター募集",
-				CategoryName:          mockCategoryName,
-				BudgetFrom:            30000,
-				BudgetTo:              60000,
+			name: "SuccessfulCreationAndSave",
+			request: &mentorapp.CreateMentorRecruitmentRequest{
+				Title:                 "Successful Mentor Recruitment",
+				CategoryID:            mockCategoryID,
+				BudgetFrom:            10000,
+				BudgetTo:              50000,
 				ApplicationPeriodFrom: time.Now(),
-				ApplicationPeriodTo:   time.Now().AddDate(0, 2, 0), // 2ヶ月後
-				ConsultationFormat:    3,
-				ConsultationMethod:    3,
-				Description:           "新しいメンター募集の詳細説明",
+				ApplicationPeriodTo:   time.Now().AddDate(0, 1, 0),
+				ConsultationFormat:    1,
+				ConsultationMethod:    1,
+				Description:           "Detailed description of the mentor recruitment",
 				Status:                1,
-				TagNames:              []string{"Existing Tag"},
+				TagIDs:                []string{mockTagID}, // 既存のタグID
+				TagNames:              []string{},
 			},
-			mockFunc: func(mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository, mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository, mockTagRepo *mockTag.MockTagRepository, mockCategoryRepo *mockCategory.MockCategoryRepository) {
-				// カテゴリと既存のタグが存在することをモック
-				mockCategoryRepo.EXPECT().FindByName(ctx, mockCategoryName).Return(&categorydm.Category{}, nil)
-				existingTag, _ := tagdm.GenWhenCreateTag("Existing Tag")
-				mockTagRepo.EXPECT().FindByName(ctx, "Existing Tag").Return(existingTag, nil)
+			mockSetup: func(
+				mockMentorRecruitmentRepo *mockMentorRecruitment.MockMentorRecruitmentRepository,
+				mockMentorRecruitmentTagRepo *mockMentorRecruitmentTag.MockMentorRecruitmentsTagsRepository,
+				mockCategoryRepo *mockCategory.MockCategoryRepository,
+				mockTagDomainService *mockTagdm.MockTagDomainService,
+			) {
+				// カテゴリが存在することをモック
+				mockCategoryRepo.EXPECT().
+					FindByID(gomock.Any(), mockCategoryID).
+					Return(&categorydm.Category{}, nil).
+					Times(1)
+
+				// 既存のタグが取得されることをモック
+				mockTagDomainService.EXPECT().
+					ProcessTag(gomock.Any(), gomock.Eq(mockTagID), gomock.Any()).
+					Return(&tagdm.Tag{}, nil).
+					Times(1)
 
 				// メンター募集の保存をモック
-				mockMentorRecruitmentRepo.EXPECT().Store(ctx, gomock.Any()).Return(nil)
+				mockMentorRecruitmentRepo.EXPECT().
+					Store(gomock.Any(), gomock.Any()).
+					Return(nil).
+					Times(1)
+
 				// 中間テーブルの更新をモック
 				mockMentorRecruitmentTagRepo.EXPECT().
 					Store(gomock.Any(), gomock.Any()).
-					DoAndReturn(func(ctx context.Context, mentorRecruitmentTag *mentorrecruitmentdm.MentorRecruitmentTag) error {
-						assert.NotNil(t, mentorRecruitmentTag)
-						return nil
-					}).AnyTimes()
+					Return(nil).
+					AnyTimes()
 			},
 			wantErr: nil,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.title, func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
 			mockMentorRecruitmentRepo := mockMentorRecruitment.NewMockMentorRecruitmentRepository(ctrl)
 			mockMentorRecruitmentTagRepo := mockMentorRecruitmentTag.NewMockMentorRecruitmentsTagsRepository(ctrl)
-			mockTagRepo := mockTag.NewMockTagRepository(ctrl)
 			mockCategoryRepo := mockCategory.NewMockCategoryRepository(ctrl)
+			mockTagDomainService := mockTagdm.NewMockTagDomainService(ctrl)
 
-			app := mentorapp.NewCreateMentorRecruitmentAppService(mockMentorRecruitmentRepo, mockMentorRecruitmentTagRepo, mockTagRepo, mockCategoryRepo)
-			tt.mockFunc(mockMentorRecruitmentRepo, mockMentorRecruitmentTagRepo, mockTagRepo, mockCategoryRepo)
+			app := mentorapp.NewCreateMentorRecruitmentAppService(
+				mockMentorRecruitmentRepo,
+				mockMentorRecruitmentTagRepo,
+				mockCategoryRepo,
+				mockTagDomainService,
+			)
 
-			err := app.Exec(ctx, tt.input)
+			tt.mockSetup(mockMentorRecruitmentRepo, mockMentorRecruitmentTagRepo, mockCategoryRepo, mockTagDomainService)
 
-			// Assertions here
+			err := app.Exec(context.TODO(), tt.request)
+
 			if tt.wantErr != nil {
 				assert.Error(t, err)
 				assert.IsType(t, tt.wantErr, err)

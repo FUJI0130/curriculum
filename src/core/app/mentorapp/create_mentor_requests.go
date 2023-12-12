@@ -14,4 +14,5 @@ type CreateMentorRecruitmentRequest struct {
 	Description           string    `json:"description"`
 	Status                uint8     `json:"status"`
 	TagIDs                []string  `json:"tag_ids"`
+	TagNames              []string  `json:"tag_names"`
 }

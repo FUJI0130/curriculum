@@ -1,0 +1,25 @@
+package categorydm
+
+import (
+	"context"
+	"fmt"
+)
+
+type existByCategoryNameDomainService struct {
+	categoryRepo CategoryRepository
+}
+
+func NewExistByCategoryNameDomainService(categoryRepo CategoryRepository) *existByCategoryNameDomainService {
+	return &existByCategoryNameDomainService{categoryRepo: categoryRepo}
+}
+
+func (ds *existByCategoryNameDomainService) Exec(ctx context.Context, categoryName string) (bool, error) {
+	existingCategory, err := ds.categoryRepo.FindByCategoryName(ctx, categoryName)
+	if err != nil {
+		if customerrors.IsNotFoundError(err) {
+			return false, nil
+		}
+		return false, customerrors.WrapInternalServerError(err, fmt.Sprintf("Exec関数呼び出し時にcategoryRepo.FindByCategoryNameでエラー発生、カテゴリ名: %s", categoryName))
+	}
+	return existingCategory != nil, nil
+}

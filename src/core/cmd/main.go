@@ -7,6 +7,7 @@ import (
 	"github.com/FUJI0130/curriculum/src/core/app/mentorapp"
 	"github.com/FUJI0130/curriculum/src/core/app/userapp"
 	"github.com/FUJI0130/curriculum/src/core/config"
+	"github.com/FUJI0130/curriculum/src/core/domain/tagdm"
 	"github.com/FUJI0130/curriculum/src/core/domain/userdm"
 	"github.com/FUJI0130/curriculum/src/core/infra/middleware"
 	"github.com/FUJI0130/curriculum/src/core/infra/rdbimpl"
@@ -34,7 +35,10 @@ func main() {
 	mentorRecruitmentRepo := rdbimpl.NewMentorRecruitmentRepository()
 	mentorRecruitmentTagRepo := rdbimpl.NewMentorRecruitmentsTagsRepository()
 	categoryRepo := rdbimpl.NewCategoryRepository()
-	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, mentorRecruitmentTagRepo, tagRepo, categoryRepo)
+
+	tagDomainService := tagdm.NewTagDomainService(tagRepo) // タグリポジトリを使用してタグドメインサービスを作成
+
+	createMentorRecruitmentService := mentorapp.NewCreateMentorRecruitmentAppService(mentorRecruitmentRepo, mentorRecruitmentTagRepo, categoryRepo, tagDomainService) // タグドメインサービスを引数として追加
 
 	r := gin.Default()
 	r.Use(middleware.ErrorHandler)

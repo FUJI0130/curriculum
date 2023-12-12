@@ -15,28 +15,32 @@ type CreateMentorRecruitmentAppService struct {
 	mentorRecruitmentTagRepo mentorrecruitmentdm.MentorRecruitmentsTagsRepository
 	tagRepo                  tagdm.TagRepository
 	categoryRepo             categorydm.CategoryRepository
+	tagDomainService         tagdm.TagDomainService
 }
 
 func NewCreateMentorRecruitmentAppService(
 	mentorRecruitmentRepo mentorrecruitmentdm.MentorRecruitmentRepository,
 	mentorRecruitmentTagRepo mentorrecruitmentdm.MentorRecruitmentsTagsRepository,
-	tagRepo tagdm.TagRepository,
 	categoryRepo categorydm.CategoryRepository,
+	tagDomainService tagdm.TagDomainService,
 ) *CreateMentorRecruitmentAppService {
 	return &CreateMentorRecruitmentAppService{
 		mentorRecruitmentRepo:    mentorRecruitmentRepo,
 		mentorRecruitmentTagRepo: mentorRecruitmentTagRepo,
-		tagRepo:                  tagRepo,
 		categoryRepo:             categoryRepo,
+		tagDomainService:         tagDomainService,
 	}
 }
 
 func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *CreateMentorRecruitmentRequest) (err error) {
+
 	category, err := app.categoryRepo.FindByID(ctx, req.CategoryID)
 	if err != nil {
+		if customerrors.IsNotFoundError(err) {
+			return err
+		}
 		return customerrors.WrapInternalServerError(err, "カテゴリの検索に失敗しました")
 	}
-
 	mentorRecruitment, err := mentorrecruitmentdm.NewMentorRecruitment(
 		req.Title,
 		category.ID(),
@@ -49,31 +53,29 @@ func (app *CreateMentorRecruitmentAppService) Exec(ctx context.Context, req *Cre
 		req.Description,
 		req.Status,
 	)
+
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "メンター募集の新規作成に失敗しました")
 	}
-
 	err = app.mentorRecruitmentRepo.Store(ctx, mentorRecruitment)
 	if err != nil {
 		return customerrors.WrapInternalServerError(err, "メンター募集の保存に失敗しました")
 	}
-
-	for _, tagIDStr := range req.TagIDs {
-		tagID, err := tagdm.NewTagIDFromString(tagIDStr)
-		if err != nil {
-			return customerrors.WrapUnprocessableEntityError(err, "無効なタグIDフォーマット")
+	for i, tagID := range req.TagIDs {
+		tagName := ""
+		if len(req.TagNames) > i {
+			tagName = req.TagNames[i]
 		}
 
-		_, err = app.tagRepo.FindByID(ctx, tagID.String())
+		tag, err := app.tagDomainService.ProcessTag(ctx, tagID, tagName)
 		if err != nil {
-			return customerrors.WrapInternalServerError(err, "タグの検索に失敗しました")
+			return err
 		}
 
-		mentorRecruitmentTag := mentorrecruitmentdm.NewMentorRecruitmentTag(mentorRecruitment.ID(), tagID, time.Now())
+		mentorRecruitmentTag := mentorrecruitmentdm.NewMentorRecruitmentTag(mentorRecruitment.ID(), tag.ID(), time.Now())
 		if err = app.mentorRecruitmentTagRepo.Store(ctx, mentorRecruitmentTag); err != nil {
-			return customerrors.WrapInternalServerError(err, "メンター募集タグの保存に失敗しました")
+			return customerrors.WrapInternalServerError(err, "Failed to store mentor recruitment tag")
 		}
 	}
-
 	return nil
 }
